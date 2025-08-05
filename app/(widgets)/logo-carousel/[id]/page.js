@@ -2,9 +2,9 @@
 
 import { useParams } from 'next/navigation';
 import { useEffect, useState } from 'react';
-import EditSidebar from '../../../app/components/EditSidebar';
-import CarouselPreview from '../../../app/components/CarouselPreview';
-import { fakeCarousels } from '../../../lib/data.js';
+import EditSidebar from '../../../components/EditSidebar';
+import CarouselPreview from '../../../components/CarouselPreview';
+import { fakeCarousels } from '../../../../lib/data.js';
 
 export default function CarouselEditPage() {
   const { id } = useParams();

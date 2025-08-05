@@ -2,7 +2,7 @@
 
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
-import { fakeCarousels } from '../../lib/data.js';
+import { fakeCarousels } from '../../../lib/data.js';
 import Link from 'next/link.js';
 
 export default function CarouselListPage() {
