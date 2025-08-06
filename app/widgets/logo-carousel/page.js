@@ -5,6 +5,7 @@ import { authorizedFetch } from '../../../lib/api';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { PencilSquareIcon, TrashIcon } from '@heroicons/react/24/solid';
+import {WidgetEmbedGenerator} from "../../components/WidgetEmbedGenerator";
 
 export default function CarouselListPage() {
   const [carousels, setCarousels] = useState([]);
@@ -76,32 +77,30 @@ export default function CarouselListPage() {
                   </td>
                   <td className="px-6 py-4">{carousel.logos?.length ?? 0}</td>
                   <td className="px-6 py-4 text-right flex justify-end gap-3">
-                    <Link
-                      href={`/widgets/logo-carousel/${carousel.id}`}
-                      className="text-blue-500 hover:text-blue-700"
-                      title="Editovat"
-                    >
-                      <PencilSquareIcon className="h-5 w-5" />
+                    <Link className="text-blue-500 hover:text-blue-700 flex items-center" title="Editovat"
+                       href={`/widgets/logo-carousel/${carousel.id}`}>
+                      <PencilSquareIcon className="h-5 w-5"/>
                     </Link>
                     <button
-                      onClick={() => handleDelete(carousel.id)}
-                      className="text-red-500 hover:text-red-700"
-                      title="Smazat"
+                        onClick={() => handleDelete(carousel.id)}
+                        className="text-red-500 hover:text-red-700"
+                        title="Smazat"
                     >
-                      <TrashIcon className="h-5 w-5" />
+                      <TrashIcon className="h-5 w-5"/>
                     </button>
+                    <WidgetEmbedGenerator widgetId={carousel.id} widgetType={'Logo'}/>
                   </td>
                 </tr>
               ))
             ) : (
-              <tr>
-                <td
-                  colSpan="3"
-                  className="px-6 py-4 text-center text-gray-500 dark:text-gray-400"
-                >
-                  Žádné carousely nenalezeny.
-                </td>
-              </tr>
+                <tr>
+                  <td
+                      colSpan="3"
+                      className="px-6 py-4 text-center text-gray-500 dark:text-gray-400"
+                  >
+                    Žádné carousely nenalezeny.
+                  </td>
+                </tr>
             )}
           </tbody>
         </table>

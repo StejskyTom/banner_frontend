@@ -20,6 +20,8 @@ const handler = NextAuth({
             })
           });
 
+          console.log(res);
+
           if (!res.ok) {
             return null;
           }

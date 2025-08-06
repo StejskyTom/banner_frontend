@@ -20,12 +20,6 @@ export default function CarouselEditPage() {
         const res = await authorizedFetch(`/widgets/${id}`);
         if (res && res.ok) {
           const data = await res.json();
-
-          data.logos = [
-              "https://upload.wikimedia.org/wikipedia/commons/thumb/a/a7/React-icon.svg/1150px-React-icon.svg.png",
-              "https://icon2.cleanpng.com/20180810/ekz/11448a7a96ee808a3cdbaf0df9570976.webp"
-          ]
-
           setCarousel(data);
         } else {
           console.error('Nepodařilo se načíst carousel');
