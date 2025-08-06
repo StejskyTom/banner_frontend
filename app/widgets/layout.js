@@ -1,6 +1,8 @@
 import { Geist, Geist_Mono } from "next/font/google";
 import "../globals.css";
 import MainSidebar from '../components/MainSidebar';
+import { ToastProvider } from "../components/ToastProvider";
+
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -20,8 +22,10 @@ export const metadata = {
 export default function WidgetLayout({ children }) {
   return (
     <div>
-        <MainSidebar />
-        <main className="flex-1 sm:ml-64">{children}</main>
+        <ToastProvider>
+          <MainSidebar />
+          <main className="flex-1 sm:ml-64">{children}</main>
+        </ToastProvider>
     </div>
   );
 }
