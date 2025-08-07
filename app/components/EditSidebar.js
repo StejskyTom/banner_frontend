@@ -6,7 +6,7 @@ import {
   closestCenter,
   PointerSensor,
   useSensor,
-  useSensors,
+  useSensors, MouseSensor, TouchSensor, KeyboardSensor,
 } from '@dnd-kit/core';
 import {
   arrayMove,
@@ -16,6 +16,7 @@ import {
 } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
 import { TrashIcon } from '@heroicons/react/24/outline';
+
 
 function SortableLogoItem({ id, logo, onRemove }) {
   const { attributes, listeners, setNodeRef, transform, transition } = useSortable({ id });
@@ -34,7 +35,10 @@ function SortableLogoItem({ id, logo, onRemove }) {
     >
       <img src={logo} alt="" className="h-12 object-contain max-w-[80px]" />
       <button
-        onClick={() => onRemove(id)}
+        data-no-dnd="true"
+        onClick={(e) => {
+          onRemove(logo);
+        }}
         className="absolute top-1 right-1 text-gray-400 hover:text-red-500"
         title="Smazat logo"
       >
@@ -44,17 +48,22 @@ function SortableLogoItem({ id, logo, onRemove }) {
   );
 }
 
-export default function EditSidebar({ carousel, setCarousel }) {
+export default function EditSidebar({ carousel, setCarousel, onSave }) {
   const [newLogo, setNewLogo] = useState('');
   const [title, setTitle] = useState(carousel.title);
 
   const handleAddLogo = () => {
     if (!newLogo.trim()) return;
-    setCarousel({
+
+    const updatedCarousel = {
       ...carousel,
       logos: [...carousel.logos, newLogo.trim()],
-    });
+    };
+
+    setCarousel(updatedCarousel);
     setNewLogo('');
+
+    onSave(updatedCarousel);
   };
 
   const handleRemoveLogo = (logoToRemove) => {
@@ -68,7 +77,21 @@ export default function EditSidebar({ carousel, setCarousel }) {
     setCarousel({ ...carousel, title });
   };
 
-  const sensors = useSensors(useSensor(PointerSensor));
+  const pointerSensor = useSensor(PointerSensor, {
+    activationConstraint: {
+      distance: 0.01
+    }
+  })
+  const mouseSensor = useSensor(MouseSensor)
+  const touchSensor = useSensor(TouchSensor)
+  const keyboardSensor = useSensor(KeyboardSensor)
+
+  const sensors = useSensors(
+      mouseSensor,
+      touchSensor,
+      keyboardSensor,
+      pointerSensor
+  )
 
   const handleDragEnd = (event) => {
     const { active, over } = event;
