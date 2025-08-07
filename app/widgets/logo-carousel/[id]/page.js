@@ -79,7 +79,7 @@ export default function CarouselEditPage() {
         </div>
       </div>
 
-      <EditSidebar carousel={carousel} setCarousel={setCarousel} onSave={handleSave} />
+      <EditSidebar carousel={carousel} setCarousel={setCarousel} />
     </div>
   );
 }

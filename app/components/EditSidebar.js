@@ -48,7 +48,7 @@ function SortableLogoItem({ id, logo, onRemove }) {
   );
 }
 
-export default function EditSidebar({ carousel, setCarousel, onSave }) {
+export default function EditSidebar({ carousel, setCarousel }) {
   const [newLogo, setNewLogo] = useState('');
   const [title, setTitle] = useState(carousel.title);
 
@@ -62,8 +62,6 @@ export default function EditSidebar({ carousel, setCarousel, onSave }) {
 
     setCarousel(updatedCarousel);
     setNewLogo('');
-
-    onSave(updatedCarousel);
   };
 
   const handleRemoveLogo = (logoToRemove) => {
