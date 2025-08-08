@@ -75,7 +75,7 @@ export default function CarouselListPage() {
                   <td className="px-6 py-4 font-medium text-gray-900 dark:text-white">
                     {carousel.title}
                   </td>
-                  <td className="px-6 py-4">{carousel.logos?.length ?? 0}</td>
+                  <td className="px-6 py-4">{carousel.attachments?.length ?? 0}</td>
                   <td className="px-6 py-4 text-right flex justify-end gap-3">
                     <Link className="text-blue-500 hover:text-blue-700 flex items-center" title="Editovat"
                        href={`/widgets/logo-carousel/${carousel.id}`}>

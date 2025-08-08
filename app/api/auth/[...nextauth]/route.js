@@ -20,15 +20,11 @@ const handler = NextAuth({
             })
           });
 
-          console.log(res);
-
           if (!res.ok) {
             return null;
           }
 
           const data = await res.json();
-
-          console.log(data);
 
           // Symfony vrátí { token: "...", refresh_token: "...", ... }
           return {

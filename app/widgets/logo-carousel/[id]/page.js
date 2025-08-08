@@ -22,7 +22,7 @@ export default function CarouselEditPage() {
           const data = await res.json();
           setCarousel(data);
         } else {
-          console.error('Nepodařilo se načíst carousel');
+          console.error('Nepodařilo se načíst carousel', res);
         }
       } catch (err) {
         console.error('Chyba při načítání carouselu', err);
@@ -40,25 +40,19 @@ export default function CarouselEditPage() {
   if (!carousel) return <p className="p-6 text-red-500">Nenalezeno...</p>;
 
   const handleSave = async () => {
-    try {
-      const res = await authorizedFetch(`/widgets/${carousel.id}`, {
-        method: "PUT",
-        body: JSON.stringify({
-          id: carousel.id,
-          title: carousel.title,
-          logos: carousel.logos
-        })
-      });
+    const data = carousel;
 
-      if (res?.ok) {
-        showNotification("Změny byli úspěšně uloženy", "success")
-      } else {
-        showNotification("Změny se nepodařilo uložit", "danger")
-      }
-    } catch (err) {
-      console.error("Chyba při ukládání widgetu:", err);
-      showNotification("Změny se nepodařilo uložit", "danger")
-    }
+    const res = await authorizedFetch(`/widgets/${data.id}`, {
+      method: "PUT",
+      body: JSON.stringify({
+        id: data.id,
+        title: data.title,
+        attachmentsOrder: data.attachments.map(a => a.id)
+      })
+    });
+
+    if (res?.ok) showNotification("Uloženo", "success");
+    else showNotification("Chyba uložení", "danger");
   };
 
   return (
@@ -66,7 +60,7 @@ export default function CarouselEditPage() {
       <div className="flex-1 p-6 bg-transparent flex flex-col justify-between min-h-screen">
         <div className='text-center'>
           <h1 className="text-2xl font-bold mb-6">{carousel.title}</h1>
-          <CarouselPreview logos={carousel.logos} />
+          <CarouselPreview attachments={carousel.attachments} />
         </div>
 
         <div className="mt-12 flex justify-center">
