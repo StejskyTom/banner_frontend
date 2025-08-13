@@ -60,7 +60,12 @@ export default function CarouselEditPage() {
       <div className="flex-1 p-6 bg-transparent flex flex-col justify-between min-h-screen">
         <div className='text-center'>
           <h1 className="text-2xl font-bold mb-6">{carousel.title}</h1>
-          <CarouselPreview attachments={carousel.attachments} />
+          <CarouselPreview
+              attachments={carousel.attachments}
+              imageSize={carousel.imageSize ?? 64}
+              speed={carousel.speed ?? 20}
+              font={carousel.font ?? 'Arial'}
+          />
         </div>
 
         <div className="mt-12 flex justify-center">
