@@ -41,13 +41,16 @@ export default function CarouselEditPage() {
 
   const handleSave = async () => {
     const data = carousel;
+    console.log(data);
 
     const res = await authorizedFetch(`/widgets/${data.id}`, {
       method: "PUT",
       body: JSON.stringify({
         id: data.id,
         title: data.title,
-        attachmentsOrder: data.attachments.map(a => a.id)
+        attachmentsOrder: data.attachments.map(a => a.id),
+        imageSize: data.imageSize,
+        speed: data.speed
       })
     });
 

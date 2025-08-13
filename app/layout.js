@@ -20,7 +20,7 @@ export const metadata = {
 export default function RootLayout({ children }) {
   return (
     <html lang="cs">
-      <body className="bg-gray-900 text-gray-100 min-h-screen">
+      <body className="min-h-screen">
         {children}        
       </body>
     </html>
