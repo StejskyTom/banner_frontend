@@ -97,7 +97,6 @@ export default function EditSidebar({ carousel, setCarousel }) {
     }
   };
 
-
   const handleDragEnd = (event) => {
     const { active, over } = event;
     if (!over || active.id === over.id) return;
@@ -110,64 +109,85 @@ export default function EditSidebar({ carousel, setCarousel }) {
   };
 
   return (
-      <aside className="w-80 bg-gray-50 border-l border-gray-200 text-gray-800 p-4 space-y-6 h-screen">
-        {/* Nadpis */}
-        <div>
-          <label className="text-sm font-medium text-gray-700">Nadpis carouselu</label>
-          <input
-              value={title}
-              onChange={(e) => {
-                const newTitle = e.target.value;
-                setTitle(newTitle);
-                setCarousel({ ...carousel, title: newTitle });
-              }}
-              className="w-full mt-1 bg-white border border-gray-300 text-sm px-3 py-2 rounded shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-          />
+      <aside className="w-80 bg-gray-50 border-l border-gray-200 text-gray-800 h-screen flex flex-col">
+        {/* Fixní hlavička sidebaru */}
+        <div className="flex-shrink-0 p-4 border-b border-gray-200">
+          <h2 className="text-lg font-semibold text-gray-900">Nastavení carouselu</h2>
         </div>
 
-        {/* Přidání URL loga */}
-        <div>
-          <label className="text-sm font-medium text-gray-700">Nové logo (URL)</label>
-          <div className="flex gap-2 mt-1">
+        {/* Scrollovatelný obsah */}
+        <div className="flex-1 overflow-y-auto p-4 space-y-6">
+          {/* Nadpis */}
+          <div>
+            <label className="text-sm font-medium text-gray-700">Nadpis carouselu</label>
             <input
-                value={newLogo}
-                onChange={(e) => setNewLogo(e.target.value)}
-                className="flex-1 bg-white border border-gray-300 text-sm px-3 py-2 rounded shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                value={title}
+                onChange={(e) => {
+                  const newTitle = e.target.value;
+                  setTitle(newTitle);
+                  setCarousel({ ...carousel, title: newTitle });
+                }}
+                className="w-full mt-1 bg-white border border-gray-300 text-sm px-3 py-2 rounded shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
             />
-            <button
-                onClick={handleAddLogo}
-                className="bg-blue-600 hover:bg-blue-500 text-white px-3 py-2 rounded text-sm shadow-sm"
-            >
-              Přidat
-            </button>
           </div>
+
+          {/* Upload souboru */}
+          <div className="pb-2">
+            <UploadAttachment
+                widgetId={carousel.id}
+                carousel={carousel}
+                setCarousel={setCarousel}
+            />
+          </div>
+
+          {/* Seznam log */}
+          {carousel.attachments?.length > 0 && (
+              <div className="pb-4">
+                <div className="flex items-center justify-between mb-3">
+                  <h3 className="text-sm font-semibold text-gray-700">
+                    Seznam log ({carousel.attachments.length})
+                  </h3>
+                </div>
+
+                <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
+                  <SortableContext items={carousel.attachments.map((a) => a.id)} strategy={rectSortingStrategy}>
+                    <div className="grid grid-cols-2 gap-3">
+                      {carousel.attachments.map((a) => (
+                          <SortableLogoItem
+                              key={a.id}
+                              id={a.id}
+                              logo={`${a.url}`}
+                              onRemove={() => handleRemoveAttachment(a.id)}
+                          />
+                      ))}
+                    </div>
+                  </SortableContext>
+                </DndContext>
+              </div>
+          )}
+
+          {/* Prázdný stav */}
+          {(!carousel.attachments || carousel.attachments.length === 0) && (
+              <div className="text-center py-8 text-gray-500">
+                <svg className="mx-auto h-12 w-12 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                </svg>
+                <p className="mt-2 text-sm">Zatím nejsou nahrána žádná loga</p>
+                <p className="text-xs text-gray-400 mt-1">Použijte formulář výše pro přidání</p>
+              </div>
+          )}
         </div>
 
-        {/* Upload souboru */}
-        <UploadAttachment
-            widgetId={carousel.id}
-            carousel={carousel}
-            setCarousel={setCarousel}
-        />
-
-        {/* Seznam log */}
+        {/* Volitelně: Fixní patička se statistikami nebo akcemi */}
         {carousel.attachments?.length > 0 && (
-            <div>
-              <h3 className="text-sm font-semibold text-gray-700 mb-2">Seznam log</h3>
-              <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
-                <SortableContext items={carousel.attachments.map((a) => a.id)} strategy={rectSortingStrategy}>
-                  <div className="grid grid-cols-2 gap-3">
-                    {carousel.attachments.map((a) => (
-                        <SortableLogoItem
-                            key={a.id}
-                            id={a.id}
-                            logo={`${a.url}`}
-                            onRemove={() => handleRemoveAttachment(a.id)}
-                        />
-                    ))}
-                  </div>
-                </SortableContext>
-              </DndContext>
+            <div className="flex-shrink-0 p-4 border-t border-gray-200 bg-gray-100">
+              <div className="text-xs text-gray-600 space-y-1">
+                <div className="flex justify-between">
+                  <span>Celkem log:</span>
+                  <span className="font-medium">{carousel.attachments.length}</span>
+                </div>
+                <p className="text-gray-500 mt-2">Tip: Přetažením změníte pořadí</p>
+              </div>
             </div>
         )}
       </aside>
