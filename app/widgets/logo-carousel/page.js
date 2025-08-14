@@ -5,6 +5,8 @@ import { authorizedFetch } from '../../../lib/api';
 import Link from 'next/link';
 import { PencilSquareIcon, TrashIcon } from '@heroicons/react/24/solid';
 import { WidgetEmbedGenerator } from '../../components/WidgetEmbedGenerator';
+import {useToast} from "../../../app/components/ToastProvider";
+import {useRouter} from "next/navigation";
 
 export default function CarouselListPage() {
   const [carousels, setCarousels] = useState([]);
@@ -14,6 +16,8 @@ export default function CarouselListPage() {
   const [showConfirm, setShowConfirm] = useState(false);
   const [deleteId, setDeleteId] = useState(null);
   const [deleteTitle, setDeleteTitle] = useState('');
+  const showNotification = useToast();
+  const router = useRouter();
 
   useEffect(() => {
     const fetchData = async () => {
@@ -46,10 +50,13 @@ export default function CarouselListPage() {
       const res = await authorizedFetch(`/widgets/${deleteId}`, { method: 'DELETE' });
       if (res.ok) {
         setCarousels((prev) => prev.filter((c) => c.id !== deleteId));
+        showNotification('Widget byl úspěšně smazán');
       } else {
+        showNotification('Widget se nepodařilo smazat', 'error');
         console.error('Smazání selhalo');
       }
     } catch (error) {
+      showNotification('Widget se nepodařilo smazat', 'error');
       console.error('Chyba při mazání', error);
     } finally {
       setShowConfirm(false);
@@ -57,6 +64,28 @@ export default function CarouselListPage() {
       setDeleteTitle('');
     }
   };
+
+  // v handleCreate()
+  const handleCreate = async () => {
+    try {
+      const res = await authorizedFetch('/widgets/logo-carousel/new', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ title: 'Nový carousel' }) // nebo prázdné
+      });
+
+      if (res.ok) {
+        const data = await res.json();
+        console.log(data);
+        router.push(`/widgets/logo-carousel/${data.id}`);
+      } else {
+        showNotification('Nepodařilo se vytvořit nový carousel', 'error');
+      }
+    } catch (error) {
+      showNotification('Nepodařilo se vytvořit nový XX', 'error');
+    }
+  };
+
 
   if (loading) {
     return (
@@ -68,6 +97,18 @@ export default function CarouselListPage() {
 
   return (
       <div className="p-6">
+        <div className="flex justify-between items-center mb-4">
+          <h1 className="text-xl font-bold text-gray-900 dark:text-white">Logo carousely</h1>
+          <button
+              onClick={handleCreate}
+              className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-indigo-600 text-white text-sm font-medium hover:bg-indigo-500 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600 transition"
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+            </svg>
+            Přidat nový
+          </button>
+        </div>
         <div className="overflow-x-auto rounded-xl shadow-lg bg-white dark:bg-gray-900">
           <table className="w-full text-sm text-left">
             <thead className="text-xs uppercase bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-300">
