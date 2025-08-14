@@ -86,15 +86,6 @@ export default function CarouselListPage() {
     }
   };
 
-
-  if (loading) {
-    return (
-        <div className="p-6 flex justify-center items-center h-40 text-gray-500 dark:text-gray-400">
-          Načítám data…
-        </div>
-    );
-  }
-
   return (
       <div className="p-6">
         <div className="flex justify-between items-center mb-4">
@@ -119,15 +110,37 @@ export default function CarouselListPage() {
             </tr>
             </thead>
             <tbody>
-            {carousels.length > 0 ? (
+            {loading ? (
+                // Skeleton rows
+                [...Array(5)].map((_, i) => (
+                    <tr
+                        key={i}
+                        className={i % 2 === 0
+                            ? 'bg-white dark:bg-gray-900'
+                            : 'bg-gray-50 dark:bg-gray-800'
+                        }
+                    >
+                      <td className="px-6 py-4">
+                        <div className="h-5 w-48 bg-gray-200 dark:bg-gray-700 rounded animate-pulse" />
+                      </td>
+                      <td className="px-6 py-4">
+                        <div className="h-5 w-12 bg-gray-200 dark:bg-gray-700 rounded animate-pulse" />
+                      </td>
+                      <td className="px-6 py-4 flex justify-end gap-2">
+                        <div className="h-8 w-8 bg-gray-200 dark:bg-gray-700 rounded-full animate-pulse" />
+                        <div className="h-8 w-8 bg-gray-200 dark:bg-gray-700 rounded-full animate-pulse" />
+                        <div className="h-8 w-8 bg-gray-200 dark:bg-gray-700 rounded-full animate-pulse" />
+                      </td>
+                    </tr>
+                ))
+            ) : carousels.length > 0 ? (
                 carousels.map((carousel, idx) => (
                     <tr
                         key={carousel.id}
-                        className={`transition-colors duration-150 ${
-                            idx % 2 === 0
-                                ? 'bg-white dark:bg-gray-900'
-                                : 'bg-gray-50 dark:bg-gray-800'
-                        } hover:bg-gray-100 dark:hover:bg-gray-700`}
+                        className={idx % 2 === 0
+                            ? 'bg-white dark:bg-gray-900'
+                            : 'bg-gray-50 dark:bg-gray-800'
+                        }
                     >
                       <td className="px-6 py-4 font-medium text-gray-900 dark:text-white">
                         {carousel.title}
@@ -182,7 +195,7 @@ export default function CarouselListPage() {
                   Chcete opravdu smazat widget <strong>{deleteTitle}</strong>?
                   Tuto akci nelze vrátit zpět.
                 </p>
-                <div className="mt-6 flex justify-end gap-3">
+                <div className="mt-6 flex justify-between gap-3">
                   <button
                       onClick={() => setShowConfirm(false)}
                       className="px-4 py-2 rounded-lg bg-gray-200 text-gray-800 hover:bg-gray-300 dark:bg-gray-700 dark:text-gray-200 dark:hover:bg-gray-600 transition"
