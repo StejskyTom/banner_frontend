@@ -82,7 +82,8 @@ export default function CarouselListPage() {
         showNotification('Nepodařilo se vytvořit nový carousel', 'error');
       }
     } catch (error) {
-      showNotification('Nepodařilo se vytvořit nový XX', 'error');
+      showNotification('Nepodařilo se vytvořit nový carousel', 'error');
+      console.log('Chyba:' + error);
     }
   };
 

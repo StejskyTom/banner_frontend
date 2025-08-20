@@ -13,6 +13,7 @@ export default function CarouselEditPage() {
   const [carousel, setCarousel] = useState(null);
   const [loading, setLoading] = useState(true);
   const showNotification = useToast();
+  const [isSaving, setIsSaving] = useState(false);
 
   useEffect(() => {
     const loadCarousel = async () => {
@@ -40,22 +41,28 @@ export default function CarouselEditPage() {
   if (!carousel) return <p className="p-6 text-red-500">Nenalezeno...</p>;
 
   const handleSave = async () => {
+    setIsSaving(true);
     const data = carousel;
     console.log(data);
 
-    const res = await authorizedFetch(`/widgets/${data.id}`, {
-      method: "PUT",
-      body: JSON.stringify({
-        id: data.id,
-        title: data.title,
-        attachmentsOrder: data.attachments.map(a => a.id),
-        imageSize: data.imageSize,
-        speed: data.speed
-      })
-    });
+    try {
+      const res = await authorizedFetch(`/widgets/${data.id}`, {
+        method: "PUT",
+        body: JSON.stringify({
+          id: data.id,
+          title: data.title,
+          attachmentsOrder: data.attachments.map(a => a.id),
+          imageSize: data.imageSize,
+          speed: data.speed
+        })
+      });
 
-    if (res?.ok) showNotification("Uloženo", "success");
-    else showNotification("Chyba uložení", "danger");
+      if (res?.ok) showNotification("Uloženo", "success");
+      else showNotification("Chyba uložení", "danger");
+
+    } finally {
+      setIsSaving(false);
+    }
   };
 
   return (
@@ -73,10 +80,33 @@ export default function CarouselEditPage() {
 
         <div className="mt-12 flex justify-center">
           <button
+            disabled={isSaving}
             onClick={handleSave}
             className="bg-blue-600 text-white px-6 py-3 rounded-lg shadow-lg transition transform hover:bg-blue-500 hover:scale-105 active:scale-95 focus:outline-none focus:ring-2 focus:ring-blue-400"
           >
-            💾 Uložit změny
+            {isSaving && (
+                <svg
+                    className="animate-spin h-5 w-5 text-white"
+                    xmlns="http://www.w3.org/2000/svg"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                >
+                  <circle
+                      className="opacity-25"
+                      cx="12"
+                      cy="12"
+                      r="10"
+                      stroke="currentColor"
+                      strokeWidth="4"
+                  ></circle>
+                  <path
+                      className="opacity-75"
+                      fill="currentColor"
+                      d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"
+                  ></path>
+                </svg>
+            )}
+            {isSaving ? "Zpracovává se…" : "💾 Uložit změny"}
           </button>
         </div>
       </div>
