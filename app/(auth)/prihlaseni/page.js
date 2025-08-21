@@ -4,7 +4,7 @@ import { useState } from "react";
 import { signIn } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import Link from 'next/link';
-import {useToast} from "@/app/components/ToastProvider";
+import {useToast} from "../../../app/components/ToastProvider";
 
 export default function LoginPage() {
     const [email, setEmail] = useState('');
