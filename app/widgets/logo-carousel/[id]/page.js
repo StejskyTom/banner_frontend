@@ -23,10 +23,10 @@ export default function CarouselEditPage() {
           const data = await res.json();
           setCarousel(data);
         } else {
-          console.error('Nepodařilo se načíst carousel', res);
+          showNotification('Nepodařilo se načíst carousel', 'error');
         }
       } catch (err) {
-        console.error('Chyba při načítání carouselu', err);
+        showNotification('Chyba při načítání carouselu', 'error');
       } finally {
         setLoading(false);
       }
@@ -35,7 +35,7 @@ export default function CarouselEditPage() {
     if (id) {
       loadCarousel();
     }
-  }, [id]);
+  }, [id, showNotification]);
 
   if (loading) return <p className="p-6 text-gray-500">Načítám...</p>;
   if (!carousel) return <p className="p-6 text-red-500">Nenalezeno...</p>;
@@ -43,7 +43,14 @@ export default function CarouselEditPage() {
   const handleSave = async () => {
     setIsSaving(true);
     const data = carousel;
-    console.log(data);
+
+    // Build attachmentsLinks object: { attachmentId: link }
+    const attachmentsLinks = {};
+    data.attachments.forEach(a => {
+      if (a.link) {
+        attachmentsLinks[a.id] = a.link;
+      }
+    });
 
     try {
       const res = await authorizedFetch(`/widgets/${data.id}`, {
@@ -52,14 +59,17 @@ export default function CarouselEditPage() {
           id: data.id,
           title: data.title,
           attachmentsOrder: data.attachments.map(a => a.id),
+          attachmentsLinks: attachmentsLinks,
           imageSize: data.imageSize,
           speed: data.speed
         })
       });
 
       if (res?.ok) showNotification("Uloženo", "success");
-      else showNotification("Chyba uložení", "danger");
+      else showNotification("Chyba uložení", "error");
 
+    } catch (err) {
+      showNotification("Chyba při ukládání", "error");
     } finally {
       setIsSaving(false);
     }

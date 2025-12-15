@@ -9,22 +9,26 @@ export function WidgetEmbedGenerator({ widgetId, widgetType }) {
     const embedCode = `<script src="${process.env.NEXT_PUBLIC_API_URL || 'https://yourapp.com'}/widget/${widgetId}/embed.js"></script>`;
 
     const copyToClipboard = async (e) => {
-        e?.stopPropagation(); // Zabrání zavření popupu při kliku na kopírování
+        e?.stopPropagation();
 
         try {
             await navigator.clipboard.writeText(embedCode);
             setCopied(true);
             setTimeout(() => setCopied(false), 2000);
         } catch (err) {
-            console.error('Copy failed:', err);
-            const textArea = document.createElement('textarea');
-            textArea.value = embedCode;
-            document.body.appendChild(textArea);
-            textArea.select();
-            document.execCommand('copy');
-            document.body.removeChild(textArea);
-            setCopied(true);
-            setTimeout(() => setCopied(false), 2000);
+            // Fallback pro starší prohlížeče
+            try {
+                const textArea = document.createElement('textarea');
+                textArea.value = embedCode;
+                document.body.appendChild(textArea);
+                textArea.select();
+                document.execCommand('copy');
+                document.body.removeChild(textArea);
+                setCopied(true);
+                setTimeout(() => setCopied(false), 2000);
+            } catch (fallbackErr) {
+                // Pokud ani fallback nefunguje, nic neděláme
+            }
         }
     };
 

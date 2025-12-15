@@ -1,76 +1,131 @@
 'use client';
 
+import { useState } from 'react';
+
 export default function CarouselPreview({
                                             attachments,
                                             imageSize = 64,
                                             speed = 20,
                                             font = 'Arial',
                                         }) {
+    const [isPaused, setIsPaused] = useState(false);
+
     if (!attachments?.length) return null;
 
-    const urls = attachments.map((a) => `${a.url}`);
-    const repeated = [...urls, ...urls];
+    // Duplicate enough times to ensure seamless infinite scroll
+    // For better performance, we only duplicate twice which is sufficient
+    const duplicatedAttachments = [...attachments, ...attachments];
 
     return (
         <div
-            className="w-full max-w-3xl inline-flex flex-nowrap overflow-hidden"
+            className="w-full max-w-3xl inline-flex flex-nowrap overflow-hidden group"
+            onMouseEnter={() => setIsPaused(true)}
+            onMouseLeave={() => setIsPaused(false)}
             style={{
-                // CSS proměnná pro rychlost animace
                 ['--duration']: `${speed}s`,
+                ['--image-size']: `${imageSize}px`,
                 fontFamily: font,
                 maskImage:
-                    'linear-gradient(to right, transparent 0, black 128px, black calc(100% - 200px), transparent 100%)',
+                    'linear-gradient(to right, transparent 0%, rgba(0,0,0,0.1) 5%, black 15%, black 85%, rgba(0,0,0,0.1) 95%, transparent 100%)',
                 WebkitMaskImage:
-                    'linear-gradient(to right, transparent 0, black 128px, black calc(100% - 200px), transparent 100%)',
+                    'linear-gradient(to right, transparent 0%, rgba(0,0,0,0.1) 5%, black 15%, black 85%, rgba(0,0,0,0.1) 95%, transparent 100%)',
             }}
         >
-            <ul className="flex items-center [&_li]:mx-8 [&_img]:max-w-none marquee">
-                {repeated.map((u, i) => (
-                    <li key={i}>
-                        <img
-                            src={u}
-                            alt=""
-                            className="object-contain"
-                            style={{ height: `${imageSize}px` }}
-                        />
+            {/* Primary scrolling track */}
+            <ul
+                className="flex items-center justify-center [&_li]:mx-8 [&_img]:max-w-none animate-scroll"
+                style={{
+                    animationPlayState: isPaused ? 'paused' : 'running',
+                }}
+            >
+                {duplicatedAttachments.map((attachment, i) => (
+                    <li key={`primary-${i}`} className="flex-shrink-0">
+                        {attachment.link ? (
+                            <a
+                                href={attachment.link}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="block transition-opacity hover:opacity-75"
+                            >
+                                <img
+                                    src={attachment.url}
+                                    alt=""
+                                    className="object-contain select-none"
+                                    style={{ height: `${imageSize}px` }}
+                                    draggable="false"
+                                />
+                            </a>
+                        ) : (
+                            <img
+                                src={attachment.url}
+                                alt=""
+                                className="object-contain select-none"
+                                style={{ height: `${imageSize}px` }}
+                                draggable="false"
+                            />
+                        )}
                     </li>
                 ))}
             </ul>
 
-            {/* Druhý pás s posunem v půlce animace pro plynulou smyčku */}
-            <ul className="flex items-center [&_li]:mx-8 [&_img]:max-w-none marquee marquee2" aria-hidden="true">
-                {repeated.map((u, i) => (
-                    <li key={`ghost-${i}`}>
-                        <img
-                            src={u}
-                            alt=""
-                            className="object-contain"
-                            style={{ height: `${imageSize}px` }}
-                        />
+            {/* Secondary scrolling track for seamless loop */}
+            <ul
+                className="flex items-center justify-center [&_li]:mx-8 [&_img]:max-w-none animate-scroll"
+                aria-hidden="true"
+                style={{
+                    animationPlayState: isPaused ? 'paused' : 'running',
+                }}
+            >
+                {duplicatedAttachments.map((attachment, i) => (
+                    <li key={`secondary-${i}`} className="flex-shrink-0">
+                        {attachment.link ? (
+                            <a
+                                href={attachment.link}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="block transition-opacity hover:opacity-75"
+                            >
+                                <img
+                                    src={attachment.url}
+                                    alt=""
+                                    className="object-contain select-none"
+                                    style={{ height: `${imageSize}px` }}
+                                    draggable="false"
+                                />
+                            </a>
+                        ) : (
+                            <img
+                                src={attachment.url}
+                                alt=""
+                                className="object-contain select-none"
+                                style={{ height: `${imageSize}px` }}
+                                draggable="false"
+                            />
+                        )}
                     </li>
                 ))}
             </ul>
 
             <style jsx>{`
-        .marquee {
-          animation-name: marquee;
-          animation-duration: var(--duration);
-          animation-timing-function: linear;
-          animation-iteration-count: infinite;
-          will-change: transform;
-        }
-        .marquee2 {
-          animation-delay: calc(var(--duration) / -2);
-        }
-        @keyframes marquee {
-          0% {
-            transform: translateX(0);
-          }
-          100% {
-            transform: translateX(-50%);
-          }
-        }
-      `}</style>
+                @keyframes scroll {
+                    0% {
+                        transform: translateX(0%);
+                    }
+                    100% {
+                        transform: translateX(-100%);
+                    }
+                }
+
+                .animate-scroll {
+                    animation: scroll var(--duration) linear infinite;
+                    will-change: transform;
+                }
+
+                /* Smooth transition when pausing */
+                .animate-scroll:hover {
+                    animation-play-state: paused;
+                }
+            `}</style>
         </div>
     );
 }

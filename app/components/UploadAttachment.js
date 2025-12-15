@@ -23,7 +23,7 @@ export default function UploadAttachment({ widgetId, carousel, setCarousel }) {
             const res = await authorizedUpload(`/widgets/${widgetId}/attachments`, fd);
             if (!res.ok) {
                 const error = await res.json();
-                showNotification(error.error || "Nepodařilo se nahrát soubor", 'danger');
+                showNotification(error.error || "Nepodařilo se nahrát soubor", 'error');
                 return;
             }
 
@@ -35,8 +35,7 @@ export default function UploadAttachment({ widgetId, carousel, setCarousel }) {
             });
             showNotification('Soubor byl nahrán', 'success');
         } catch (err) {
-            console.error('Upload error:', err);
-            showNotification('Chyba při nahrávání', 'danger');
+            showNotification('Chyba při nahrávání', 'error');
         } finally {
             setUploading(false);
         }
@@ -55,11 +54,11 @@ export default function UploadAttachment({ widgetId, carousel, setCarousel }) {
             const url = new URL(newLogoUrl);
             // Kontrola, že je to http nebo https
             if (!['http:', 'https:'].includes(url.protocol)) {
-                showNotification('URL musí začínat http:// nebo https://', 'danger');
+                showNotification('URL musí začínat http:// nebo https://', 'error');
                 return;
             }
         } catch {
-            showNotification('Neplatná URL adresa', 'danger');
+            showNotification('Neplatná URL adresa', 'error');
             return;
         }
 
@@ -72,7 +71,7 @@ export default function UploadAttachment({ widgetId, carousel, setCarousel }) {
 
             if (!res.ok) {
                 const error = await res.json();
-                showNotification(error.error || "Nepodařilo se přidat obrázek z URL", 'danger');
+                showNotification(error.error || "Nepodařilo se přidat obrázek z URL", 'error');
                 return;
             }
 
@@ -88,8 +87,7 @@ export default function UploadAttachment({ widgetId, carousel, setCarousel }) {
             setNewLogoUrl('');
             showNotification('Obrázek byl přidán z URL', 'success');
         } catch (err) {
-            console.error('URL upload error:', err);
-            showNotification('Chyba při přidávání obrázku z URL', 'danger');
+            showNotification('Chyba při přidávání obrázku z URL', 'error');
         } finally {
             setUploadingUrl(false);
         }

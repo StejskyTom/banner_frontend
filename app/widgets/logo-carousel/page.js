@@ -27,17 +27,17 @@ export default function CarouselListPage() {
           const data = await res.json();
           setCarousels(data);
         } else {
-          console.error('Nepodařilo se načíst data');
+          showNotification('Nepodařilo se načíst data', 'error');
         }
       } catch (error) {
-        console.error('Chyba při načítání widgetů', error);
+        showNotification('Chyba při načítání widgetů', 'error');
       } finally {
         setLoading(false);
       }
     };
 
     fetchData();
-  }, []);
+  }, [showNotification]);
 
   const handleDeleteClick = (id, title) => {
     setDeleteId(id);
@@ -53,11 +53,9 @@ export default function CarouselListPage() {
         showNotification('Widget byl úspěšně smazán');
       } else {
         showNotification('Widget se nepodařilo smazat', 'error');
-        console.error('Smazání selhalo');
       }
     } catch (error) {
       showNotification('Widget se nepodařilo smazat', 'error');
-      console.error('Chyba při mazání', error);
     } finally {
       setShowConfirm(false);
       setDeleteId(null);
@@ -65,25 +63,22 @@ export default function CarouselListPage() {
     }
   };
 
-  // v handleCreate()
   const handleCreate = async () => {
     try {
       const res = await authorizedFetch('/widgets/logo-carousel/new', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ title: 'Nový carousel' }) // nebo prázdné
+        body: JSON.stringify({ title: 'Nový carousel' })
       });
 
       if (res.ok) {
         const data = await res.json();
-        console.log(data);
         router.push(`/widgets/logo-carousel/${data.id}`);
       } else {
         showNotification('Nepodařilo se vytvořit nový carousel', 'error');
       }
     } catch (error) {
       showNotification('Nepodařilo se vytvořit nový carousel', 'error');
-      console.log('Chyba:' + error);
     }
   };
 

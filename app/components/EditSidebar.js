@@ -25,32 +25,42 @@ function SectionTitle({ icon, title }) {
   );
 }
 
-function SortableLogoItem({ id, logo, onRemove, imageSize }) {
+function SortableLogoItem({ id, logo, url, onRemove, onUrlChange, imageSize }) {
   const { attributes, listeners, setNodeRef, transform, transition } = useSortable({ id });
   const style = { transform: CSS.Transform.toString(transform), transition };
 
   return (
-      <div
-          ref={setNodeRef}
-          style={style}
-          {...attributes}
-          {...listeners}
-          className="relative bg-gray-100 p-2 rounded flex items-center justify-center cursor-move shadow-sm"
-      >
-        <img
-            src={logo}
-            alt=""
-            className="object-contain"
-            style={{ height: `${imageSize}px`, maxWidth: `${imageSize + 40}px` }}
-        />
-        <button
-            data-no-dnd="true"
-            onClick={onRemove}
-            className="absolute top-1 right-1 text-gray-400 hover:text-red-500"
-            title="Smazat logo"
+      <div className="flex flex-col gap-1">
+        <div
+            ref={setNodeRef}
+            style={style}
+            {...attributes}
+            {...listeners}
+            className="relative bg-gray-100 p-2 rounded flex items-center justify-center cursor-move shadow-sm"
         >
-          <TrashIcon className="w-4 h-4" />
-        </button>
+          <img
+              src={logo}
+              alt=""
+              className="object-contain"
+              style={{ height: `${imageSize}px`, maxWidth: `${imageSize + 40}px` }}
+          />
+          <button
+              data-no-dnd="true"
+              onClick={onRemove}
+              className="absolute top-1 right-1 text-gray-400 hover:text-red-500"
+              title="Smazat logo"
+          >
+            <TrashIcon className="w-4 h-4" />
+          </button>
+        </div>
+        <input
+            type="url"
+            placeholder="https://..."
+            value={url || ''}
+            onChange={(e) => onUrlChange(e.target.value)}
+            onClick={(e) => e.stopPropagation()}
+            className="w-full text-xs px-2 py-1 border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500"
+        />
       </div>
   );
 }
@@ -76,11 +86,20 @@ export default function EditSidebar({ carousel, setCarousel }) {
         });
         showNotification("Logo bylo odstraněno", "success");
       } else {
-        showNotification("Nepodařilo se smazat logo", "danger");
+        showNotification("Nepodařilo se smazat logo", "error");
       }
     } catch {
-      showNotification("Chyba při mazání", "danger");
+      showNotification("Chyba při mazání", "error");
     }
+  };
+
+  const handleUrlChange = (attachmentId, newUrl) => {
+    setCarousel({
+      ...carousel,
+      attachments: carousel.attachments.map((a) =>
+        a.id === attachmentId ? { ...a, link: newUrl } : a
+      ),
+    });
   };
 
   const handleDragEnd = (event) => {
@@ -144,8 +163,10 @@ export default function EditSidebar({ carousel, setCarousel }) {
                             key={a.id}
                             id={a.id}
                             logo={a.url}
+                            url={a.link}
                             imageSize={64}
                             onRemove={() => handleRemoveAttachment(a.id)}
+                            onUrlChange={(newUrl) => handleUrlChange(a.id, newUrl)}
                         />
                     ))}
                   </div>

@@ -4,7 +4,7 @@ import { useState } from "react";
 import { signIn } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import Link from 'next/link';
-import {useToast} from "../../../app/components/ToastProvider";
+import { useToast } from "../../components/ToastProvider";
 
 export default function LoginPage() {
     const [email, setEmail] = useState('');
@@ -23,7 +23,7 @@ export default function LoginPage() {
       if (res.ok) {
         router.push("/widgets/logo-carousel");
       } else {
-        showNotification('Uživatele se nepodařilo přihlásit', 'danger');
+        showNotification('Uživatele se nepodařilo přihlásit', 'error');
       }
     };
 
