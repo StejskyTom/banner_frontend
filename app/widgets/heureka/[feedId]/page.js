@@ -5,6 +5,7 @@ import { useEffect, useState } from 'react';
 import { authorizedFetch } from '../../../../lib/api';
 import { useToast } from "../../../components/ToastProvider";
 import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from "@/components/ui/select";
+import { ChevronDownIcon, ChevronUpIcon, XMarkIcon } from '@heroicons/react/24/solid';
 
 export default function HeurekaFeedDetailPage() {
   const { feedId } = useParams();
@@ -13,6 +14,8 @@ export default function HeurekaFeedDetailPage() {
   const [categories, setCategories] = useState([]);
   const [loading, setLoading] = useState(true);
   const [selectedProducts, setSelectedProducts] = useState(new Set());
+  const [selectedProductDetails, setSelectedProductDetails] = useState([]);
+  const [showSelected, setShowSelected] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('all');
   const showNotification = useToast();
@@ -53,6 +56,7 @@ export default function HeurekaFeedDetailPage() {
         if (selectedRes?.ok) {
           const selectedData = await selectedRes.json();
           setSelectedProducts(new Set(selectedData.map(p => p.id)));
+          setSelectedProductDetails(selectedData);
         }
       }
     } catch (error) {
@@ -82,7 +86,9 @@ export default function HeurekaFeedDetailPage() {
     fetchProducts();
   };
 
-  const toggleProductSelection = (productId) => {
+  const toggleProductSelection = (product) => {
+    const productId = product.id;
+    
     setSelectedProducts(prev => {
       const newSet = new Set(prev);
       if (newSet.has(productId)) {
@@ -91,6 +97,15 @@ export default function HeurekaFeedDetailPage() {
         newSet.add(productId);
       }
       return newSet;
+    });
+
+    setSelectedProductDetails(prev => {
+      const exists = prev.find(p => p.id === productId);
+      if (exists) {
+        return prev.filter(p => p.id !== productId);
+      } else {
+        return [...prev, product];
+      }
     });
   };
 
@@ -139,6 +154,54 @@ export default function HeurekaFeedDetailPage() {
           </button>
         </div>
       </div>
+
+      {/* Selected Products Section */}
+      {selectedProductDetails.length > 0 && (
+        <div className="mb-6 bg-blue-50 dark:bg-blue-900/20 rounded-lg border border-blue-100 dark:border-blue-800 overflow-hidden">
+          <button 
+            onClick={() => setShowSelected(!showSelected)}
+            className="w-full flex justify-between items-center p-4 bg-blue-100 dark:bg-blue-900/40 hover:bg-blue-200 dark:hover:bg-blue-900/60 transition"
+          >
+            <span className="font-semibold text-blue-900 dark:text-blue-100">
+              Vybrané produkty ({selectedProductDetails.length})
+            </span>
+            {showSelected ? (
+              <ChevronUpIcon className="h-5 w-5 text-blue-700 dark:text-blue-300" />
+            ) : (
+              <ChevronDownIcon className="h-5 w-5 text-blue-700 dark:text-blue-300" />
+            )}
+          </button>
+          
+          {showSelected && (
+            <div className="p-4 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 max-h-[500px] overflow-y-auto">
+              {selectedProductDetails.map(product => (
+                <div key={product.id} className="flex items-start gap-3 p-3 bg-white dark:bg-gray-800 rounded border border-blue-200 dark:border-blue-700 shadow-sm">
+                  {product.imgUrl && (
+                    <img
+                      src={product.imgUrl}
+                      alt={product.productName}
+                      className="w-12 h-12 object-contain rounded bg-white"
+                    />
+                  )}
+                  <div className="flex-1 min-w-0">
+                    <h4 className="text-sm font-medium text-gray-900 dark:text-white truncate" title={product.productName}>
+                      {product.productName}
+                    </h4>
+                    <p className="text-xs text-green-600 font-bold">{product.priceVat} Kč</p>
+                  </div>
+                  <button
+                    onClick={() => toggleProductSelection(product)}
+                    className="text-gray-400 hover:text-red-500 transition"
+                    title="Odebrat z výběru"
+                  >
+                    <XMarkIcon className="h-5 w-5" />
+                  </button>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      )}
 
       {/* Filtry */}
       <div className="mb-6 bg-white dark:bg-gray-900 p-4 rounded-lg shadow">
@@ -219,7 +282,7 @@ export default function HeurekaFeedDetailPage() {
           {products.map(product => (
             <div
               key={product.id}
-              onClick={() => toggleProductSelection(product.id)}
+              onClick={() => toggleProductSelection(product)}
               className={`
                 p-4 rounded-lg border-2 cursor-pointer transition
                 ${selectedProducts.has(product.id)
