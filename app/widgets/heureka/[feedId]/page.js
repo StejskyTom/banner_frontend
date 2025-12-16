@@ -6,6 +6,61 @@ import { authorizedFetch } from '../../../../lib/api';
 import { useToast } from "../../../components/ToastProvider";
 import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from "@/components/ui/select";
 import { ChevronDownIcon, ChevronUpIcon, XMarkIcon, ChevronLeftIcon, ChevronRightIcon } from '@heroicons/react/24/solid';
+import { DndContext, closestCenter, KeyboardSensor, PointerSensor, useSensor, useSensors } from '@dnd-kit/core';
+import { arrayMove, SortableContext, sortableKeyboardCoordinates, useSortable, rectSortingStrategy } from '@dnd-kit/sortable';
+import { CSS } from '@dnd-kit/utilities';
+
+const ITEMS_PER_PAGE = 30;
+
+function SortableProductItem({ product, onRemove }) {
+  const {
+    attributes,
+    listeners,
+    setNodeRef,
+    transform,
+    transition,
+  } = useSortable({ id: product.id });
+
+  const style = {
+    transform: CSS.Transform.toString(transform),
+    transition,
+  };
+
+  return (
+    <div
+      ref={setNodeRef}
+      style={style}
+      {...attributes}
+      {...listeners}
+      className="flex items-start gap-3 p-3 bg-white dark:bg-gray-800 rounded border border-blue-200 dark:border-blue-700 shadow-sm cursor-move touch-none"
+    >
+      {product.imgUrl && (
+        <img
+          src={product.imgUrl}
+          alt={product.productName}
+          className="w-12 h-12 object-contain rounded bg-white pointer-events-none"
+        />
+      )}
+      <div className="flex-1 min-w-0 pointer-events-none">
+        <h4 className="text-sm font-medium text-gray-900 dark:text-white truncate" title={product.productName}>
+          {product.productName}
+        </h4>
+        <p className="text-xs text-green-600 font-bold">{product.priceVat} Kč</p>
+      </div>
+      <button
+        onClick={(e) => {
+          e.stopPropagation(); // Prevent drag start
+          onRemove(product);
+        }}
+        className="text-gray-400 hover:text-red-500 transition cursor-pointer"
+        title="Odebrat z výběru"
+        onPointerDown={(e) => e.stopPropagation()} // Prevent drag start
+      >
+        <XMarkIcon className="h-5 w-5" />
+      </button>
+    </div>
+  );
+}
 
 export default function HeurekaFeedDetailPage() {
   const { feedId } = useParams();
@@ -22,7 +77,15 @@ export default function HeurekaFeedDetailPage() {
   const [totalItems, setTotalItems] = useState(0);
   const [itemsPerPage, setItemsPerPage] = useState(30);
   const [sortBy, setSortBy] = useState('name_asc');
+  const [saving, setSaving] = useState(false);
   const showNotification = useToast();
+
+  const sensors = useSensors(
+    useSensor(PointerSensor),
+    useSensor(KeyboardSensor, {
+      coordinateGetter: sortableKeyboardCoordinates,
+    })
+  );
 
   useEffect(() => {
     if (feedId) {
@@ -132,12 +195,28 @@ export default function HeurekaFeedDetailPage() {
     });
   };
 
+  const handleDragEnd = (event) => {
+    const { active, over } = event;
+
+    if (active.id !== over.id) {
+      setSelectedProductDetails((items) => {
+        const oldIndex = items.findIndex((item) => item.id === active.id);
+        const newIndex = items.findIndex((item) => item.id === over.id);
+        return arrayMove(items, oldIndex, newIndex);
+      });
+    }
+  };
+
   const handleSaveSelection = async () => {
     try {
+      setSaving(true);
+      // Use selectedProductDetails to preserve order
+      const orderedIds = selectedProductDetails.map(p => p.id);
+
       const res = await authorizedFetch(`/heureka/feeds/${feedId}/products/selection`, {
         method: 'PUT',
         body: JSON.stringify({
-          selectedProductIds: Array.from(selectedProducts)
+          selectedProductIds: orderedIds
         })
       });
 
@@ -148,6 +227,8 @@ export default function HeurekaFeedDetailPage() {
       }
     } catch (error) {
       showNotification('Chyba při ukládání', 'error');
+    } finally {
+      setSaving(false);
     }
   };
 
@@ -172,9 +253,16 @@ export default function HeurekaFeedDetailPage() {
         <div className="flex gap-2">
           <button
             onClick={handleSaveSelection}
-            className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition"
+            disabled={saving}
+            className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
           >
-            Uložit výběr
+            {saving && (
+              <svg className="animate-spin h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+              </svg>
+            )}
+            {saving ? 'Ukládám...' : 'Uložit výběr'}
           </button>
         </div>
       </div>
@@ -197,31 +285,27 @@ export default function HeurekaFeedDetailPage() {
           </button>
 
           {showSelected && (
-            <div className="p-4 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 max-h-[500px] overflow-y-auto">
-              {selectedProductDetails.map(product => (
-                <div key={product.id} className="flex items-start gap-3 p-3 bg-white dark:bg-gray-800 rounded border border-blue-200 dark:border-blue-700 shadow-sm">
-                  {product.imgUrl && (
-                    <img
-                      src={product.imgUrl}
-                      alt={product.productName}
-                      className="w-12 h-12 object-contain rounded bg-white"
-                    />
-                  )}
-                  <div className="flex-1 min-w-0">
-                    <h4 className="text-sm font-medium text-gray-900 dark:text-white truncate" title={product.productName}>
-                      {product.productName}
-                    </h4>
-                    <p className="text-xs text-green-600 font-bold">{product.priceVat} Kč</p>
+            <div className="p-4">
+              <DndContext
+                sensors={sensors}
+                collisionDetection={closestCenter}
+                onDragEnd={handleDragEnd}
+              >
+                <SortableContext
+                  items={selectedProductDetails.map(p => p.id)}
+                  strategy={rectSortingStrategy}
+                >
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 max-h-[500px] overflow-y-auto">
+                    {selectedProductDetails.map(product => (
+                      <SortableProductItem
+                        key={product.id}
+                        product={product}
+                        onRemove={toggleProductSelection}
+                      />
+                    ))}
                   </div>
-                  <button
-                    onClick={() => toggleProductSelection(product)}
-                    className="text-gray-400 hover:text-red-500 transition"
-                    title="Odebrat z výběru"
-                  >
-                    <XMarkIcon className="h-5 w-5" />
-                  </button>
-                </div>
-              ))}
+                </SortableContext>
+              </DndContext>
             </div>
           )}
         </div>
