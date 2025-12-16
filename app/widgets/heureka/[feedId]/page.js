@@ -5,7 +5,7 @@ import { useEffect, useState } from 'react';
 import { authorizedFetch } from '../../../../lib/api';
 import { useToast } from "../../../components/ToastProvider";
 import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from "@/components/ui/select";
-import { ChevronDownIcon, ChevronUpIcon, XMarkIcon, ChevronLeftIcon, ChevronRightIcon } from '@heroicons/react/24/solid';
+import { ChevronDownIcon, ChevronUpIcon, XMarkIcon, ChevronLeftIcon, ChevronRightIcon, PencilSquareIcon, CheckIcon, Cog6ToothIcon, CodeBracketIcon, ClipboardDocumentIcon } from '@heroicons/react/24/solid';
 import { DndContext, closestCenter, KeyboardSensor, PointerSensor, useSensor, useSensors } from '@dnd-kit/core';
 import { arrayMove, SortableContext, sortableKeyboardCoordinates, useSortable, rectSortingStrategy } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
@@ -78,6 +78,18 @@ export default function HeurekaFeedDetailPage() {
   const [itemsPerPage, setItemsPerPage] = useState(30);
   const [sortBy, setSortBy] = useState('name_asc');
   const [saving, setSaving] = useState(false);
+  const [isEditingName, setIsEditingName] = useState(false);
+  const [editNameValue, setEditNameValue] = useState('');
+
+  // Settings Modal State
+  const [showSettingsModal, setShowSettingsModal] = useState(false);
+  const [showEmbedModal, setShowEmbedModal] = useState(false);
+  const [layout, setLayout] = useState('carousel');
+  const [gridColumns, setGridColumns] = useState(3);
+  const [mobileGridColumns, setMobileGridColumns] = useState(1);
+  const [buttonColor, setButtonColor] = useState('#2563eb');
+  const [savingSettings, setSavingSettings] = useState(false);
+
   const showNotification = useToast();
 
   const sensors = useSensors(
@@ -100,12 +112,24 @@ export default function HeurekaFeedDetailPage() {
     }
   }, [feedId, page, itemsPerPage, sortBy]);
 
+  useEffect(() => {
+    if (feed) {
+      setLayout(feed.layout || 'carousel');
+      if (feed.layoutOptions) {
+        setGridColumns(feed.layoutOptions.gridColumns || 3);
+        setMobileGridColumns(feed.layoutOptions.mobileGridColumns || 1);
+        setButtonColor(feed.layoutOptions.buttonColor || '#2563eb');
+      }
+    }
+  }, [feed]);
+
   const fetchFeedDetails = async () => {
     try {
       const res = await authorizedFetch(`/heureka/feeds/${feedId}`);
       if (res?.ok) {
         const data = await res.json();
         setFeed(data);
+        setEditNameValue(data.name);
       }
     } catch (error) {
       showNotification('Chyba při načítání feedu', 'error');
@@ -130,7 +154,6 @@ export default function HeurekaFeedDetailPage() {
         setTotalItems(data.total);
 
         // Load previously selected products (only once or check if needed)
-        // Optimization: We could load this only once on mount, but keeping it here ensures sync.
         // However, we only need to load it once really.
         if (selectedProductDetails.length === 0) {
           const selectedRes = await authorizedFetch(`/heureka/feeds/${feedId}/products/selected`);
@@ -232,9 +255,71 @@ export default function HeurekaFeedDetailPage() {
     }
   };
 
+  const handleUpdateName = async () => {
+    if (!editNameValue.trim()) return;
+
+    try {
+      const res = await authorizedFetch(`/heureka/feeds/${feedId}`, {
+        method: 'PUT',
+        body: JSON.stringify({
+          name: editNameValue,
+          url: feed.url // Keep existing URL
+        })
+      });
+
+      if (res?.ok) {
+        const updatedFeed = await res.json();
+        setFeed(updatedFeed);
+        setIsEditingName(false);
+        showNotification('Název feedu byl upraven', 'success');
+      } else {
+        showNotification('Nepodařilo se upravit název', 'error');
+      }
+    } catch (error) {
+      showNotification('Chyba při úpravě názvu', 'error');
+    }
+  };
+
+  const handleSaveSettings = async () => {
+    try {
+      setSavingSettings(true);
+      const res = await authorizedFetch(`/heureka/feeds/${feedId}`, {
+        method: 'PUT',
+        body: JSON.stringify({
+          layout: layout,
+          layoutOptions: {
+            gridColumns: parseInt(gridColumns),
+            mobileGridColumns: parseInt(mobileGridColumns),
+            buttonColor: buttonColor
+          },
+          url: feed.url,
+          name: feed.name
+        })
+      });
+
+      if (res?.ok) {
+        const updatedFeed = await res.json();
+        setFeed(updatedFeed);
+        setShowSettingsModal(false);
+        showNotification('Nastavení zobrazení bylo uloženo', 'success');
+      } else {
+        showNotification('Nepodařilo se uložit nastavení', 'error');
+      }
+    } catch (error) {
+      showNotification('Chyba při ukládání nastavení', 'error');
+    } finally {
+      setSavingSettings(false);
+    }
+  };
+
   const generateEmbedCode = () => {
     const embedUrl = `${process.env.NEXT_PUBLIC_API_URL}/heureka/feed/${feedId}/embed.js`;
     return `<script src="${embedUrl}"></script>`;
+  };
+
+  const copyEmbedCode = () => {
+    navigator.clipboard.writeText(generateEmbedCode());
+    showNotification('Kód zkopírován do schránky', 'success');
   };
 
   const totalPages = Math.ceil(totalItems / itemsPerPage);
@@ -245,7 +330,59 @@ export default function HeurekaFeedDetailPage() {
     <div className="p-6">
       <div className="flex justify-between items-center mb-6">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900 dark:text-white">{feed.name}</h1>
+          {isEditingName ? (
+            <div className="flex items-center gap-2">
+              <input
+                type="text"
+                value={editNameValue}
+                onChange={(e) => setEditNameValue(e.target.value)}
+                className="text-2xl font-bold text-gray-900 dark:text-white bg-transparent border-b-2 border-indigo-500 focus:outline-none"
+                autoFocus
+              />
+              <button
+                onClick={handleUpdateName}
+                className="p-1 text-green-600 hover:text-green-700 transition cursor-pointer"
+                title="Uložit"
+              >
+                <CheckIcon className="h-6 w-6" />
+              </button>
+              <button
+                onClick={() => {
+                  setIsEditingName(false);
+                  setEditNameValue(feed.name);
+                }}
+                className="p-1 text-red-600 hover:text-red-700 transition cursor-pointer"
+                title="Zrušit"
+              >
+                <XMarkIcon className="h-6 w-6" />
+              </button>
+            </div>
+          ) : (
+            <div className="flex items-center gap-2 group">
+              <h1 className="text-2xl font-bold text-gray-900 dark:text-white">{feed.name}</h1>
+              <button
+                onClick={() => setIsEditingName(true)}
+                className="opacity-0 group-hover:opacity-100 transition p-1 text-gray-400 hover:text-indigo-600 cursor-pointer"
+                title="Upravit název"
+              >
+                <PencilSquareIcon className="h-5 w-5" />
+              </button>
+              <button
+                onClick={() => setShowSettingsModal(true)}
+                className="p-1 text-gray-400 hover:text-indigo-600 transition cursor-pointer"
+                title="Nastavení zobrazení"
+              >
+                <Cog6ToothIcon className="h-5 w-5" />
+              </button>
+              <button
+                onClick={() => setShowEmbedModal(true)}
+                className="p-1 text-gray-400 hover:text-indigo-600 transition cursor-pointer"
+                title="Získat embed kód"
+              >
+                <CodeBracketIcon className="h-5 w-5" />
+              </button>
+            </div>
+          )}
           <p className="text-sm text-gray-500">
             Celkem produktů: {feed.productCount} | Vybráno: {selectedProducts.size}
           </p>
@@ -254,7 +391,7 @@ export default function HeurekaFeedDetailPage() {
           <button
             onClick={handleSaveSelection}
             disabled={saving}
-            className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+            className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2 cursor-pointer"
           >
             {saving && (
               <svg className="animate-spin h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
@@ -267,12 +404,141 @@ export default function HeurekaFeedDetailPage() {
         </div>
       </div>
 
+      {/* Embed Code Modal */}
+      {showEmbedModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">
+          <div className="bg-white dark:bg-gray-800 rounded-xl shadow-2xl p-6 w-full max-w-lg transform transition-all scale-100">
+            <div className="flex justify-between items-center mb-4">
+              <h2 className="text-xl font-bold text-gray-900 dark:text-white">Embed kód</h2>
+              <button onClick={() => setShowEmbedModal(false)} className="text-gray-400 hover:text-gray-500 cursor-pointer">
+                <XMarkIcon className="h-6 w-6" />
+              </button>
+            </div>
+
+            <p className="text-sm text-gray-600 dark:text-gray-400 mb-4">
+              Vložte tento kód do vašich stránek tam, kde chcete zobrazit produkty.
+            </p>
+
+            <div className="relative">
+              <pre className="bg-gray-100 dark:bg-gray-900 p-4 rounded-lg text-sm font-mono text-gray-800 dark:text-gray-200 overflow-x-auto whitespace-pre-wrap break-all">
+                {generateEmbedCode()}
+              </pre>
+              <button
+                onClick={copyEmbedCode}
+                className="absolute top-2 right-2 p-2 bg-white dark:bg-gray-800 rounded-md shadow-sm border border-gray-200 dark:border-gray-700 text-gray-500 hover:text-indigo-600 transition cursor-pointer"
+                title="Zkopírovat"
+              >
+                <ClipboardDocumentIcon className="h-5 w-5" />
+              </button>
+            </div>
+
+            <div className="mt-6 flex justify-end">
+              <button
+                onClick={() => setShowEmbedModal(false)}
+                className="px-4 py-2 rounded-lg bg-indigo-600 text-white hover:bg-indigo-700 transition cursor-pointer"
+              >
+                Zavřít
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Settings Modal */}
+      {showSettingsModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">
+          <div className="bg-white dark:bg-gray-800 rounded-xl shadow-2xl p-6 w-full max-w-md transform transition-all scale-100">
+            <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-4">Nastavení zobrazení</h2>
+
+            <div className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                  Typ zobrazení
+                </label>
+                <Select value={layout} onValueChange={setLayout}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Vyberte zobrazení" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="carousel">Carousel (posuvník)</SelectItem>
+                    <SelectItem value="grid">Mřížka (Grid)</SelectItem>
+                    <SelectItem value="list">Seznam (List)</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+
+              {layout === 'grid' && (
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                      Sloupce (Desktop)
+                    </label>
+                    <input
+                      type="number"
+                      min="1"
+                      max="6"
+                      value={gridColumns}
+                      onChange={(e) => setGridColumns(e.target.value)}
+                      className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                      Sloupce (Mobil)
+                    </label>
+                    <input
+                      type="number"
+                      min="1"
+                      max="3"
+                      value={mobileGridColumns}
+                      onChange={(e) => setMobileGridColumns(e.target.value)}
+                      className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                    />
+                  </div>
+                </div>
+              )}
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                  Barva tlačítka "Koupit"
+                </label>
+                <div className="flex items-center gap-3">
+                  <input
+                    type="color"
+                    value={buttonColor}
+                    onChange={(e) => setButtonColor(e.target.value)}
+                    className="h-10 w-20 p-1 rounded border border-gray-300 dark:border-gray-600 cursor-pointer"
+                  />
+                  <span className="text-sm text-gray-500 dark:text-gray-400 font-mono">{buttonColor}</span>
+                </div>
+              </div>
+            </div>
+
+            <div className="mt-6 flex justify-end gap-3">
+              <button
+                onClick={() => setShowSettingsModal(false)}
+                className="px-4 py-2 rounded-lg bg-gray-100 text-gray-700 hover:bg-gray-200 dark:bg-gray-700 dark:text-gray-300 dark:hover:bg-gray-600 transition cursor-pointer"
+              >
+                Zrušit
+              </button>
+              <button
+                onClick={handleSaveSettings}
+                disabled={savingSettings}
+                className="px-4 py-2 rounded-lg bg-indigo-600 text-white hover:bg-indigo-700 transition flex items-center gap-2 cursor-pointer"
+              >
+                {savingSettings ? 'Ukládám...' : 'Uložit nastavení'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Selected Products Section */}
       {selectedProductDetails.length > 0 && (
         <div className="mb-6 bg-blue-50 dark:bg-blue-900/20 rounded-lg border border-blue-100 dark:border-blue-800 overflow-hidden">
           <button
             onClick={() => setShowSelected(!showSelected)}
-            className="w-full flex justify-between items-center p-4 bg-blue-100 dark:bg-blue-900/40 hover:bg-blue-200 dark:hover:bg-blue-900/60 transition"
+            className="w-full flex justify-between items-center p-4 bg-blue-100 dark:bg-blue-900/40 hover:bg-blue-200 dark:hover:bg-blue-900/60 transition cursor-pointer"
           >
             <span className="font-semibold text-blue-900 dark:text-blue-100">
               Vybrané produkty ({selectedProductDetails.length})
@@ -343,7 +609,7 @@ export default function HeurekaFeedDetailPage() {
           <div className="flex items-end">
             <button
               onClick={applyFilters}
-              className="w-full px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition"
+              className="w-full px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition cursor-pointer"
             >
               Filtrovat
             </button>
@@ -423,7 +689,7 @@ export default function HeurekaFeedDetailPage() {
                   showNotification('Synchronizace selhala', 'error');
                 }
               }}
-              className="inline-flex items-center gap-2 px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition"
+              className="inline-flex items-center gap-2 px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition cursor-pointer"
             >
               <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
                 <path fillRule="evenodd" d="M4 2a1 1 0 011 1v2.101a7.002 7.002 0 0111.601 2.566 1 1 0 11-1.885.666A5.002 5.002 0 005.999 7H9a1 1 0 010 2H4a1 1 0 01-1-1V3a1 1 0 011-1zm.008 9.057a1 1 0 011.276.61A5.002 5.002 0 0014.001 13H11a1 1 0 110-2h5a1 1 0 011 1v5a1 1 0 11-2 0v-2.101a7.002 7.002 0 01-11.601-2.566 1 1 0 01.61-1.276z" clipRule="evenodd" />
@@ -483,7 +749,7 @@ export default function HeurekaFeedDetailPage() {
               <button
                 onClick={() => setPage(p => Math.max(1, p - 1))}
                 disabled={page === 1}
-                className="p-2 rounded-lg border border-gray-300 dark:border-gray-600 disabled:opacity-50 hover:bg-gray-100 dark:hover:bg-gray-800 transition"
+                className="p-2 rounded-lg border border-gray-300 dark:border-gray-600 disabled:opacity-50 hover:bg-gray-100 dark:hover:bg-gray-800 transition cursor-pointer"
               >
                 <ChevronLeftIcon className="h-5 w-5" />
               </button>
@@ -493,7 +759,7 @@ export default function HeurekaFeedDetailPage() {
               <button
                 onClick={() => setPage(p => Math.min(totalPages, p + 1))}
                 disabled={page === totalPages}
-                className="p-2 rounded-lg border border-gray-300 dark:border-gray-600 disabled:opacity-50 hover:bg-gray-100 dark:hover:bg-gray-800 transition"
+                className="p-2 rounded-lg border border-gray-300 dark:border-gray-600 disabled:opacity-50 hover:bg-gray-100 dark:hover:bg-gray-800 transition cursor-pointer"
               >
                 <ChevronRightIcon className="h-5 w-5" />
               </button>
