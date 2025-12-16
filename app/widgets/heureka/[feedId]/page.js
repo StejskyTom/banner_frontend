@@ -5,7 +5,7 @@ import { useEffect, useState } from 'react';
 import { authorizedFetch } from '../../../../lib/api';
 import { useToast } from "../../../components/ToastProvider";
 import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from "@/components/ui/select";
-import { ChevronDownIcon, ChevronUpIcon, XMarkIcon } from '@heroicons/react/24/solid';
+import { ChevronDownIcon, ChevronUpIcon, XMarkIcon, ChevronLeftIcon, ChevronRightIcon } from '@heroicons/react/24/solid';
 
 export default function HeurekaFeedDetailPage() {
   const { feedId } = useParams();
@@ -18,15 +18,24 @@ export default function HeurekaFeedDetailPage() {
   const [showSelected, setShowSelected] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('all');
+  const [page, setPage] = useState(1);
+  const [totalItems, setTotalItems] = useState(0);
+  const [itemsPerPage, setItemsPerPage] = useState(30);
+  const [sortBy, setSortBy] = useState('name_asc');
   const showNotification = useToast();
 
   useEffect(() => {
     if (feedId) {
       fetchFeedDetails();
-      fetchProducts();
       fetchCategories();
     }
   }, [feedId]);
+
+  useEffect(() => {
+    if (feedId) {
+      fetchProducts();
+    }
+  }, [feedId, page, itemsPerPage, sortBy]);
 
   const fetchFeedDetails = async () => {
     try {
@@ -42,21 +51,31 @@ export default function HeurekaFeedDetailPage() {
 
   const fetchProducts = async () => {
     try {
+      setLoading(true);
       const params = new URLSearchParams();
       if (searchTerm) params.append('search', searchTerm);
       if (selectedCategory !== 'all') params.append('category', selectedCategory);
+
+      params.append('limit', itemsPerPage);
+      params.append('offset', (page - 1) * itemsPerPage);
+      params.append('sort', sortBy);
 
       const res = await authorizedFetch(`/heureka/feeds/${feedId}/products?${params}`);
       if (res?.ok) {
         const data = await res.json();
         setProducts(data.products);
+        setTotalItems(data.total);
 
-        // Load previously selected products
-        const selectedRes = await authorizedFetch(`/heureka/feeds/${feedId}/products/selected`);
-        if (selectedRes?.ok) {
-          const selectedData = await selectedRes.json();
-          setSelectedProducts(new Set(selectedData.map(p => p.id)));
-          setSelectedProductDetails(selectedData);
+        // Load previously selected products (only once or check if needed)
+        // Optimization: We could load this only once on mount, but keeping it here ensures sync.
+        // However, we only need to load it once really.
+        if (selectedProductDetails.length === 0) {
+          const selectedRes = await authorizedFetch(`/heureka/feeds/${feedId}/products/selected`);
+          if (selectedRes?.ok) {
+            const selectedData = await selectedRes.json();
+            setSelectedProducts(new Set(selectedData.map(p => p.id)));
+            setSelectedProductDetails(selectedData);
+          }
         }
       }
     } catch (error) {
@@ -83,12 +102,16 @@ export default function HeurekaFeedDetailPage() {
   };
 
   const applyFilters = () => {
-    fetchProducts();
+    if (page === 1) {
+      fetchProducts();
+    } else {
+      setPage(1);
+    }
   };
 
   const toggleProductSelection = (product) => {
     const productId = product.id;
-    
+
     setSelectedProducts(prev => {
       const newSet = new Set(prev);
       if (newSet.has(productId)) {
@@ -133,8 +156,9 @@ export default function HeurekaFeedDetailPage() {
     return `<script src="${embedUrl}"></script>`;
   };
 
-  if (loading) return <p className="p-6 text-gray-500">Načítám...</p>;
-  if (!feed) return <p className="p-6 text-red-500">Feed nenalezen</p>;
+  const totalPages = Math.ceil(totalItems / itemsPerPage);
+
+  if (!feed) return <p className="p-6 text-gray-500">Načítám feed...</p>;
 
   return (
     <div className="p-6">
@@ -158,7 +182,7 @@ export default function HeurekaFeedDetailPage() {
       {/* Selected Products Section */}
       {selectedProductDetails.length > 0 && (
         <div className="mb-6 bg-blue-50 dark:bg-blue-900/20 rounded-lg border border-blue-100 dark:border-blue-800 overflow-hidden">
-          <button 
+          <button
             onClick={() => setShowSelected(!showSelected)}
             className="w-full flex justify-between items-center p-4 bg-blue-100 dark:bg-blue-900/40 hover:bg-blue-200 dark:hover:bg-blue-900/60 transition"
           >
@@ -171,7 +195,7 @@ export default function HeurekaFeedDetailPage() {
               <ChevronDownIcon className="h-5 w-5 text-blue-700 dark:text-blue-300" />
             )}
           </button>
-          
+
           {showSelected && (
             <div className="p-4 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 max-h-[500px] overflow-y-auto">
               {selectedProductDetails.map(product => (
@@ -243,8 +267,55 @@ export default function HeurekaFeedDetailPage() {
         </div>
       </div>
 
+      {/* Controls Bar */}
+      <div className="flex flex-col md:flex-row justify-between items-center gap-4 mb-4">
+        {/* Left: Sort */}
+        <div className="flex items-center gap-2 w-full md:w-auto">
+          <span className="text-sm text-gray-500 dark:text-gray-400 whitespace-nowrap">Řazení:</span>
+          <Select value={sortBy} onValueChange={setSortBy}>
+            <SelectTrigger className="w-[180px]">
+              <SelectValue placeholder="Řazení" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="name_asc">Název (A-Z)</SelectItem>
+              <SelectItem value="name_desc">Název (Z-A)</SelectItem>
+              <SelectItem value="price_asc">Cena (nejlevnější)</SelectItem>
+              <SelectItem value="price_desc">Cena (nejdražší)</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
+
+        {/* Center: Stats */}
+        <div className="text-sm text-gray-500 dark:text-gray-400 text-center">
+          Zobrazeno {Math.min((page - 1) * itemsPerPage + 1, totalItems)} - {Math.min(page * itemsPerPage, totalItems)} z {totalItems} produktů
+        </div>
+
+        {/* Right: Items per page */}
+        <div className="flex items-center gap-2 w-full md:w-auto justify-end">
+          <span className="text-sm text-gray-500 dark:text-gray-400 whitespace-nowrap">Na stránku:</span>
+          <Select value={itemsPerPage.toString()} onValueChange={(val) => { setItemsPerPage(Number(val)); setPage(1); }}>
+            <SelectTrigger className="w-[80px]">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="12">12</SelectItem>
+              <SelectItem value="24">24</SelectItem>
+              <SelectItem value="30">30</SelectItem>
+              <SelectItem value="60">60</SelectItem>
+              <SelectItem value="100">100</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
+      </div>
+
       {/* Seznam produktů */}
-      {products.length === 0 ? (
+      {loading ? (
+        <div className="text-center py-12">
+          <div className="inline-block h-8 w-8 animate-spin rounded-full border-4 border-solid border-current border-r-transparent align-[-0.125em] motion-reduce:animate-[spin_1.5s_linear_infinite]" role="status">
+            <span className="!absolute !-m-px !h-px !w-px !overflow-hidden !whitespace-nowrap !border-0 !p-0 ![clip:rect(0,0,0,0)]">Loading...</span>
+          </div>
+        </div>
+      ) : products.length === 0 ? (
         <div className="bg-white dark:bg-gray-900 rounded-lg shadow p-12 text-center">
           <svg className="mx-auto h-12 w-12 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4" />
@@ -278,48 +349,73 @@ export default function HeurekaFeedDetailPage() {
           </div>
         </div>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          {products.map(product => (
-            <div
-              key={product.id}
-              onClick={() => toggleProductSelection(product)}
-              className={`
-                p-4 rounded-lg border-2 cursor-pointer transition
-                ${selectedProducts.has(product.id)
-                  ? 'border-blue-500 bg-blue-50 dark:bg-blue-900/20'
-                  : 'border-gray-200 dark:border-gray-700 hover:border-gray-400'
-                }
-              `}
-            >
-              <div className="flex items-start gap-3">
-                <input
-                  type="checkbox"
-                  checked={selectedProducts.has(product.id)}
-                  onChange={() => {}}
-                  className="mt-1"
-                />
-                {product.imgUrl && (
-                  <img
-                    src={product.imgUrl}
-                    alt={product.productName}
-                    className="w-16 h-16 object-contain rounded"
+        <>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            {products.map(product => (
+              <div
+                key={product.id}
+                onClick={() => toggleProductSelection(product)}
+                className={`
+                    p-4 rounded-lg border-2 cursor-pointer transition
+                    ${selectedProducts.has(product.id)
+                    ? 'border-blue-500 bg-blue-50 dark:bg-blue-900/20'
+                    : 'border-gray-200 dark:border-gray-700 hover:border-gray-400'
+                  }
+                `}
+              >
+                <div className="flex items-start gap-3">
+                  <input
+                    type="checkbox"
+                    checked={selectedProducts.has(product.id)}
+                    onChange={() => { }}
+                    className="mt-1"
                   />
-                )}
-                <div className="flex-1">
-                  <h3 className="font-semibold text-sm text-gray-900 dark:text-white line-clamp-2">
-                    {product.productName}
-                  </h3>
-                  <p className="text-lg font-bold text-green-600 mt-1">
-                    {product.priceVat} Kč
-                  </p>
-                  {product.category && (
-                    <p className="text-xs text-gray-500 mt-1">{product.category.name}</p>
+                  {product.imgUrl && (
+                    <img
+                      src={product.imgUrl}
+                      alt={product.productName}
+                      className="w-16 h-16 object-contain rounded"
+                    />
                   )}
+                  <div className="flex-1">
+                    <h3 className="font-semibold text-sm text-gray-900 dark:text-white line-clamp-2">
+                      {product.productName}
+                    </h3>
+                    <p className="text-lg font-bold text-green-600 mt-1">
+                      {product.priceVat} Kč
+                    </p>
+                    {product.category && (
+                      <p className="text-xs text-gray-500 mt-1">{product.category.name}</p>
+                    )}
+                  </div>
                 </div>
               </div>
+            ))}
+          </div>
+
+          {/* Pagination Controls */}
+          {totalPages > 1 && (
+            <div className="flex justify-center items-center gap-4 mt-8">
+              <button
+                onClick={() => setPage(p => Math.max(1, p - 1))}
+                disabled={page === 1}
+                className="p-2 rounded-lg border border-gray-300 dark:border-gray-600 disabled:opacity-50 hover:bg-gray-100 dark:hover:bg-gray-800 transition"
+              >
+                <ChevronLeftIcon className="h-5 w-5" />
+              </button>
+              <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                Strana {page} z {totalPages}
+              </span>
+              <button
+                onClick={() => setPage(p => Math.min(totalPages, p + 1))}
+                disabled={page === totalPages}
+                className="p-2 rounded-lg border border-gray-300 dark:border-gray-600 disabled:opacity-50 hover:bg-gray-100 dark:hover:bg-gray-800 transition"
+              >
+                <ChevronRightIcon className="h-5 w-5" />
+              </button>
             </div>
-          ))}
-        </div>
+          )}
+        </>
       )}
 
       {/* Embed code */}
