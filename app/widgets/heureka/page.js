@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react';
 import { authorizedFetch } from '../../../lib/api';
 import Link from 'next/link';
-import { PencilSquareIcon, TrashIcon, ArrowPathIcon } from '@heroicons/react/24/solid';
+import { PencilSquareIcon, TrashIcon, ArrowPathIcon, ShoppingBagIcon, PlusIcon } from '@heroicons/react/24/solid';
 import { useToast } from "../../components/ToastProvider";
 import { useRouter } from "next/navigation";
 
@@ -206,8 +206,23 @@ export default function HeurekaFeedsPage() {
               ))
             ) : (
               <tr>
-                <td colSpan="4" className="px-6 py-10 text-center text-gray-500 dark:text-gray-400">
-                  Žádné feedy nenalezeny.
+                <td colSpan="4" className="px-6 py-16 text-center">
+                  <div className="flex flex-col items-center justify-center">
+                    <div className="bg-gray-100 dark:bg-gray-800 p-4 rounded-full mb-4">
+                      <ShoppingBagIcon className="h-10 w-10 text-gray-400 dark:text-gray-500" />
+                    </div>
+                    <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-1">Zatím nemáte žádné feedy</h3>
+                    <p className="text-gray-500 dark:text-gray-400 mb-6 max-w-sm">
+                      Přidejte svůj první XML feed z Heureky a začněte zobrazovat produkty na svém webu.
+                    </p>
+                    <button
+                      onClick={openCreateModal}
+                      className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-indigo-600 text-white font-medium hover:bg-indigo-700 transition cursor-pointer"
+                    >
+                      <PlusIcon className="h-5 w-5" />
+                      Vytvořit první feed
+                    </button>
+                  </div>
                 </td>
               </tr>
             )}

@@ -5,7 +5,7 @@ import { useEffect, useState } from 'react';
 import { authorizedFetch } from '../../../../lib/api';
 import { useToast } from "../../../components/ToastProvider";
 import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from "@/components/ui/select";
-import { ChevronDownIcon, ChevronUpIcon, XMarkIcon, ChevronLeftIcon, ChevronRightIcon, PencilSquareIcon, CheckIcon, Cog6ToothIcon, CodeBracketIcon, ClipboardDocumentIcon } from '@heroicons/react/24/solid';
+import { ChevronDownIcon, ChevronUpIcon, XMarkIcon, ChevronLeftIcon, ChevronRightIcon, PencilSquareIcon, CheckIcon, Cog6ToothIcon, CodeBracketIcon, ClipboardDocumentIcon, CheckCircleIcon } from '@heroicons/react/24/solid';
 import { DndContext, closestCenter, KeyboardSensor, PointerSensor, useSensor, useSensors } from '@dnd-kit/core';
 import { arrayMove, SortableContext, sortableKeyboardCoordinates, useSortable, rectSortingStrategy } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
@@ -701,46 +701,54 @@ export default function HeurekaFeedDetailPage() {
       ) : (
         <>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {products.map(product => (
-              <div
-                key={product.id}
-                onClick={() => toggleProductSelection(product)}
-                className={`
-                    p-4 rounded-lg border-2 cursor-pointer transition
-                    ${selectedProducts.has(product.id)
-                    ? 'border-blue-500 bg-blue-50 dark:bg-blue-900/20'
-                    : 'border-gray-200 dark:border-gray-700 hover:border-gray-400'
-                  }
-                `}
-              >
-                <div className="flex items-start gap-3">
-                  <input
-                    type="checkbox"
-                    checked={selectedProducts.has(product.id)}
-                    onChange={() => { }}
-                    className="mt-1"
-                  />
-                  {product.imgUrl && (
-                    <img
-                      src={product.imgUrl}
-                      alt={product.productName}
-                      className="w-16 h-16 object-contain rounded"
-                    />
-                  )}
-                  <div className="flex-1">
-                    <h3 className="font-semibold text-sm text-gray-900 dark:text-white line-clamp-2">
-                      {product.productName}
-                    </h3>
-                    <p className="text-lg font-bold text-green-600 mt-1">
-                      {product.priceVat} Kč
-                    </p>
-                    {product.category && (
-                      <p className="text-xs text-gray-500 mt-1">{product.category.name}</p>
+            {products.map(product => {
+              const isSelected = selectedProducts.has(product.id);
+              return (
+                <div
+                  key={product.id}
+                  onClick={() => toggleProductSelection(product)}
+                  className={`
+                      relative group p-4 rounded-xl border-2 cursor-pointer transition-all duration-200
+                      hover:shadow-lg hover:-translate-y-1
+                      ${isSelected
+                      ? 'border-blue-500 bg-blue-50 dark:bg-blue-900/20'
+                      : 'border-gray-200 dark:border-gray-700 hover:border-blue-300 dark:hover:border-blue-700 bg-white dark:bg-gray-800'
+                    }
+                  `}
+                >
+                  {/* Selection Badge */}
+                  <div className={`absolute top-3 right-3 transition-transform duration-200 ${isSelected ? 'scale-100' : 'scale-0'}`}>
+                    <CheckCircleIcon className="h-6 w-6 text-blue-600 dark:text-blue-400" />
+                  </div>
+
+                  <div className="flex items-start gap-4">
+                    {product.imgUrl ? (
+                      <img
+                        src={product.imgUrl}
+                        alt={product.productName}
+                        className="w-20 h-20 object-contain rounded-lg bg-white p-1"
+                      />
+                    ) : (
+                      <div className="w-20 h-20 bg-gray-100 dark:bg-gray-700 rounded-lg flex items-center justify-center text-gray-400">
+                        <span className="text-xs">Bez foto</span>
+                      </div>
                     )}
+
+                    <div className="flex-1 min-w-0">
+                      <h3 className="font-semibold text-sm text-gray-900 dark:text-white line-clamp-2 mb-1 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">
+                        {product.productName}
+                      </h3>
+                      <p className="text-lg font-bold text-green-600">
+                        {product.priceVat} Kč
+                      </p>
+                      {product.category && (
+                        <p className="text-xs text-gray-500 mt-1 line-clamp-1">{product.category.name}</p>
+                      )}
+                    </div>
                   </div>
                 </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
 
           {/* Pagination Controls */}
@@ -768,13 +776,7 @@ export default function HeurekaFeedDetailPage() {
         </>
       )}
 
-      {/* Embed code */}
-      <div className="mt-8 bg-gray-100 dark:bg-gray-800 p-4 rounded-lg">
-        <h3 className="font-semibold mb-2">Embed kód:</h3>
-        <pre className="bg-white dark:bg-gray-900 p-3 rounded text-sm overflow-x-auto">
-          {generateEmbedCode()}
-        </pre>
-      </div>
+
     </div>
   );
 }
