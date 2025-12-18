@@ -3,11 +3,13 @@
 import { useState } from 'react';
 
 export default function CarouselPreview({
-                                            attachments,
-                                            imageSize = 64,
-                                            speed = 20,
-                                            font = 'Arial',
-                                        }) {
+    attachments,
+    imageSize = 64,
+    speed = 20,
+    font = 'Arial',
+    pauseOnHover = false,
+    gap = 32,
+}) {
     const [isPaused, setIsPaused] = useState(false);
 
     if (!attachments?.length) return null;
@@ -16,14 +18,31 @@ export default function CarouselPreview({
     // For better performance, we only duplicate twice which is sufficient
     const duplicatedAttachments = [...attachments, ...attachments];
 
+    const handleMouseEnter = () => {
+        if (pauseOnHover) {
+            setIsPaused(true);
+        }
+    };
+
+    const handleMouseLeave = () => {
+        if (pauseOnHover) {
+            setIsPaused(false);
+        }
+    };
+
+    // Calculate duration: (items scrolled * speed) / 10
+    // We scroll the full length of duplicatedAttachments (translateX -100%)
+    const duration = (duplicatedAttachments.length * speed) / 10;
+
     return (
         <div
             className="w-full max-w-3xl inline-flex flex-nowrap overflow-hidden group"
-            onMouseEnter={() => setIsPaused(true)}
-            onMouseLeave={() => setIsPaused(false)}
+            onMouseEnter={handleMouseEnter}
+            onMouseLeave={handleMouseLeave}
             style={{
-                ['--duration']: `${speed}s`,
+                ['--duration']: `${duration}s`,
                 ['--image-size']: `${imageSize}px`,
+                ['--item-gap']: `${gap}px`,
                 fontFamily: font,
                 maskImage:
                     'linear-gradient(to right, transparent 0%, rgba(0,0,0,0.1) 5%, black 15%, black 85%, rgba(0,0,0,0.1) 95%, transparent 100%)',
@@ -33,7 +52,7 @@ export default function CarouselPreview({
         >
             {/* Primary scrolling track */}
             <ul
-                className="flex items-center justify-center [&_li]:mx-8 [&_img]:max-w-none animate-scroll"
+                className="flex items-center justify-center [&_li]:mx-[var(--item-gap)] [&_img]:max-w-none animate-scroll"
                 style={{
                     animationPlayState: isPaused ? 'paused' : 'running',
                 }}
@@ -70,7 +89,7 @@ export default function CarouselPreview({
 
             {/* Secondary scrolling track for seamless loop */}
             <ul
-                className="flex items-center justify-center [&_li]:mx-8 [&_img]:max-w-none animate-scroll"
+                className="flex items-center justify-center [&_li]:mx-[var(--item-gap)] [&_img]:max-w-none animate-scroll"
                 aria-hidden="true"
                 style={{
                     animationPlayState: isPaused ? 'paused' : 'running',
@@ -119,11 +138,6 @@ export default function CarouselPreview({
                 .animate-scroll {
                     animation: scroll var(--duration) linear infinite;
                     will-change: transform;
-                }
-
-                /* Smooth transition when pausing */
-                .animate-scroll:hover {
-                    animation-play-state: paused;
                 }
             `}</style>
         </div>

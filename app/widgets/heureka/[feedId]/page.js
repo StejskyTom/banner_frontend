@@ -374,13 +374,6 @@ export default function HeurekaFeedDetailPage() {
               >
                 <Cog6ToothIcon className="h-5 w-5" />
               </button>
-              <button
-                onClick={() => setShowEmbedModal(true)}
-                className="p-1 text-gray-400 hover:text-indigo-600 transition cursor-pointer"
-                title="Získat embed kód"
-              >
-                <CodeBracketIcon className="h-5 w-5" />
-              </button>
             </div>
           )}
           <p className="text-sm text-gray-500">
@@ -388,6 +381,13 @@ export default function HeurekaFeedDetailPage() {
           </p>
         </div>
         <div className="flex gap-2">
+          <button
+            onClick={() => setShowEmbedModal(true)}
+            className="px-4 py-2 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition flex items-center gap-2 cursor-pointer"
+          >
+            <CodeBracketIcon className="h-5 w-5" />
+            Embed kód
+          </button>
           <button
             onClick={handleSaveSelection}
             disabled={saving}
