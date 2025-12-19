@@ -5,7 +5,7 @@ import { useEffect, useState } from 'react';
 import { authorizedFetch } from '../../../../lib/api';
 import { useToast } from "../../../components/ToastProvider";
 import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from "@/components/ui/select";
-import { ChevronDownIcon, ChevronUpIcon, XMarkIcon, ChevronLeftIcon, ChevronRightIcon, PencilSquareIcon, CheckIcon, Cog6ToothIcon, CodeBracketIcon, ClipboardDocumentIcon, CheckCircleIcon } from '@heroicons/react/24/solid';
+import { ChevronDownIcon, ChevronUpIcon, XMarkIcon, ChevronLeftIcon, ChevronRightIcon, PencilSquareIcon, CheckIcon, Cog6ToothIcon, CodeBracketIcon, ClipboardDocumentIcon, CheckCircleIcon, EyeIcon } from '@heroicons/react/24/solid';
 import { DndContext, closestCenter, KeyboardSensor, PointerSensor, useSensor, useSensors } from '@dnd-kit/core';
 import { arrayMove, SortableContext, sortableKeyboardCoordinates, useSortable, rectSortingStrategy } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
@@ -82,8 +82,8 @@ export default function HeurekaFeedDetailPage() {
   const [editNameValue, setEditNameValue] = useState('');
 
   // Settings Modal State
-  const [showSettingsModal, setShowSettingsModal] = useState(false);
   const [showEmbedModal, setShowEmbedModal] = useState(false);
+  const [showPreviewModal, setShowPreviewModal] = useState(false);
   const [layout, setLayout] = useState('carousel');
   const [gridColumns, setGridColumns] = useState(3);
   const [mobileGridColumns, setMobileGridColumns] = useState(1);
@@ -230,23 +230,41 @@ export default function HeurekaFeedDetailPage() {
     }
   };
 
-  const handleSaveSelection = async () => {
+  const handleSaveAll = async () => {
     try {
       setSaving(true);
       // Use selectedProductDetails to preserve order
       const orderedIds = selectedProductDetails.map(p => p.id);
 
-      const res = await authorizedFetch(`/heureka/feeds/${feedId}/products/selection`, {
+      const saveSelectionPromise = authorizedFetch(`/heureka/feeds/${feedId}/products/selection`, {
         method: 'PUT',
         body: JSON.stringify({
           selectedProductIds: orderedIds
         })
       });
 
-      if (res?.ok) {
-        showNotification('Výběr produktů byl uložen', 'success');
+      const saveSettingsPromise = authorizedFetch(`/heureka/feeds/${feedId}`, {
+        method: 'PUT',
+        body: JSON.stringify({
+          layout: layout,
+          layoutOptions: {
+            gridColumns: parseInt(gridColumns),
+            mobileGridColumns: parseInt(mobileGridColumns),
+            buttonColor: buttonColor
+          },
+          url: feed.url,
+          name: feed.name
+        })
+      });
+
+      const [selectionRes, settingsRes] = await Promise.all([saveSelectionPromise, saveSettingsPromise]);
+
+      if (selectionRes?.ok && settingsRes?.ok) {
+        const updatedFeed = await settingsRes.json();
+        setFeed(updatedFeed);
+        showNotification('Všechny změny byly uloženy', 'success');
       } else {
-        showNotification('Nepodařilo se uložit výběr', 'error');
+        showNotification('Některé změny se nepodařilo uložit', 'warning');
       }
     } catch (error) {
       showNotification('Chyba při ukládání', 'error');
@@ -280,41 +298,15 @@ export default function HeurekaFeedDetailPage() {
     }
   };
 
-  const handleSaveSettings = async () => {
-    try {
-      setSavingSettings(true);
-      const res = await authorizedFetch(`/heureka/feeds/${feedId}`, {
-        method: 'PUT',
-        body: JSON.stringify({
-          layout: layout,
-          layoutOptions: {
-            gridColumns: parseInt(gridColumns),
-            mobileGridColumns: parseInt(mobileGridColumns),
-            buttonColor: buttonColor
-          },
-          url: feed.url,
-          name: feed.name
-        })
-      });
 
-      if (res?.ok) {
-        const updatedFeed = await res.json();
-        setFeed(updatedFeed);
-        setShowSettingsModal(false);
-        showNotification('Nastavení zobrazení bylo uloženo', 'success');
-      } else {
-        showNotification('Nepodařilo se uložit nastavení', 'error');
-      }
-    } catch (error) {
-      showNotification('Chyba při ukládání nastavení', 'error');
-    } finally {
-      setSavingSettings(false);
-    }
-  };
 
   const generateEmbedCode = () => {
     const embedUrl = `${process.env.NEXT_PUBLIC_API_URL}/heureka/feed/${feedId}/embed.js`;
     return `<script src="${embedUrl}"></script>`;
+  };
+
+  const generatePreviewUrl = () => {
+    return `${process.env.NEXT_PUBLIC_API_URL}/heureka/feed/${feedId}/embed.js`;
   };
 
   const copyEmbedCode = () => {
@@ -367,13 +359,6 @@ export default function HeurekaFeedDetailPage() {
               >
                 <PencilSquareIcon className="h-5 w-5" />
               </button>
-              <button
-                onClick={() => setShowSettingsModal(true)}
-                className="p-1 text-gray-400 hover:text-indigo-600 transition cursor-pointer"
-                title="Nastavení zobrazení"
-              >
-                <Cog6ToothIcon className="h-5 w-5" />
-              </button>
             </div>
           )}
           <p className="text-sm text-gray-500">
@@ -389,7 +374,14 @@ export default function HeurekaFeedDetailPage() {
             Embed kód
           </button>
           <button
-            onClick={handleSaveSelection}
+            onClick={() => setShowPreviewModal(true)}
+            className="px-4 py-2 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition flex items-center gap-2 cursor-pointer"
+          >
+            <EyeIcon className="h-5 w-5" />
+            Náhled
+          </button>
+          <button
+            onClick={handleSaveAll}
             disabled={saving}
             className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2 cursor-pointer"
           >
@@ -399,183 +391,229 @@ export default function HeurekaFeedDetailPage() {
                 <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
               </svg>
             )}
-            {saving ? 'Ukládám...' : 'Uložit výběr'}
+            {saving ? 'Ukládám...' : 'Uložit změny'}
           </button>
         </div>
       </div>
 
+      {/* Settings Section */}
+      <div className="mb-6 bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-6">
+        <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Nastavení zobrazení</h2>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+          <div>
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+              Typ zobrazení
+            </label>
+            <Select value={layout} onValueChange={setLayout}>
+              <SelectTrigger>
+                <SelectValue placeholder="Vyberte zobrazení" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="carousel">Carousel (posuvník)</SelectItem>
+                <SelectItem value="grid">Mřížka (Grid)</SelectItem>
+                <SelectItem value="list">Seznam (List)</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+
+          {layout === 'grid' && (
+            <>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                  Sloupce (Desktop)
+                </label>
+                <input
+                  type="number"
+                  min="1"
+                  max="6"
+                  value={gridColumns}
+                  onChange={(e) => setGridColumns(e.target.value)}
+                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                  Sloupce (Mobil)
+                </label>
+                <input
+                  type="number"
+                  min="1"
+                  max="3"
+                  value={mobileGridColumns}
+                  onChange={(e) => setMobileGridColumns(e.target.value)}
+                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                />
+              </div>
+            </>
+          )}
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+              Barva tlačítka "Koupit"
+            </label>
+            <div className="flex items-center gap-3">
+              <input
+                type="color"
+                value={buttonColor}
+                onChange={(e) => setButtonColor(e.target.value)}
+                className="h-10 w-20 p-1 rounded border border-gray-300 dark:border-gray-600 cursor-pointer"
+              />
+              <span className="text-sm text-gray-500 dark:text-gray-400 font-mono">{buttonColor}</span>
+            </div>
+          </div>
+
+        </div>
+      </div>
+
       {/* Embed Code Modal */}
-      {showEmbedModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">
-          <div className="bg-white dark:bg-gray-800 rounded-xl shadow-2xl p-6 w-full max-w-lg transform transition-all scale-100">
-            <div className="flex justify-between items-center mb-4">
-              <h2 className="text-xl font-bold text-gray-900 dark:text-white">Embed kód</h2>
-              <button onClick={() => setShowEmbedModal(false)} className="text-gray-400 hover:text-gray-500 cursor-pointer">
-                <XMarkIcon className="h-6 w-6" />
-              </button>
-            </div>
-
-            <p className="text-sm text-gray-600 dark:text-gray-400 mb-4">
-              Vložte tento kód do vašich stránek tam, kde chcete zobrazit produkty.
-            </p>
-
-            <div className="relative">
-              <pre className="bg-gray-100 dark:bg-gray-900 p-4 rounded-lg text-sm font-mono text-gray-800 dark:text-gray-200 overflow-x-auto whitespace-pre-wrap break-all">
-                {generateEmbedCode()}
-              </pre>
-              <button
-                onClick={copyEmbedCode}
-                className="absolute top-2 right-2 p-2 bg-white dark:bg-gray-800 rounded-md shadow-sm border border-gray-200 dark:border-gray-700 text-gray-500 hover:text-indigo-600 transition cursor-pointer"
-                title="Zkopírovat"
-              >
-                <ClipboardDocumentIcon className="h-5 w-5" />
-              </button>
-            </div>
-
-            <div className="mt-6 flex justify-end">
-              <button
-                onClick={() => setShowEmbedModal(false)}
-                className="px-4 py-2 rounded-lg bg-indigo-600 text-white hover:bg-indigo-700 transition cursor-pointer"
-              >
-                Zavřít
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* Settings Modal */}
-      {showSettingsModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">
-          <div className="bg-white dark:bg-gray-800 rounded-xl shadow-2xl p-6 w-full max-w-md transform transition-all scale-100">
-            <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-4">Nastavení zobrazení</h2>
-
-            <div className="space-y-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                  Typ zobrazení
-                </label>
-                <Select value={layout} onValueChange={setLayout}>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Vyberte zobrazení" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="carousel">Carousel (posuvník)</SelectItem>
-                    <SelectItem value="grid">Mřížka (Grid)</SelectItem>
-                    <SelectItem value="list">Seznam (List)</SelectItem>
-                  </SelectContent>
-                </Select>
+      {
+        showEmbedModal && (
+          <div
+            className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm"
+            onClick={() => setShowEmbedModal(false)}
+          >
+            <div
+              className="bg-white dark:bg-gray-800 rounded-xl shadow-2xl p-6 w-full max-w-lg transform transition-all scale-100"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <div className="flex justify-between items-center mb-4">
+                <h2 className="text-xl font-bold text-gray-900 dark:text-white">Embed kód</h2>
+                <button onClick={() => setShowEmbedModal(false)} className="text-gray-400 hover:text-gray-500 cursor-pointer">
+                  <XMarkIcon className="h-6 w-6" />
+                </button>
               </div>
 
-              {layout === 'grid' && (
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                      Sloupce (Desktop)
-                    </label>
-                    <input
-                      type="number"
-                      min="1"
-                      max="6"
-                      value={gridColumns}
-                      onChange={(e) => setGridColumns(e.target.value)}
-                      className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                      Sloupce (Mobil)
-                    </label>
-                    <input
-                      type="number"
-                      min="1"
-                      max="3"
-                      value={mobileGridColumns}
-                      onChange={(e) => setMobileGridColumns(e.target.value)}
-                      className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
-                    />
-                  </div>
-                </div>
-              )}
+              <p className="text-sm text-gray-600 dark:text-gray-400 mb-4">
+                Vložte tento kód do vašich stránek tam, kde chcete zobrazit produkty.
+              </p>
 
-              <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                  Barva tlačítka "Koupit"
-                </label>
-                <div className="flex items-center gap-3">
-                  <input
-                    type="color"
-                    value={buttonColor}
-                    onChange={(e) => setButtonColor(e.target.value)}
-                    className="h-10 w-20 p-1 rounded border border-gray-300 dark:border-gray-600 cursor-pointer"
-                  />
-                  <span className="text-sm text-gray-500 dark:text-gray-400 font-mono">{buttonColor}</span>
-                </div>
+              <div className="relative">
+                <pre className="bg-gray-100 dark:bg-gray-900 p-4 rounded-lg text-sm font-mono text-gray-800 dark:text-gray-200 overflow-x-auto whitespace-pre-wrap break-all">
+                  {generateEmbedCode()}
+                </pre>
+                <button
+                  onClick={copyEmbedCode}
+                  className="absolute top-2 right-2 p-2 bg-white dark:bg-gray-800 rounded-md shadow-sm border border-gray-200 dark:border-gray-700 text-gray-500 hover:text-indigo-600 transition cursor-pointer"
+                  title="Zkopírovat"
+                >
+                  <ClipboardDocumentIcon className="h-5 w-5" />
+                </button>
+              </div>
+
+              <div className="mt-6 flex justify-end">
+                <button
+                  onClick={() => setShowEmbedModal(false)}
+                  className="px-4 py-2 rounded-lg bg-indigo-600 text-white hover:bg-indigo-700 transition cursor-pointer"
+                >
+                  Zavřít
+                </button>
               </div>
             </div>
+          </div>
+        )
+      }
 
-            <div className="mt-6 flex justify-end gap-3">
-              <button
-                onClick={() => setShowSettingsModal(false)}
-                className="px-4 py-2 rounded-lg bg-gray-100 text-gray-700 hover:bg-gray-200 dark:bg-gray-700 dark:text-gray-300 dark:hover:bg-gray-600 transition cursor-pointer"
-              >
-                Zrušit
-              </button>
-              <button
-                onClick={handleSaveSettings}
-                disabled={savingSettings}
-                className="px-4 py-2 rounded-lg bg-indigo-600 text-white hover:bg-indigo-700 transition flex items-center gap-2 cursor-pointer"
-              >
-                {savingSettings ? 'Ukládám...' : 'Uložit nastavení'}
-              </button>
+
+
+      {/* Preview Modal */}
+      {
+        showPreviewModal && (
+          <div
+            className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm"
+            onClick={() => setShowPreviewModal(false)}
+          >
+            <div
+              className="bg-white dark:bg-gray-800 rounded-xl shadow-2xl p-6 w-full max-w-4xl h-[80vh] flex flex-col transform transition-all scale-100"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <div className="flex justify-between items-center mb-4">
+                <h2 className="text-xl font-bold text-gray-900 dark:text-white">Náhled widgetu</h2>
+                <button onClick={() => setShowPreviewModal(false)} className="text-gray-400 hover:text-gray-500 cursor-pointer">
+                  <XMarkIcon className="h-6 w-6" />
+                </button>
+              </div>
+
+              <div className="flex-1 bg-gray-100 dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-700 overflow-hidden relative">
+                <iframe
+                  srcDoc={`
+                    <!DOCTYPE html>
+                    <html>
+                      <head>
+                        <meta charset="utf-8">
+                        <meta name="viewport" content="width=device-width, initial-scale=1">
+                        <style>
+                          body { font-family: system-ui, -apple-system, sans-serif; padding: 20px; }
+                        </style>
+                      </head>
+                      <body>
+                        <div id="heureka-widget-preview"></div>
+                        <script src="${generatePreviewUrl()}"></script>
+                      </body>
+                    </html>
+                  `}
+                  className="w-full h-full border-0"
+                  title="Widget Preview"
+                />
+              </div>
+
+              <div className="mt-4 flex justify-end">
+                <button
+                  onClick={() => setShowPreviewModal(false)}
+                  className="px-4 py-2 rounded-lg bg-gray-100 text-gray-700 hover:bg-gray-200 dark:bg-gray-700 dark:text-gray-300 dark:hover:bg-gray-600 transition cursor-pointer"
+                >
+                  Zavřít
+                </button>
+              </div>
             </div>
           </div>
-        </div>
-      )}
+        )
+      }
 
       {/* Selected Products Section */}
-      {selectedProductDetails.length > 0 && (
-        <div className="mb-6 bg-blue-50 dark:bg-blue-900/20 rounded-lg border border-blue-100 dark:border-blue-800 overflow-hidden">
-          <button
-            onClick={() => setShowSelected(!showSelected)}
-            className="w-full flex justify-between items-center p-4 bg-blue-100 dark:bg-blue-900/40 hover:bg-blue-200 dark:hover:bg-blue-900/60 transition cursor-pointer"
-          >
-            <span className="font-semibold text-blue-900 dark:text-blue-100">
-              Vybrané produkty ({selectedProductDetails.length})
-            </span>
-            {showSelected ? (
-              <ChevronUpIcon className="h-5 w-5 text-blue-700 dark:text-blue-300" />
-            ) : (
-              <ChevronDownIcon className="h-5 w-5 text-blue-700 dark:text-blue-300" />
-            )}
-          </button>
+      {
+        selectedProductDetails.length > 0 && (
+          <div className="mb-6 bg-blue-50 dark:bg-blue-900/20 rounded-lg border border-blue-100 dark:border-blue-800 overflow-hidden">
+            <button
+              onClick={() => setShowSelected(!showSelected)}
+              className="w-full flex justify-between items-center p-4 bg-blue-100 dark:bg-blue-900/40 hover:bg-blue-200 dark:hover:bg-blue-900/60 transition cursor-pointer"
+            >
+              <span className="font-semibold text-blue-900 dark:text-blue-100">
+                Vybrané produkty ({selectedProductDetails.length})
+              </span>
+              {showSelected ? (
+                <ChevronUpIcon className="h-5 w-5 text-blue-700 dark:text-blue-300" />
+              ) : (
+                <ChevronDownIcon className="h-5 w-5 text-blue-700 dark:text-blue-300" />
+              )}
+            </button>
 
-          {showSelected && (
-            <div className="p-4">
-              <DndContext
-                sensors={sensors}
-                collisionDetection={closestCenter}
-                onDragEnd={handleDragEnd}
-              >
-                <SortableContext
-                  items={selectedProductDetails.map(p => p.id)}
-                  strategy={rectSortingStrategy}
+            {showSelected && (
+              <div className="p-4">
+                <DndContext
+                  sensors={sensors}
+                  collisionDetection={closestCenter}
+                  onDragEnd={handleDragEnd}
                 >
-                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 max-h-[500px] overflow-y-auto">
-                    {selectedProductDetails.map(product => (
-                      <SortableProductItem
-                        key={product.id}
-                        product={product}
-                        onRemove={toggleProductSelection}
-                      />
-                    ))}
-                  </div>
-                </SortableContext>
-              </DndContext>
-            </div>
-          )}
-        </div>
-      )}
+                  <SortableContext
+                    items={selectedProductDetails.map(p => p.id)}
+                    strategy={rectSortingStrategy}
+                  >
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 max-h-[500px] overflow-y-auto">
+                      {selectedProductDetails.map(product => (
+                        <SortableProductItem
+                          key={product.id}
+                          product={product}
+                          onRemove={toggleProductSelection}
+                        />
+                      ))}
+                    </div>
+                  </SortableContext>
+                </DndContext>
+              </div>
+            )}
+          </div>
+        )
+      }
 
       {/* Filtry */}
       <div className="mb-6 bg-white dark:bg-gray-900 p-4 rounded-lg shadow">
@@ -659,124 +697,126 @@ export default function HeurekaFeedDetailPage() {
       </div>
 
       {/* Seznam produktů */}
-      {loading ? (
-        <div className="text-center py-12">
-          <div className="inline-block h-8 w-8 animate-spin rounded-full border-4 border-solid border-current border-r-transparent align-[-0.125em] motion-reduce:animate-[spin_1.5s_linear_infinite]" role="status">
-            <span className="!absolute !-m-px !h-px !w-px !overflow-hidden !whitespace-nowrap !border-0 !p-0 ![clip:rect(0,0,0,0)]">Loading...</span>
+      {
+        loading ? (
+          <div className="text-center py-12">
+            <div className="inline-block h-8 w-8 animate-spin rounded-full border-4 border-solid border-current border-r-transparent align-[-0.125em] motion-reduce:animate-[spin_1.5s_linear_infinite]" role="status">
+              <span className="!absolute !-m-px !h-px !w-px !overflow-hidden !whitespace-nowrap !border-0 !p-0 ![clip:rect(0,0,0,0)]">Loading...</span>
+            </div>
           </div>
-        </div>
-      ) : products.length === 0 ? (
-        <div className="bg-white dark:bg-gray-900 rounded-lg shadow p-12 text-center">
-          <svg className="mx-auto h-12 w-12 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4" />
-          </svg>
-          <h3 className="mt-2 text-sm font-semibold text-gray-900 dark:text-white">Žádné produkty</h3>
-          <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
-            Tento feed zatím neobsahuje žádné produkty. Synchronizujte feed pro načtení produktů z XML.
-          </p>
-          <div className="mt-6">
-            <button
-              onClick={async () => {
-                showNotification('Synchronizace probíhá...', 'info');
-                const res = await authorizedFetch(`/heureka/feeds/${feedId}/sync`, { method: 'POST' });
-                if (res?.ok) {
-                  const data = await res.json();
-                  showNotification(`Synchronizováno: ${data.stats.created} nových, ${data.stats.updated} aktualizovaných`, 'success');
-                  fetchFeedDetails();
-                  fetchProducts();
-                  fetchCategories();
-                } else {
-                  showNotification('Synchronizace selhala', 'error');
-                }
-              }}
-              className="inline-flex items-center gap-2 px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition cursor-pointer"
-            >
-              <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
-                <path fillRule="evenodd" d="M4 2a1 1 0 011 1v2.101a7.002 7.002 0 0111.601 2.566 1 1 0 11-1.885.666A5.002 5.002 0 005.999 7H9a1 1 0 010 2H4a1 1 0 01-1-1V3a1 1 0 011-1zm.008 9.057a1 1 0 011.276.61A5.002 5.002 0 0014.001 13H11a1 1 0 110-2h5a1 1 0 011 1v5a1 1 0 11-2 0v-2.101a7.002 7.002 0 01-11.601-2.566 1 1 0 01.61-1.276z" clipRule="evenodd" />
-              </svg>
-              Synchronizovat produkty
-            </button>
+        ) : products.length === 0 ? (
+          <div className="bg-white dark:bg-gray-900 rounded-lg shadow p-12 text-center">
+            <svg className="mx-auto h-12 w-12 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4" />
+            </svg>
+            <h3 className="mt-2 text-sm font-semibold text-gray-900 dark:text-white">Žádné produkty</h3>
+            <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
+              Tento feed zatím neobsahuje žádné produkty. Synchronizujte feed pro načtení produktů z XML.
+            </p>
+            <div className="mt-6">
+              <button
+                onClick={async () => {
+                  showNotification('Synchronizace probíhá...', 'info');
+                  const res = await authorizedFetch(`/heureka/feeds/${feedId}/sync`, { method: 'POST' });
+                  if (res?.ok) {
+                    const data = await res.json();
+                    showNotification(`Synchronizováno: ${data.stats.created} nových, ${data.stats.updated} aktualizovaných`, 'success');
+                    fetchFeedDetails();
+                    fetchProducts();
+                    fetchCategories();
+                  } else {
+                    showNotification('Synchronizace selhala', 'error');
+                  }
+                }}
+                className="inline-flex items-center gap-2 px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition cursor-pointer"
+              >
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                  <path fillRule="evenodd" d="M4 2a1 1 0 011 1v2.101a7.002 7.002 0 0111.601 2.566 1 1 0 11-1.885.666A5.002 5.002 0 005.999 7H9a1 1 0 010 2H4a1 1 0 01-1-1V3a1 1 0 011-1zm.008 9.057a1 1 0 011.276.61A5.002 5.002 0 0014.001 13H11a1 1 0 110-2h5a1 1 0 011 1v5a1 1 0 11-2 0v-2.101a7.002 7.002 0 01-11.601-2.566 1 1 0 01.61-1.276z" clipRule="evenodd" />
+                </svg>
+                Synchronizovat produkty
+              </button>
+            </div>
           </div>
-        </div>
-      ) : (
-        <>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {products.map(product => {
-              const isSelected = selectedProducts.has(product.id);
-              return (
-                <div
-                  key={product.id}
-                  onClick={() => toggleProductSelection(product)}
-                  className={`
+        ) : (
+          <>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              {products.map(product => {
+                const isSelected = selectedProducts.has(product.id);
+                return (
+                  <div
+                    key={product.id}
+                    onClick={() => toggleProductSelection(product)}
+                    className={`
                       relative group p-4 rounded-xl border-2 cursor-pointer transition-all duration-200
                       hover:shadow-lg hover:-translate-y-1
                       ${isSelected
-                      ? 'border-blue-500 bg-blue-50 dark:bg-blue-900/20'
-                      : 'border-gray-200 dark:border-gray-700 hover:border-blue-300 dark:hover:border-blue-700 bg-white dark:bg-gray-800'
-                    }
+                        ? 'border-blue-500 bg-blue-50 dark:bg-blue-900/20'
+                        : 'border-gray-200 dark:border-gray-700 hover:border-blue-300 dark:hover:border-blue-700 bg-white dark:bg-gray-800'
+                      }
                   `}
-                >
-                  {/* Selection Badge */}
-                  <div className={`absolute top-3 right-3 transition-transform duration-200 ${isSelected ? 'scale-100' : 'scale-0'}`}>
-                    <CheckCircleIcon className="h-6 w-6 text-blue-600 dark:text-blue-400" />
-                  </div>
+                  >
+                    {/* Selection Badge */}
+                    <div className={`absolute top-3 right-3 transition-transform duration-200 ${isSelected ? 'scale-100' : 'scale-0'}`}>
+                      <CheckCircleIcon className="h-6 w-6 text-blue-600 dark:text-blue-400" />
+                    </div>
 
-                  <div className="flex items-start gap-4">
-                    {product.imgUrl ? (
-                      <img
-                        src={product.imgUrl}
-                        alt={product.productName}
-                        className="w-20 h-20 object-contain rounded-lg bg-white p-1"
-                      />
-                    ) : (
-                      <div className="w-20 h-20 bg-gray-100 dark:bg-gray-700 rounded-lg flex items-center justify-center text-gray-400">
-                        <span className="text-xs">Bez foto</span>
-                      </div>
-                    )}
-
-                    <div className="flex-1 min-w-0">
-                      <h3 className="font-semibold text-sm text-gray-900 dark:text-white line-clamp-2 mb-1 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">
-                        {product.productName}
-                      </h3>
-                      <p className="text-lg font-bold text-green-600">
-                        {product.priceVat} Kč
-                      </p>
-                      {product.category && (
-                        <p className="text-xs text-gray-500 mt-1 line-clamp-1">{product.category.name}</p>
+                    <div className="flex items-start gap-4">
+                      {product.imgUrl ? (
+                        <img
+                          src={product.imgUrl}
+                          alt={product.productName}
+                          className="w-20 h-20 object-contain rounded-lg bg-white p-1"
+                        />
+                      ) : (
+                        <div className="w-20 h-20 bg-gray-100 dark:bg-gray-700 rounded-lg flex items-center justify-center text-gray-400">
+                          <span className="text-xs">Bez foto</span>
+                        </div>
                       )}
+
+                      <div className="flex-1 min-w-0">
+                        <h3 className="font-semibold text-sm text-gray-900 dark:text-white line-clamp-2 mb-1 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">
+                          {product.productName}
+                        </h3>
+                        <p className="text-lg font-bold text-green-600">
+                          {product.priceVat} Kč
+                        </p>
+                        {product.category && (
+                          <p className="text-xs text-gray-500 mt-1 line-clamp-1">{product.category.name}</p>
+                        )}
+                      </div>
                     </div>
                   </div>
-                </div>
-              );
-            })}
-          </div>
-
-          {/* Pagination Controls */}
-          {totalPages > 1 && (
-            <div className="flex justify-center items-center gap-4 mt-8">
-              <button
-                onClick={() => setPage(p => Math.max(1, p - 1))}
-                disabled={page === 1}
-                className="p-2 rounded-lg border border-gray-300 dark:border-gray-600 disabled:opacity-50 hover:bg-gray-100 dark:hover:bg-gray-800 transition cursor-pointer"
-              >
-                <ChevronLeftIcon className="h-5 w-5" />
-              </button>
-              <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
-                Strana {page} z {totalPages}
-              </span>
-              <button
-                onClick={() => setPage(p => Math.min(totalPages, p + 1))}
-                disabled={page === totalPages}
-                className="p-2 rounded-lg border border-gray-300 dark:border-gray-600 disabled:opacity-50 hover:bg-gray-100 dark:hover:bg-gray-800 transition cursor-pointer"
-              >
-                <ChevronRightIcon className="h-5 w-5" />
-              </button>
+                );
+              })}
             </div>
-          )}
-        </>
-      )}
+
+            {/* Pagination Controls */}
+            {totalPages > 1 && (
+              <div className="flex justify-center items-center gap-4 mt-8">
+                <button
+                  onClick={() => setPage(p => Math.max(1, p - 1))}
+                  disabled={page === 1}
+                  className="p-2 rounded-lg border border-gray-300 dark:border-gray-600 disabled:opacity-50 hover:bg-gray-100 dark:hover:bg-gray-800 transition cursor-pointer"
+                >
+                  <ChevronLeftIcon className="h-5 w-5" />
+                </button>
+                <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                  Strana {page} z {totalPages}
+                </span>
+                <button
+                  onClick={() => setPage(p => Math.min(totalPages, p + 1))}
+                  disabled={page === totalPages}
+                  className="p-2 rounded-lg border border-gray-300 dark:border-gray-600 disabled:opacity-50 hover:bg-gray-100 dark:hover:bg-gray-800 transition cursor-pointer"
+                >
+                  <ChevronRightIcon className="h-5 w-5" />
+                </button>
+              </div>
+            )}
+          </>
+        )
+      }
 
 
-    </div>
+    </div >
   );
 }
