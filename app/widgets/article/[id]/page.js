@@ -1,7 +1,7 @@
 'use strict';
 'use client';
 
-import { useState, useEffect, use } from 'react';
+import { useState, useEffect, use, useRef, useCallback } from 'react';
 import { authorizedFetch, authorizedUpload } from '../../../../lib/api';
 import { useToast } from '../../../components/ToastProvider';
 import {
@@ -182,70 +182,221 @@ function ImageUpload({ url, onChange, widgetId, label = "Obrázek" }) {
 
 // --- Properties Panel Components ---
 
-function TextProperties({ block, onChange }) {
+function RichTextToolbar({ activeFormats = {} }) {
+    const applyFontSize = (size) => {
+        const selection = window.getSelection();
+        if (!selection || selection.rangeCount === 0) return;
+
+        const range = selection.getRangeAt(0);
+        const editor = range.commonAncestorContainer.nodeType === 3
+            ? range.commonAncestorContainer.parentNode.closest('[contenteditable]')
+            : range.commonAncestorContainer.closest('[contenteditable]');
+
+        if (!editor) return;
+
+        // Create the new span
+        const span = document.createElement('span');
+        span.style.fontSize = size;
+        span.style.fontFamily = 'inherit';
+
+        // Extract contents
+        const contents = range.extractContents();
+
+        // Clean up nested font sizes in the extracted content to avoid compounding/nesting
+        const spans = contents.querySelectorAll('span');
+        spans.forEach(s => {
+            if (s.style.fontSize) {
+                s.style.fontSize = '';
+                if (!s.getAttribute('style')) {
+                    // Unwrap if no other styles
+                    const parent = s.parentNode;
+                    while (s.firstChild) parent.insertBefore(s.firstChild, s);
+                    parent.removeChild(s);
+                }
+            }
+        });
+
+        // Also remove any <font> tags that might have been left over from previous attempts
+        const fonts = contents.querySelectorAll('font');
+        fonts.forEach(f => {
+            const parent = f.parentNode;
+            while (f.firstChild) parent.insertBefore(f.firstChild, f);
+            parent.removeChild(f);
+        });
+
+        span.appendChild(contents);
+        range.insertNode(span);
+
+        // Restore selection to the new span
+        selection.removeAllRanges();
+        const newRange = document.createRange();
+        newRange.selectNodeContents(span);
+        selection.addRange(newRange);
+
+        // Ensure focus
+        editor.focus();
+
+        // Trigger input event to save changes (React needs this)
+        const event = new Event('input', { bubbles: true });
+        editor.dispatchEvent(event);
+    };
+
+    const applyFontFamily = (font) => {
+        const selection = window.getSelection();
+        if (!selection || selection.rangeCount === 0) return;
+
+        const range = selection.getRangeAt(0);
+        const editor = range.commonAncestorContainer.nodeType === 3
+            ? range.commonAncestorContainer.parentNode.closest('[contenteditable]')
+            : range.commonAncestorContainer.closest('[contenteditable]');
+
+        if (!editor) return;
+
+        // Create the new span
+        const span = document.createElement('span');
+        span.style.fontFamily = font;
+
+        // Extract contents
+        const contents = range.extractContents();
+
+        // Clean up nested font families
+        const spans = contents.querySelectorAll('span');
+        spans.forEach(s => {
+            if (s.style.fontFamily) {
+                s.style.fontFamily = '';
+                if (!s.getAttribute('style')) {
+                    const parent = s.parentNode;
+                    while (s.firstChild) parent.insertBefore(s.firstChild, s);
+                    parent.removeChild(s);
+                }
+            }
+        });
+
+        // Remove font tags
+        const fonts = contents.querySelectorAll('font');
+        fonts.forEach(f => {
+            const parent = f.parentNode;
+            while (f.firstChild) parent.insertBefore(f.firstChild, f);
+            parent.removeChild(f);
+        });
+
+        span.appendChild(contents);
+        range.insertNode(span);
+
+        // Restore selection
+        selection.removeAllRanges();
+        const newRange = document.createRange();
+        newRange.selectNodeContents(span);
+        selection.addRange(newRange);
+
+        editor.focus();
+
+        const event = new Event('input', { bubbles: true });
+        editor.dispatchEvent(event);
+    };
+
     return (
-        <>
-            <div className="mb-4">
+        <div className="mb-4 space-y-3">
+            <div>
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Styl textu</label>
-                <div className="flex gap-2 mb-2">
+                <div className="flex flex-wrap gap-2">
                     <button
-                        onClick={() => onChange({ ...block, tag: 'p' })}
-                        className={`p-2 rounded border ${block.tag === 'p' || !block.tag ? 'bg-indigo-100 border-indigo-500 text-indigo-700' : 'bg-white border-gray-300 text-gray-700'}`}
+                        onMouseDown={(e) => e.preventDefault()}
+                        onClick={() => document.execCommand('formatBlock', false, 'p')}
+                        className={`p-2 rounded border ${activeFormats.tag === 'p' || !activeFormats.tag ? 'bg-indigo-100 border-indigo-500 text-indigo-700' : 'bg-white border-gray-300 text-gray-700 hover:bg-gray-50'}`}
                         title="Normal Text"
                     >
                         <span className="text-sm font-bold">T</span>
                     </button>
                     <button
-                        onClick={() => onChange({ ...block, tag: 'h1' })}
-                        className={`p-2 rounded border ${block.tag === 'h1' ? 'bg-indigo-100 border-indigo-500 text-indigo-700' : 'bg-white border-gray-300 text-gray-700'}`}
+                        onMouseDown={(e) => e.preventDefault()}
+                        onClick={() => document.execCommand('formatBlock', false, 'h1')}
+                        className={`p-2 rounded border ${activeFormats.tag === 'h1' ? 'bg-indigo-100 border-indigo-500 text-indigo-700' : 'bg-white border-gray-300 text-gray-700 hover:bg-gray-50'}`}
                         title="Heading 1"
                     >
                         <span className="text-sm font-bold">H1</span>
                     </button>
                     <button
-                        onClick={() => onChange({ ...block, tag: 'h2' })}
-                        className={`p-2 rounded border ${block.tag === 'h2' ? 'bg-indigo-100 border-indigo-500 text-indigo-700' : 'bg-white border-gray-300 text-gray-700'}`}
+                        onMouseDown={(e) => e.preventDefault()}
+                        onClick={() => document.execCommand('formatBlock', false, 'h2')}
+                        className={`p-2 rounded border ${activeFormats.tag === 'h2' ? 'bg-indigo-100 border-indigo-500 text-indigo-700' : 'bg-white border-gray-300 text-gray-700 hover:bg-gray-50'}`}
                         title="Heading 2"
                     >
                         <span className="text-sm font-bold">H2</span>
                     </button>
                     <button
-                        onClick={() => onChange({ ...block, tag: 'h3' })}
-                        className={`p-2 rounded border ${block.tag === 'h3' ? 'bg-indigo-100 border-indigo-500 text-indigo-700' : 'bg-white border-gray-300 text-gray-700'}`}
+                        onMouseDown={(e) => e.preventDefault()}
+                        onClick={() => document.execCommand('formatBlock', false, 'h3')}
+                        className={`p-2 rounded border ${activeFormats.tag === 'h3' ? 'bg-indigo-100 border-indigo-500 text-indigo-700' : 'bg-white border-gray-300 text-gray-700 hover:bg-gray-50'}`}
                         title="Heading 3"
                     >
                         <span className="text-sm font-bold">H3</span>
                     </button>
                 </div>
+            </div>
+
+            <div className="flex flex-wrap gap-4">
                 <div className="flex gap-2">
                     <button
-                        onClick={() => onChange({ ...block, bold: !block.bold })}
-                        className={`p-2 rounded border ${block.bold ? 'bg-indigo-100 border-indigo-500 text-indigo-700' : 'bg-white border-gray-300 text-gray-700'}`}
+                        onMouseDown={(e) => e.preventDefault()}
+                        onClick={() => document.execCommand('bold')}
+                        className={`p-2 rounded border ${activeFormats.bold ? 'bg-indigo-100 border-indigo-500 text-indigo-700' : 'bg-white border-gray-300 text-gray-700 hover:bg-gray-50'}`}
                         title="Bold"
                     >
                         <BoldIcon className="h-4 w-4" />
                     </button>
                     <button
-                        onClick={() => onChange({ ...block, italic: !block.italic })}
-                        className={`p-2 rounded border ${block.italic ? 'bg-indigo-100 border-indigo-500 text-indigo-700' : 'bg-white border-gray-300 text-gray-700'}`}
+                        onMouseDown={(e) => e.preventDefault()}
+                        onClick={() => document.execCommand('italic')}
+                        className={`p-2 rounded border ${activeFormats.italic ? 'bg-indigo-100 border-indigo-500 text-indigo-700' : 'bg-white border-gray-300 text-gray-700 hover:bg-gray-50'}`}
                         title="Italic"
                     >
                         <ItalicIcon className="h-4 w-4" />
                     </button>
                 </div>
+                <div className="flex flex-col gap-2">
+                    <div className="flex items-center gap-2">
+                        <input
+                            type="color"
+                            className="h-9 w-9 p-1 rounded border border-gray-300 cursor-pointer"
+                            onChange={(e) => document.execCommand('foreColor', false, e.target.value)}
+                            value={activeFormats.color || '#000000'}
+                            title="Barva textu"
+                        />
+                        <select
+                            className="p-2 rounded border border-gray-300 text-sm"
+                            onChange={(e) => applyFontSize(e.target.value)}
+                            value={activeFormats.fontSize || ''}
+                        >
+                            <option value="" disabled>Velikost</option>
+                            <option value="14px">Malé (14px)</option>
+                            <option value="16px">Normální (16px)</option>
+                            <option value="18px">Střední (18px)</option>
+                            <option value="20px">Velké (20px)</option>
+                            <option value="24px">Extra velké (24px)</option>
+                        </select>
+                    </div>
+                    <select
+                        className="p-2 rounded border border-gray-300 text-sm w-full"
+                        onChange={(e) => applyFontFamily(e.target.value)}
+                        value={activeFormats.fontFamily || ''}
+                    >
+                        <option value="" disabled>Font</option>
+                        <option value="system-ui">System UI</option>
+                        <option value="Arial, sans-serif">Arial</option>
+                        <option value="Georgia, serif">Georgia</option>
+                        <option value="Courier New, monospace">Courier</option>
+                    </select>
+                </div>
             </div>
+        </div>
+    );
+}
 
-            <Select
-                label="Font"
-                value={block.font || 'system-ui'}
-                onChange={(val) => onChange({ ...block, font: val })}
-                options={[
-                    { value: 'system-ui', label: 'System UI (Default)' },
-                    { value: 'Arial, sans-serif', label: 'Arial' },
-                    { value: 'Georgia, serif', label: 'Georgia' },
-                    { value: 'Courier New, monospace', label: 'Courier New' },
-                ]}
-            />
+function TextProperties({ block, onChange, activeFormats = {} }) {
+    return (
+        <>
+            <RichTextToolbar activeFormats={activeFormats} />
 
             <Select
                 label="Zarovnání"
@@ -287,9 +438,10 @@ function ImageProperties({ block, onChange, widgetId }) {
     );
 }
 
-function WrapProperties({ block, onChange, widgetId }) {
+function WrapProperties({ block, onChange, widgetId, activeFormats = {} }) {
     return (
         <>
+            <RichTextToolbar activeFormats={activeFormats} />
             <Select
                 label="Pozice obrázku"
                 value={block.imgPos || 'right'}
@@ -306,13 +458,6 @@ function WrapProperties({ block, onChange, widgetId }) {
                 onChange={(val) => onChange({ ...block, imgWidth: val })}
                 min={20}
                 max={60}
-            />
-            <TextArea
-                label="Text"
-                value={block.text}
-                onChange={(val) => onChange({ ...block, text: val })}
-                placeholder="Text obtékající obrázek..."
-                rows={6}
             />
         </>
     );
@@ -617,9 +762,108 @@ function DraggablePaletteItem({ type, icon: Icon, label, onClick }) {
     );
 }
 
+// --- Helper Components ---
+
+function ContentEditable({ tagName, html, onChange, onFormatChange, ...props }) {
+    const contentEditableRef = useRef(null);
+
+    const setRef = useCallback((node) => {
+        if (node) {
+            contentEditableRef.current = node;
+            // Set initial content
+            if (node.innerHTML !== html) {
+                node.innerHTML = html;
+            }
+        }
+    }, []); // Run once on mount
+
+    useEffect(() => {
+        // Update content if it changes externally
+        if (contentEditableRef.current && html !== contentEditableRef.current.innerHTML) {
+            contentEditableRef.current.innerHTML = html;
+        }
+    }, [html]);
+
+    const checkFormats = () => {
+        if (!onFormatChange) return;
+
+        let fontSize = '';
+        let color = '#000000';
+        let fontFamily = '';
+
+        const selection = window.getSelection();
+        if (selection && selection.rangeCount > 0) {
+            const anchor = selection.anchorNode;
+            if (anchor) {
+                const element = anchor.nodeType === 3 ? anchor.parentNode : anchor;
+                // Ensure we are inside the editor
+                if (contentEditableRef.current && contentEditableRef.current.contains(element)) {
+                    const computed = window.getComputedStyle(element);
+                    fontSize = computed.fontSize;
+                    color = computed.color;
+                    fontFamily = computed.fontFamily.replace(/['"]/g, ''); // Remove quotes
+                }
+            }
+        }
+
+        // Helper to convert RGB to Hex
+        const rgbToHex = (rgb) => {
+            if (!rgb) return '#000000';
+            if (rgb.startsWith('#')) return rgb;
+            if (!rgb.startsWith('rgb')) return '#000000';
+
+            try {
+                const sep = rgb.indexOf(",") > -1 ? "," : " ";
+                const rgbArr = rgb.substr(4).split(")")[0].split(sep);
+
+                let r = (+rgbArr[0]).toString(16);
+                let g = (+rgbArr[1]).toString(16);
+                let b = (+rgbArr[2]).toString(16);
+
+                if (r.length === 1) r = "0" + r;
+                if (g.length === 1) g = "0" + g;
+                if (b.length === 1) b = "0" + b;
+
+                return "#" + r + g + b;
+            } catch (e) {
+                return '#000000';
+            }
+        };
+
+        const formats = {
+            bold: document.queryCommandState('bold'),
+            italic: document.queryCommandState('italic'),
+            tag: document.queryCommandValue('formatBlock').toLowerCase() || 'p',
+            fontSize: fontSize,
+            color: rgbToHex(color),
+            fontFamily: fontFamily
+        };
+        onFormatChange(formats);
+    };
+
+    const Tag = tagName || 'div';
+
+    return (
+        <Tag
+            ref={setRef}
+            contentEditable
+            suppressContentEditableWarning
+            onInput={(e) => {
+                onChange(e.currentTarget.innerHTML);
+                checkFormats();
+            }}
+            onMouseUp={checkFormats}
+            onKeyUp={checkFormats}
+            onFocus={checkFormats}
+            onClick={checkFormats}
+            {...props}
+        />
+    );
+}
+
 // --- Canvas Components ---
 
-function CanvasBlock({ id, block, isSelected, onClick, onDelete, onChange, activeDragItem }) {
+function CanvasBlock({ id, block, isSelected, onClick, onDelete, onChange, activeDragItem, onFormatChange }) {
     const {
         attributes,
         listeners,
@@ -649,21 +893,12 @@ function CanvasBlock({ id, block, isSelected, onClick, onDelete, onChange, activ
 
     // Render content based on block type
     const renderContent = () => {
-        const margin = { marginBottom: `${block.margin || 24}px` };
+        const margin = { marginBottom: `${block.margin !== undefined ? block.margin : 24}px` };
 
         if (block.type === 'text') {
-            const Tag = block.tag || 'p';
-            const baseFontSize = Tag === 'h1' ? '2em' : Tag === 'h2' ? '1.5em' : Tag === 'h3' ? '1.17em' : '1em';
-            const fontWeight = Tag.startsWith('h') ? 'bold' : (block.bold ? 'bold' : 'normal');
-
             const styles = {
-                fontWeight: fontWeight,
-                fontStyle: block.italic ? 'italic' : 'normal',
-                fontFamily: block.font || 'inherit',
                 textAlign: block.align || 'left',
-                fontSize: baseFontSize,
-                margin: 0,
-                color: '#374151',
+                ...margin,
                 width: '100%',
                 background: 'transparent',
                 border: 'none',
@@ -671,27 +906,31 @@ function CanvasBlock({ id, block, isSelected, onClick, onDelete, onChange, activ
                 resize: 'none',
                 overflow: 'hidden',
                 lineHeight: 1.5,
-                minHeight: '1.5em'
+                minHeight: '1.5em',
+                fontSize: '16px'
             };
 
             return (
-                <textarea
-                    value={block.content || ''}
-                    onChange={(e) => {
-                        onChange({ ...block, content: e.target.value });
-                        adjustHeight(e.target);
-                    }}
-                    onFocus={(e) => adjustHeight(e.target)}
+                <ContentEditable
+                    tagName="div"
+                    html={block.content || ''}
+                    onChange={(html) => onChange({ ...block, content: html })}
+                    onFormatChange={onFormatChange}
                     style={styles}
+                    className="focus:outline-none empty:before:content-[attr(placeholder)] empty:before:text-gray-400 [&>h1]:text-2xl [&>h1]:font-bold [&>h2]:text-xl [&>h2]:font-bold [&>h3]:text-lg [&>h3]:font-bold [&>p]:mb-2"
                     placeholder="Klikněte a pište..."
-                    ref={(el) => { if (el) adjustHeight(el); }}
-
+                    onClick={(e) => {
+                        // Ensure focus when clicking
+                        if (document.activeElement !== e.currentTarget) {
+                            e.currentTarget.focus();
+                        }
+                    }}
                 />
             );
         }
         if (block.type === 'image') {
             return (
-                <div style={{ textAlign: block.align || 'center' }}>
+                <div style={{ textAlign: block.align || 'center', ...margin }}>
                     {block.url ? (
                         <img src={resolveImageUrl(block.url)} style={{ width: `${block.width}%`, maxWidth: '100%', borderRadius: '8px', display: 'inline-block' }} alt="" />
                     ) : (
@@ -702,7 +941,7 @@ function CanvasBlock({ id, block, isSelected, onClick, onDelete, onChange, activ
         }
         if (block.type === 'wrap') {
             return (
-                <div className="clearfix">
+                <div className="clearfix" style={margin}>
                     {block.imgUrl && (
                         <img
                             src={resolveImageUrl(block.imgUrl)}
@@ -715,26 +954,30 @@ function CanvasBlock({ id, block, isSelected, onClick, onDelete, onChange, activ
                             alt=""
                         />
                     )}
-                    <textarea
-                        value={block.text || ''}
-                        onChange={(e) => {
-                            onChange({ ...block, text: e.target.value });
-                            adjustHeight(e.target);
-                        }}
+                    <ContentEditable
+                        tagName="div"
+                        html={block.content || block.text || ''}
+                        onChange={(html) => onChange({ ...block, content: html })}
+                        onFormatChange={onFormatChange}
                         style={{
-                            width: '100%',
                             background: 'transparent',
                             border: 'none',
                             outline: 'none',
                             resize: 'none',
-                            overflow: 'hidden',
-                            fontFamily: 'inherit',
-                            fontSize: '1em',
-                            color: '#374151',
-                            lineHeight: 1.6
+                            lineHeight: 1.6,
+                            minHeight: '1.5em',
+                            display: 'block',
+                            width: 'auto',
+                            overflow: 'visible',
+                            fontSize: '16px'
                         }}
-                        ref={(el) => { if (el) adjustHeight(el); }}
+                        className="focus:outline-none empty:before:content-[attr(placeholder)] empty:before:text-gray-400 [&>h1]:text-2xl [&>h1]:font-bold [&>h2]:text-xl [&>h2]:font-bold [&>h3]:text-lg [&>h3]:font-bold [&>p]:mb-2"
                         placeholder="Klikněte a pište..."
+                        onClick={(e) => {
+                            if (document.activeElement !== e.currentTarget) {
+                                e.currentTarget.focus();
+                            }
+                        }}
                     />
                     <div style={{ clear: 'both' }}></div>
                 </div>
@@ -747,7 +990,8 @@ function CanvasBlock({ id, block, isSelected, onClick, onDelete, onChange, activ
                     padding: '24px',
                     borderRadius: '12px',
                     textAlign: 'center',
-                    borderLeft: '4px solid #4f46e5'
+                    borderLeft: '4px solid #4f46e5',
+                    ...margin
                 }}>
                     <input
                         value={block.content || ''}
@@ -779,7 +1023,7 @@ function CanvasBlock({ id, block, isSelected, onClick, onDelete, onChange, activ
                     textAlign: 'center',
                     boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)',
                     maxWidth: '400px',
-                    margin: '0 auto'
+                    margin: `0 auto ${block.margin !== undefined ? block.margin : 24}px`
                 }}>
                     {block.imgUrl && <img src={resolveImageUrl(block.imgUrl)} style={{ width: '120px', height: '120px', objectFit: 'cover', borderRadius: '8px', marginBottom: '16px', display: 'block', margin: '0 auto 16px auto' }} alt="" />}
                     <input
@@ -807,7 +1051,7 @@ function CanvasBlock({ id, block, isSelected, onClick, onDelete, onChange, activ
         }
         if (block.type === 'author') {
             return (
-                <div className="flex items-center gap-4 p-6 bg-gray-50 rounded-xl border border-gray-100">
+                <div className="flex items-center gap-4 p-6 bg-gray-50 rounded-xl border border-gray-100" style={margin}>
                     {block.authorPhotoUrl ? (
                         <img
                             src={resolveImageUrl(block.authorPhotoUrl)}
@@ -841,7 +1085,7 @@ function CanvasBlock({ id, block, isSelected, onClick, onDelete, onChange, activ
                 onClick();
             }}
             className={`
-                relative group mb-6 p-4 pl-10 rounded-xl transition-all duration-200
+                relative group mb-2 p-2 pl-10 rounded-xl transition-all duration-200
                 ${isSelected
                     ? 'ring-2 ring-indigo-500 bg-white shadow-md z-10'
                     : 'hover:bg-gray-50 border border-transparent hover:border-gray-200'
@@ -916,6 +1160,7 @@ export default function ArticleEditorPage({ params }) {
     const showNotification = useToast();
 
     const [activeDragItem, setActiveDragItem] = useState(null); // Track active drag item for Overlay
+    const [activeFormats, setActiveFormats] = useState({}); // Track active text formats
 
     const sensors = useSensors(
         useSensor(PointerSensor),
@@ -1000,7 +1245,7 @@ export default function ArticleEditorPage({ params }) {
 
         if (type === 'text') { newBlock.content = 'Nový textový blok'; newBlock.tag = 'p'; }
         if (type === 'image') { newBlock.url = ''; newBlock.width = 100; newBlock.align = 'center'; }
-        if (type === 'wrap') { newBlock.text = 'Text s obtékáním'; newBlock.imgUrl = ''; newBlock.imgWidth = 40; newBlock.imgPos = 'right'; }
+        if (type === 'wrap') { newBlock.content = 'Text s obtékáním'; newBlock.imgUrl = ''; newBlock.imgWidth = 40; newBlock.imgPos = 'right'; }
         if (type === 'banner') { newBlock.content = 'NADPIS SEKCE'; newBlock.bgColor = '#f3f4f6'; newBlock.textColor = '#111827'; }
         if (type === 'product') { newBlock.name = 'Nový produkt'; newBlock.link = ''; newBlock.imgUrl = ''; newBlock.price = ''; newBlock.btnText = 'Koupit'; }
 
@@ -1183,6 +1428,7 @@ export default function ArticleEditorPage({ params }) {
                                             onDelete={() => deleteBlock(block.id)}
                                             onChange={updateBlock}
                                             activeDragItem={activeDragItem}
+                                            onFormatChange={setActiveFormats}
                                         />
                                     ))
                                 )}
@@ -1201,9 +1447,9 @@ export default function ArticleEditorPage({ params }) {
                         <div className="p-4">
                             {selectedBlock ? (
                                 <>
-                                    {selectedBlock.type === 'text' && <TextProperties block={selectedBlock} onChange={updateBlock} />}
+                                    {selectedBlock.type === 'text' && <TextProperties block={selectedBlock} onChange={updateBlock} activeFormats={activeFormats} />}
                                     {selectedBlock.type === 'image' && <ImageProperties block={selectedBlock} onChange={updateBlock} widgetId={id} />}
-                                    {selectedBlock.type === 'wrap' && <WrapProperties block={selectedBlock} onChange={updateBlock} widgetId={id} />}
+                                    {selectedBlock.type === 'wrap' && <WrapProperties block={selectedBlock} onChange={updateBlock} widgetId={id} activeFormats={activeFormats} />}
                                     {selectedBlock.type === 'banner' && <BannerProperties block={selectedBlock} onChange={updateBlock} />}
                                     {selectedBlock.type === 'product' && <ProductProperties block={selectedBlock} onChange={updateBlock} widgetId={id} />}
                                     {selectedBlock.type === 'author' && (
@@ -1217,7 +1463,7 @@ export default function ArticleEditorPage({ params }) {
                                         <input
                                             type="range"
                                             className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer"
-                                            value={selectedBlock.margin || 24}
+                                            value={selectedBlock.margin !== undefined ? selectedBlock.margin : 24}
                                             onChange={(e) => updateBlock({ ...selectedBlock, margin: parseInt(e.target.value) })}
                                             min={0}
                                             max={100}
