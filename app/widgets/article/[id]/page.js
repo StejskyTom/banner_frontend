@@ -49,18 +49,19 @@ import {
     H1Icon,
     H2Icon,
     H3Icon,
-    UserCircleIcon
+    UserCircleIcon,
+    TableCellsIcon
 } from '@heroicons/react/24/solid';
 import Link from 'next/link';
 
 // --- Helper Components ---
 
-function RangeControl({ label, value, onChange, min = 0, max = 100, step = 1 }) {
+function RangeControl({ label, value, onChange, min = 0, max = 100, step = 1, unit = '%' }) {
     return (
         <div className="mb-4">
             <div className="flex justify-between mb-1">
                 <label className="text-sm font-medium text-gray-700 dark:text-gray-300">{label}</label>
-                <span className="text-sm text-gray-500">{value}%</span>
+                <span className="text-sm text-gray-500">{value}{unit}</span>
             </div>
             <input
                 type="range"
@@ -463,6 +464,138 @@ function WrapProperties({ block, onChange, widgetId, activeFormats = {} }) {
     );
 }
 
+function TableProperties({ block, onChange }) {
+    const updateDimensions = (rows, cols) => {
+        const newHeader = [...(block.header || [])];
+        const newData = [...(block.data || [])];
+
+        // Adjust columns
+        if (cols > newHeader.length) {
+            for (let i = newHeader.length; i < cols; i++) newHeader.push('Sloupec ' + (i + 1));
+            newData.forEach(row => {
+                for (let i = row.length; i < cols; i++) row.push('');
+            });
+        } else if (cols < newHeader.length) {
+            newHeader.length = cols;
+            newData.forEach(row => row.length = cols);
+        }
+
+        // Adjust rows
+        if (rows > newData.length) {
+            for (let i = newData.length; i < rows; i++) {
+                newData.push(new Array(cols).fill(''));
+            }
+        } else if (rows < newData.length) {
+            newData.length = rows;
+        }
+
+        onChange({ ...block, rows, cols, header: newHeader, data: newData });
+    };
+
+    return (
+        <>
+            <div className="flex gap-4 mb-4">
+                <div className="flex-1">
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Řádky</label>
+                    <input
+                        type="number"
+                        min="1"
+                        max="20"
+                        value={block.rows || 3}
+                        onChange={(e) => updateDimensions(parseInt(e.target.value) || 1, block.cols || 3)}
+                        className="w-full p-2 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg"
+                    />
+                </div>
+                <div className="flex-1">
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Sloupce</label>
+                    <input
+                        type="number"
+                        min="1"
+                        max="10"
+                        value={block.cols || 3}
+                        onChange={(e) => updateDimensions(block.rows || 3, parseInt(e.target.value) || 1)}
+                        className="w-full p-2 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg"
+                    />
+                </div>
+            </div>
+
+            <Select
+                label="Styl ohraničení"
+                value={block.borderStyle || 'full'}
+                onChange={(val) => onChange({ ...block, borderStyle: val })}
+                options={[
+                    { value: 'full', label: 'Mřížka (vše)' },
+                    { value: 'rows', label: 'Pouze řádky' },
+                    { value: 'none', label: 'Žádné' },
+                ]}
+            />
+
+            <div className="mb-4 flex items-center">
+                <input
+                    type="checkbox"
+                    id="table-outer-border"
+                    checked={block.outerBorder !== false}
+                    onChange={(e) => onChange({ ...block, outerBorder: e.target.checked })}
+                    className="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded"
+                />
+                <label htmlFor="table-outer-border" className="ml-2 block text-sm text-gray-900 dark:text-gray-300">
+                    Vnější ohraničení
+                </label>
+            </div>
+
+            <RangeControl
+                label="Šířka tabulky"
+                value={block.width || 100}
+                onChange={(val) => onChange({ ...block, width: val })}
+                min={20}
+                max={100}
+                unit="%"
+            />
+
+            <Select
+                label="Zarovnání textu"
+                value={block.textAlign || 'left'}
+                onChange={(val) => onChange({ ...block, textAlign: val })}
+                options={[
+                    { value: 'left', label: 'Vlevo' },
+                    { value: 'center', label: 'Na střed' },
+                    { value: 'right', label: 'Vpravo' },
+                ]}
+            />
+
+            <RangeControl
+                label="Zaoblení rohů"
+                value={block.borderRadius !== undefined ? block.borderRadius : 8}
+                onChange={(val) => onChange({ ...block, borderRadius: val })}
+                min={0}
+                max={24}
+                unit="px"
+            />
+
+            <div className="flex gap-4 mb-4">
+                <div className="flex-1">
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Barva záhlaví</label>
+                    <input
+                        type="color"
+                        value={block.headerBgColor || '#f3f4f6'}
+                        onChange={(e) => onChange({ ...block, headerBgColor: e.target.value })}
+                        className="h-10 w-full p-1 rounded border border-gray-300 dark:border-gray-600 cursor-pointer"
+                    />
+                </div>
+                <div className="flex-1">
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Barva textu</label>
+                    <input
+                        type="color"
+                        value={block.headerTextColor || '#111827'}
+                        onChange={(e) => onChange({ ...block, headerTextColor: e.target.value })}
+                        className="h-10 w-full p-1 rounded border border-gray-300 dark:border-gray-600 cursor-pointer"
+                    />
+                </div>
+            </div>
+        </>
+    );
+}
+
 function BannerProperties({ block, onChange }) {
     return (
         <>
@@ -521,6 +654,7 @@ function ProductProperties({ block, onChange, widgetId }) {
         onChange({
             ...block,
             name: product.productName,
+            description: product.description ? product.description.substring(0, 200) + (product.description.length > 200 ? '...' : '') : '',
             imgUrl: product.imgUrl || '',
             price: product.priceVat ? `${product.priceVat} Kč` : '',
             link: product.url || '',
@@ -592,6 +726,13 @@ function ProductProperties({ block, onChange, widgetId }) {
                         value={block.name}
                         onChange={(val) => onChange({ ...block, name: val })}
                         placeholder="Název produktu"
+                    />
+                    <TextArea
+                        label="Popis produktu"
+                        value={block.description}
+                        onChange={(val) => onChange({ ...block, description: val })}
+                        placeholder="Krátký popis produktu..."
+                        rows={3}
                     />
                     <ImageUpload
                         label="Foto produktu"
@@ -1035,6 +1176,20 @@ function CanvasBlock({ id, block, isSelected, onClick, onDelete, onChange, activ
                         }}
                         placeholder="Název produktu"
                     />
+                    {block.description && (
+                        <p style={{
+                            color: '#4b5563',
+                            fontSize: '14px',
+                            lineHeight: '1.4',
+                            margin: '0 0 16px 0',
+                            display: '-webkit-box',
+                            WebkitLineClamp: '3',
+                            WebkitBoxOrient: 'vertical',
+                            overflow: 'hidden'
+                        }}>
+                            {block.description}
+                        </p>
+                    )}
                     {block.price && <p style={{ color: '#059669', fontWeight: 'bold', marginBottom: '16px' }}>{block.price}</p>}
                     <span style={{
                         background: block.btnColor || '#4f46e5',
@@ -1071,6 +1226,76 @@ function CanvasBlock({ id, block, isSelected, onClick, onDelete, onChange, activ
                 </div>
             );
         }
+        if (block.type === 'table') {
+            const borderColor = '#e5e7eb';
+            const borderStyle = block.borderStyle || 'full';
+
+            return (
+                <div style={{ overflowX: 'auto', ...margin }}>
+                    <table style={{
+                        width: `${block.width || 100}%`,
+                        borderCollapse: 'separate',
+                        borderSpacing: 0,
+                        border: block.outerBorder !== false ? `1px solid ${borderColor}` : 'none',
+                        borderRadius: `${block.borderRadius !== undefined ? block.borderRadius : 8}px`,
+                        overflow: 'hidden'
+                    }}>
+                        <thead>
+                            <tr>
+                                {(block.header || []).map((head, i) => (
+                                    <th key={i} style={{
+                                        background: block.headerBgColor || '#f3f4f6',
+                                        color: block.headerTextColor || '#111827',
+                                        padding: '12px 16px',
+                                        textAlign: block.textAlign || 'left',
+                                        fontWeight: 600,
+                                        borderBottom: borderStyle !== 'none' ? `1px solid ${borderColor}` : 'none',
+                                        borderRight: borderStyle === 'full' && i < (block.header.length - 1) ? `1px solid ${borderColor}` : 'none'
+                                    }}>
+                                        <ContentEditable
+                                            tagName="div"
+                                            html={head}
+                                            onChange={(val) => {
+                                                const newHeader = [...block.header];
+                                                newHeader[i] = val;
+                                                onChange({ ...block, header: newHeader });
+                                            }}
+                                            style={{ outline: 'none', minWidth: '50px' }}
+                                        />
+                                    </th>
+                                ))}
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {(block.data || []).map((row, rowIndex) => (
+                                <tr key={rowIndex}>
+                                    {row.map((cell, colIndex) => (
+                                        <td key={colIndex} style={{
+                                            padding: '12px 16px',
+                                            textAlign: block.textAlign || 'left',
+                                            borderBottom: borderStyle !== 'none' && rowIndex < (block.data.length - 1) ? `1px solid ${borderColor}` : 'none',
+                                            borderRight: borderStyle === 'full' && colIndex < (row.length - 1) ? `1px solid ${borderColor}` : 'none'
+                                        }}>
+                                            <ContentEditable
+                                                tagName="div"
+                                                html={cell}
+                                                onChange={(val) => {
+                                                    const newData = [...block.data];
+                                                    newData[rowIndex] = [...newData[rowIndex]]; // Copy row
+                                                    newData[rowIndex][colIndex] = val;
+                                                    onChange({ ...block, data: newData });
+                                                }}
+                                                style={{ outline: 'none', minWidth: '50px' }}
+                                            />
+                                        </td>
+                                    ))}
+                                </tr>
+                            ))}
+                        </tbody>
+                    </table>
+                </div>
+            );
+        }
         return null;
     };
 
@@ -1085,7 +1310,7 @@ function CanvasBlock({ id, block, isSelected, onClick, onDelete, onChange, activ
                 onClick();
             }}
             className={`
-                relative group mb-2 p-2 pl-10 rounded-xl transition-all duration-200
+                relative group mb-2 p-2 pl-6 rounded-xl transition-all duration-200
                 ${isSelected
                     ? 'ring-2 ring-indigo-500 bg-white shadow-md z-10'
                     : 'hover:bg-gray-50 border border-transparent hover:border-gray-200'
@@ -1102,10 +1327,13 @@ function CanvasBlock({ id, block, isSelected, onClick, onDelete, onChange, activ
             <div
                 {...attributes}
                 {...listeners}
-                className="absolute top-4 left-2 p-1 cursor-move text-gray-300 hover:text-gray-600 transition touch-none"
+                className={`
+                    absolute -top-3 -left-3 p-2 bg-white text-gray-400 hover:text-indigo-600 rounded-full shadow-lg transition-all cursor-move touch-none border border-gray-100
+                    ${isSelected ? 'opacity-100' : 'opacity-0 group-hover:opacity-100'}
+                `}
                 title="Přesunout blok"
             >
-                <ArrowsUpDownIcon className="h-5 w-5" />
+                <ArrowsUpDownIcon className="h-4 w-4" />
             </div>
 
             {renderContent()}
@@ -1248,6 +1476,23 @@ export default function ArticleEditorPage({ params }) {
         if (type === 'wrap') { newBlock.content = 'Text s obtékáním'; newBlock.imgUrl = ''; newBlock.imgWidth = 40; newBlock.imgPos = 'right'; }
         if (type === 'banner') { newBlock.content = 'NADPIS SEKCE'; newBlock.bgColor = '#f3f4f6'; newBlock.textColor = '#111827'; }
         if (type === 'product') { newBlock.name = 'Nový produkt'; newBlock.link = ''; newBlock.imgUrl = ''; newBlock.price = ''; newBlock.btnText = 'Koupit'; }
+        if (type === 'table') {
+            newBlock.rows = 3;
+            newBlock.cols = 3;
+            newBlock.header = ['Sloupec 1', 'Sloupec 2', 'Sloupec 3'];
+            newBlock.data = [
+                ['', '', ''],
+                ['', '', ''],
+                ['', '', '']
+            ];
+            newBlock.borderStyle = 'full';
+            newBlock.outerBorder = true;
+            newBlock.width = 100;
+            newBlock.textAlign = 'left';
+            newBlock.headerBgColor = '#f3f4f6';
+            newBlock.headerTextColor = '#111827';
+            newBlock.borderRadius = 8;
+        }
 
         return newBlock;
     };
@@ -1401,6 +1646,7 @@ export default function ArticleEditorPage({ params }) {
                             <DraggablePaletteItem type="wrap" icon={DocumentTextIcon} label="Obtékání" onClick={() => addBlock('wrap')} />
                             <DraggablePaletteItem type="banner" icon={MegaphoneIcon} label="Banner" onClick={() => addBlock('banner')} />
                             <DraggablePaletteItem type="product" icon={ShoppingBagIcon} label="Produkt" onClick={() => addBlock('product')} />
+                            <DraggablePaletteItem type="table" icon={TableCellsIcon} label="Tabulka" onClick={() => addBlock('table')} />
                             <DraggablePaletteItem type="author" icon={UserCircleIcon} label="Autor" onClick={() => addBlock('author')} />
                         </div>
                     </div>
@@ -1451,6 +1697,7 @@ export default function ArticleEditorPage({ params }) {
                                     {selectedBlock.type === 'image' && <ImageProperties block={selectedBlock} onChange={updateBlock} widgetId={id} />}
                                     {selectedBlock.type === 'wrap' && <WrapProperties block={selectedBlock} onChange={updateBlock} widgetId={id} activeFormats={activeFormats} />}
                                     {selectedBlock.type === 'banner' && <BannerProperties block={selectedBlock} onChange={updateBlock} />}
+                                    {selectedBlock.type === 'table' && <TableProperties block={selectedBlock} onChange={updateBlock} />}
                                     {selectedBlock.type === 'product' && <ProductProperties block={selectedBlock} onChange={updateBlock} widgetId={id} />}
                                     {selectedBlock.type === 'author' && (
                                         <AuthorProperties block={selectedBlock} onChange={updateBlock} widgetId={id} />
