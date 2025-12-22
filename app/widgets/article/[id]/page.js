@@ -7,6 +7,7 @@ import { useToast } from '../../../components/ToastProvider';
 import {
     DndContext,
     closestCenter,
+    pointerWithin,
     KeyboardSensor,
     PointerSensor,
     useSensor,
@@ -626,6 +627,7 @@ function CanvasBlock({ id, block, isSelected, onClick, onDelete, onChange, activ
         transform,
         transition,
         isOver,
+        isDragging,
     } = useSortable({ id });
 
     const style = {
@@ -834,13 +836,17 @@ function CanvasBlock({ id, block, isSelected, onClick, onDelete, onChange, activ
         <div
             ref={setNodeRef}
             style={style}
-            onClick={(e) => { e.stopPropagation(); onClick(); }}
+            onClick={(e) => {
+                e.stopPropagation();
+                onClick();
+            }}
             className={`
-                relative group mb-6 p-4 pl-10 rounded-xl transition-all
+                relative group mb-6 p-4 pl-10 rounded-xl transition-all duration-200
                 ${isSelected
-                    ? 'ring-2 ring-indigo-500 bg-white shadow-md'
+                    ? 'ring-2 ring-indigo-500 bg-white shadow-md z-10'
                     : 'hover:bg-gray-50 border border-transparent hover:border-gray-200'
                 }
+                ${isDragging ? 'opacity-50' : 'opacity-100'}
             `}
         >
             {/* Drop Indicator */}
@@ -1133,7 +1139,7 @@ export default function ArticleEditorPage({ params }) {
             {/* Main Content - 3 Column Layout */}
             <DndContext
                 sensors={sensors}
-                collisionDetection={closestCenter}
+                collisionDetection={pointerWithin}
                 onDragStart={handleDragStart}
                 onDragEnd={handleDragEnd}
             >
@@ -1156,7 +1162,7 @@ export default function ArticleEditorPage({ params }) {
 
                     {/* Center: Canvas */}
                     <div className="flex-1 overflow-y-auto bg-gray-100 dark:bg-gray-900 p-8 flex justify-center items-start" onClick={() => setSelectedBlockId(null)}>
-                        <div ref={setCanvasRef} className="w-full max-w-3xl bg-white min-h-[800px] shadow-lg rounded-xl p-8" onClick={(e) => e.stopPropagation()}>
+                        <div ref={setCanvasRef} className="w-full max-w-3xl bg-white min-h-[800px] shadow-lg rounded-xl p-8" onClick={() => setSelectedBlockId(null)}>
                             <SortableContext
                                 items={widget.content.map(b => b.id)}
                                 strategy={verticalListSortingStrategy}
