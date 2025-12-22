@@ -82,7 +82,7 @@ export default function CarouselEditPage() {
 
   const generateEmbedCode = () => {
     const embedUrl = `${process.env.NEXT_PUBLIC_API_URL}/widget/${id}/embed.js`;
-    return `<script src="${embedUrl}"></script>`;
+    return `<script src="${embedUrl}" defer></script>`;
   };
 
   const copyEmbedCode = () => {

@@ -302,7 +302,7 @@ export default function HeurekaFeedDetailPage() {
 
   const generateEmbedCode = () => {
     const embedUrl = `${process.env.NEXT_PUBLIC_API_URL}/heureka/feed/${feedId}/embed.js`;
-    return `<script src="${embedUrl}"></script>`;
+    return `<script src="${embedUrl}" defer></script>`;
   };
 
   const generatePreviewUrl = () => {

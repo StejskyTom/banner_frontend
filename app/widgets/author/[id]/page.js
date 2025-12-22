@@ -96,7 +96,7 @@ export default function AuthorWidgetDetailPage() {
 
     const generateEmbedCode = () => {
         const embedUrl = `${process.env.NEXT_PUBLIC_API_URL}/author-widgets/${id}/embed.js`;
-        return `<script src="${embedUrl}"></script>`;
+        return `<script src="${embedUrl}" defer></script>`;
     };
 
     const copyEmbedCode = () => {

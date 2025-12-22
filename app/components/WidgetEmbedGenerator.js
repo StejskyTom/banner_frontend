@@ -6,7 +6,7 @@ export function WidgetEmbedGenerator({ widgetId, widgetType }) {
     const [isAnimating, setIsAnimating] = useState(false);
     const [copied, setCopied] = useState(false);
 
-    const embedCode = `<script src="${process.env.NEXT_PUBLIC_API_URL || 'https://yourapp.com'}/widget/${widgetId}/embed.js"></script>`;
+    const embedCode = `<script src="${process.env.NEXT_PUBLIC_API_URL || 'https://yourapp.com'}/widget/${widgetId}/embed.js" defer></script>`;
 
     const copyToClipboard = async (e) => {
         e?.stopPropagation();
