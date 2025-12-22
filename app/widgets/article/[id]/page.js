@@ -685,7 +685,7 @@ function CanvasBlock({ id, block, isSelected, onClick, onDelete, onChange, activ
                     style={styles}
                     placeholder="Klikněte a pište..."
                     ref={(el) => { if (el) adjustHeight(el); }}
-                    onClick={(e) => e.stopPropagation()} // Prevent selecting block when clicking text
+
                 />
             );
         }
