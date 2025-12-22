@@ -83,6 +83,8 @@ export default function HeurekaFeedsPage() {
         }
 
         router.push(`/widgets/heureka/${data.id}`);
+      } else if (res.status === 403) {
+        router.push('/subscription');
       } else {
         const errorData = await res.json().catch(() => ({ message: 'Neznámá chyba' }));
         showNotification(errorData.message || 'Nepodařilo se vytvořit feed', 'error');

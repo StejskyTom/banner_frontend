@@ -63,6 +63,8 @@ export default function CarouselListPage() {
     }
   };
 
+
+
   const handleCreate = async () => {
     try {
       const res = await authorizedFetch('/widgets/logo-carousel/new', {
@@ -74,6 +76,8 @@ export default function CarouselListPage() {
       if (res.ok) {
         const data = await res.json();
         router.push(`/widgets/logo-carousel/${data.id}`);
+      } else if (res.status === 403) {
+        router.push('/subscription');
       } else {
         showNotification('Nepodařilo se vytvořit nový carousel', 'error');
       }

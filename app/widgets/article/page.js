@@ -7,6 +7,8 @@ import Link from 'next/link';
 import { PlusIcon, PencilSquareIcon, TrashIcon, DocumentTextIcon } from '@heroicons/react/24/solid';
 import { useToast } from '../../components/ToastProvider';
 
+import { useRouter } from 'next/navigation';
+
 export default function ArticleWidgetsPage() {
     const [widgets, setWidgets] = useState([]);
     const [loading, setLoading] = useState(true);
@@ -14,6 +16,7 @@ export default function ArticleWidgetsPage() {
     const [deleteId, setDeleteId] = useState(null);
     const [deleteName, setDeleteName] = useState('');
     const showNotification = useToast();
+    const router = useRouter();
 
     useEffect(() => {
         fetchWidgets();
@@ -40,9 +43,12 @@ export default function ArticleWidgetsPage() {
                 method: 'POST',
                 body: JSON.stringify({ name: 'Nový článek' }),
             });
+
             if (res.ok) {
                 const newWidget = await res.json();
-                window.location.href = `/widgets/article/${newWidget.id}`;
+                router.push(`/widgets/article/${newWidget.id}`);
+            } else if (res.status === 403) {
+                router.push('/subscription');
             } else {
                 showNotification('Nepodařilo se vytvořit widget', 'error');
             }

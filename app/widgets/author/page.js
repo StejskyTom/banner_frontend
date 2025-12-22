@@ -55,6 +55,8 @@ export default function AuthorWidgetsPage() {
                 setShowCreateModal(false);
                 setNewWidgetName('');
                 router.push(`/widgets/author/${widget.id}`);
+            } else if (res?.status === 403) {
+                router.push('/subscription');
             } else {
                 showNotification('Nepodařilo se vytvořit widget', 'error');
             }
