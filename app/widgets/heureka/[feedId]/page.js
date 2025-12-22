@@ -88,6 +88,8 @@ export default function HeurekaFeedDetailPage() {
   const [gridColumns, setGridColumns] = useState(3);
   const [mobileGridColumns, setMobileGridColumns] = useState(1);
   const [buttonColor, setButtonColor] = useState('#2563eb');
+  const [buttonText, setButtonText] = useState('Koupit');
+  const [showSettings, setShowSettings] = useState(false);
   const [savingSettings, setSavingSettings] = useState(false);
 
   const showNotification = useToast();
@@ -119,6 +121,7 @@ export default function HeurekaFeedDetailPage() {
         setGridColumns(feed.layoutOptions.gridColumns || 3);
         setMobileGridColumns(feed.layoutOptions.mobileGridColumns || 1);
         setButtonColor(feed.layoutOptions.buttonColor || '#2563eb');
+        setButtonText(feed.layoutOptions.buttonText || 'Koupit');
       }
     }
   }, [feed]);
@@ -250,7 +253,8 @@ export default function HeurekaFeedDetailPage() {
           layoutOptions: {
             gridColumns: parseInt(gridColumns),
             mobileGridColumns: parseInt(mobileGridColumns),
-            buttonColor: buttonColor
+            buttonColor: buttonColor,
+            buttonText: buttonText
           },
           url: feed.url,
           name: feed.name
@@ -397,72 +401,100 @@ export default function HeurekaFeedDetailPage() {
       </div>
 
       {/* Settings Section */}
-      <div className="mb-6 bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-6">
-        <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Nastavení zobrazení</h2>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-          <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-              Typ zobrazení
-            </label>
-            <Select value={layout} onValueChange={setLayout}>
-              <SelectTrigger>
-                <SelectValue placeholder="Vyberte zobrazení" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="carousel">Carousel (posuvník)</SelectItem>
-                <SelectItem value="grid">Mřížka (Grid)</SelectItem>
-                <SelectItem value="list">Seznam (List)</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-
-          {layout === 'grid' && (
-            <>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                  Sloupce (Desktop)
-                </label>
-                <input
-                  type="number"
-                  min="1"
-                  max="6"
-                  value={gridColumns}
-                  onChange={(e) => setGridColumns(e.target.value)}
-                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                  Sloupce (Mobil)
-                </label>
-                <input
-                  type="number"
-                  min="1"
-                  max="3"
-                  value={mobileGridColumns}
-                  onChange={(e) => setMobileGridColumns(e.target.value)}
-                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
-                />
-              </div>
-            </>
+      <div className="mb-6 bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden">
+        <button
+          onClick={() => setShowSettings(!showSettings)}
+          className="w-full flex justify-between items-center p-6 bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-750 transition cursor-pointer"
+        >
+          <h2 className="text-lg font-semibold text-gray-900 dark:text-white">Nastavení zobrazení</h2>
+          {showSettings ? (
+            <ChevronUpIcon className="h-5 w-5 text-gray-500" />
+          ) : (
+            <ChevronDownIcon className="h-5 w-5 text-gray-500" />
           )}
+        </button>
 
-          <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-              Barva tlačítka "Koupit"
-            </label>
-            <div className="flex items-center gap-3">
-              <input
-                type="color"
-                value={buttonColor}
-                onChange={(e) => setButtonColor(e.target.value)}
-                className="h-10 w-20 p-1 rounded border border-gray-300 dark:border-gray-600 cursor-pointer"
-              />
-              <span className="text-sm text-gray-500 dark:text-gray-400 font-mono">{buttonColor}</span>
+        {showSettings && (
+          <div className="p-6 border-t border-gray-200 dark:border-gray-700 bg-gray-50/50 dark:bg-gray-800/50">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                  Typ zobrazení
+                </label>
+                <Select value={layout} onValueChange={setLayout}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Vyberte zobrazení" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="carousel">Carousel (posuvník)</SelectItem>
+                    <SelectItem value="grid">Mřížka (Grid)</SelectItem>
+                    <SelectItem value="list">Seznam (List)</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+
+              {layout === 'grid' && (
+                <>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                      Sloupce (Desktop)
+                    </label>
+                    <input
+                      type="number"
+                      min="1"
+                      max="6"
+                      value={gridColumns}
+                      onChange={(e) => setGridColumns(e.target.value)}
+                      className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                      Sloupce (Mobil)
+                    </label>
+                    <input
+                      type="number"
+                      min="1"
+                      max="3"
+                      value={mobileGridColumns}
+                      onChange={(e) => setMobileGridColumns(e.target.value)}
+                      className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                    />
+                  </div>
+                </>
+              )}
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                  Text tlačítka
+                </label>
+                <input
+                  type="text"
+                  value={buttonText}
+                  onChange={(e) => setButtonText(e.target.value)}
+                  placeholder="Koupit"
+                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                  Barva tlačítka "Koupit"
+                </label>
+                <div className="flex items-center gap-3">
+                  <input
+                    type="color"
+                    value={buttonColor}
+                    onChange={(e) => setButtonColor(e.target.value)}
+                    className="h-10 w-20 p-1 rounded border border-gray-300 dark:border-gray-600 cursor-pointer"
+                  />
+                  <span className="text-sm text-gray-500 dark:text-gray-400 font-mono">{buttonColor}</span>
+                </div>
+              </div>
+
             </div>
           </div>
-
-        </div>
+        )}
       </div>
 
       {/* Embed Code Modal */}
