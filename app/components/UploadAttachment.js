@@ -114,7 +114,7 @@ export default function UploadAttachment({ widgetId, carousel, setCarousel }) {
         <>
             {/* Input pro URL */}
             <div>
-                <label className="text-sm font-medium text-gray-700">Nové logo (URL)</label>
+                <label className="text-sm font-medium text-gray-400">Nové logo (URL)</label>
                 <div className="flex gap-2 mt-1">
                     <input
                         value={newLogoUrl}
@@ -122,14 +122,14 @@ export default function UploadAttachment({ widgetId, carousel, setCarousel }) {
                         onKeyPress={handleKeyPress}
                         placeholder="https://example.com/image.jpg"
                         disabled={uploadingUrl || uploading}
-                        className="flex-1 bg-white border border-gray-300 text-sm px-3 py-2 rounded shadow-sm
-                                 focus:outline-none focus:ring-2 focus:ring-blue-500
+                        className="flex-1 bg-gray-800 border border-gray-700 text-white text-sm px-3 py-2 rounded shadow-sm
+                                 focus:outline-none focus:ring-2 focus:ring-visualy-accent-4 placeholder-gray-500
                                  disabled:opacity-50 disabled:cursor-not-allowed"
                     />
                     <button
                         onClick={handleAddLogoFromUrl}
                         disabled={uploadingUrl || uploading || !newLogoUrl.trim()}
-                        className="bg-blue-600 hover:bg-blue-500 text-white px-3 py-2 rounded text-sm shadow-sm
+                        className="bg-visualy-accent-4 hover:bg-visualy-accent-4/90 text-white px-3 py-2 rounded text-sm shadow-sm
                                  disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
                     >
                         {uploadingUrl ? 'Přidávám...' : 'Přidat'}
@@ -140,42 +140,40 @@ export default function UploadAttachment({ widgetId, carousel, setCarousel }) {
             {/* Oddělovač */}
             <div className="relative my-4">
                 <div className="absolute inset-0 flex items-center">
-                    <div className="w-full border-t border-gray-300"></div>
+                    <div className="w-full border-t border-gray-700"></div>
                 </div>
                 <div className="relative flex justify-center text-sm">
-                    <span className="px-2 bg-white text-gray-500">nebo</span>
+                    <span className="px-2 bg-gray-900 text-gray-500">nebo</span>
                 </div>
             </div>
 
             {/* Dropzone pro soubory */}
             <div
                 {...getRootProps()}
-                className={`border-2 border-dashed rounded-lg p-4 text-center cursor-pointer transition ${
-                    isDragActive
-                        ? 'border-blue-500 bg-blue-50'
-                        : 'border-gray-300 bg-gray-100'
-                } ${
-                    (uploading || uploadingUrl)
+                className={`border-2 border-dashed rounded-lg p-4 text-center cursor-pointer transition ${isDragActive
+                        ? 'border-visualy-accent-4 bg-gray-800/50'
+                        : 'border-gray-700 bg-gray-800'
+                    } ${(uploading || uploadingUrl)
                         ? 'opacity-50 cursor-not-allowed'
-                        : 'hover:border-gray-400'
-                }`}
+                        : 'hover:border-gray-600'
+                    }`}
             >
                 <input {...getInputProps()} />
                 {uploading ? (
                     <div className="space-y-2">
                         <div className="flex justify-center">
-                            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+                            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-visualy-accent-4"></div>
                         </div>
-                        <p className="text-gray-500">Nahrávám soubor...</p>
+                        <p className="text-gray-400">Nahrávám soubor...</p>
                     </div>
                 ) : uploadingUrl ? (
                     <p className="text-gray-400">Počkejte, přidávám obrázek z URL...</p>
                 ) : isDragActive ? (
-                    <p className="text-blue-500">Pusť soubor sem…</p>
+                    <p className="text-visualy-accent-4">Pusť soubor sem…</p>
                 ) : (
                     <div>
-                        <p className="text-gray-600">
-                            Přetáhni obrázek sem nebo <span className="text-blue-600">klikni</span> pro výběr
+                        <p className="text-gray-400">
+                            Přetáhni obrázek sem nebo <span className="text-visualy-accent-4 font-medium">klikni</span> pro výběr
                         </p>
                         <p className="text-xs text-gray-500 mt-1">
                             PNG, JPG, WEBP, SVG (max. 5MB)

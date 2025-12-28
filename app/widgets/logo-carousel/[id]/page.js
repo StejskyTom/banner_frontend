@@ -1,14 +1,12 @@
 'use client';
-
 import { useParams } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import EditSidebar from '../../../components/EditSidebar';
 import CarouselPreview from '../../../components/CarouselPreview';
 import { authorizedFetch } from '../../../../lib/api';
 import { useToast } from "../../../components/ToastProvider";
-
-
-import { CodeBracketIcon, ClipboardDocumentIcon, XMarkIcon } from '@heroicons/react/24/solid';
+import { CodeBracketIcon, ClipboardDocumentIcon, XMarkIcon, ArrowLeftIcon, TableCellsIcon, Cog6ToothIcon } from '@heroicons/react/24/solid';
+import Link from 'next/link';
 
 export default function CarouselEditPage() {
   const { id } = useParams();
@@ -17,6 +15,7 @@ export default function CarouselEditPage() {
   const showNotification = useToast();
   const [isSaving, setIsSaving] = useState(false);
   const [showEmbedModal, setShowEmbedModal] = useState(false);
+  const [activeTab, setActiveTab] = useState('content');
 
   useEffect(() => {
     const loadCarousel = async () => {
@@ -91,69 +90,107 @@ export default function CarouselEditPage() {
   };
 
   return (
-    <div className="flex">
-      <div className="flex-1 p-6 bg-transparent flex flex-col justify-between min-h-screen">
-        <div className='text-center'>
-          <h1 className="text-2xl font-bold mb-6">{carousel.title}</h1>
-          <CarouselPreview
-            attachments={carousel.attachments}
-            imageSize={carousel.imageSize ?? 64}
-            speed={carousel.speed ?? 20}
-            font={carousel.font ?? 'Arial'}
-            pauseOnHover={carousel.pauseOnHover ?? false}
-            gap={carousel.gap ?? 32}
-          />
+    <div className="flex flex-col h-screen bg-gray-50 dark:bg-gray-900">
+      {/* Top Bar */}
+      <div className="h-16 bg-gray-900 border-b border-gray-800 flex justify-between items-center px-6 shrink-0 z-10">
+        <div className="flex items-center gap-4">
+          <Link
+            href="/widgets/logo-carousel"
+            className="p-2 rounded-lg hover:bg-gray-800 text-gray-400 hover:text-white transition-colors"
+          >
+            <ArrowLeftIcon className="h-5 w-5" />
+          </Link>
+          <h1 className="text-lg font-semibold text-white truncate max-w-md">
+            {carousel.title}
+          </h1>
         </div>
 
-        <div className="mt-12 flex justify-center gap-4">
+        <div className="flex items-center gap-3">
           <button
             onClick={() => setShowEmbedModal(true)}
-            className="bg-white text-gray-700 border border-gray-300 px-6 py-3 rounded-lg shadow-sm transition transform hover:bg-gray-50 hover:scale-105 active:scale-95 focus:outline-none focus:ring-2 focus:ring-gray-200 flex items-center gap-2 cursor-pointer"
+            className="px-4 py-2 rounded-lg bg-gray-800 border border-gray-700 text-gray-300 hover:bg-gray-700 hover:text-white transition-colors font-medium text-sm flex items-center gap-2"
           >
-            <CodeBracketIcon className="h-5 w-5" />
-            Embed kód
+            <CodeBracketIcon className="h-4 w-4" />
+            Publikovat
           </button>
 
           <button
             disabled={isSaving}
             onClick={handleSave}
-            className="bg-blue-600 text-white px-6 py-3 rounded-lg shadow-lg transition transform hover:bg-blue-500 hover:scale-105 active:scale-95 focus:outline-none focus:ring-2 focus:ring-blue-400 flex items-center gap-2"
+            className="px-4 py-2 rounded-lg bg-visualy-accent-4 text-white hover:bg-visualy-accent-4/90 transition-colors font-medium text-sm flex items-center gap-2 disabled:opacity-70 disabled:cursor-not-allowed shadow-sm"
           >
-            {isSaving && (
-              <svg
-                className="animate-spin h-5 w-5 text-white"
-                xmlns="http://www.w3.org/2000/svg"
-                fill="none"
-                viewBox="0 0 24 24"
-              >
-                <circle
-                  className="opacity-25"
-                  cx="12"
-                  cy="12"
-                  r="10"
-                  stroke="currentColor"
-                  strokeWidth="4"
-                ></circle>
-                <path
-                  className="opacity-75"
-                  fill="currentColor"
-                  d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"
-                ></path>
+            {isSaving ? (
+              <svg className="animate-spin h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"></path>
               </svg>
+            ) : (
+              "Uložit"
             )}
-            {isSaving ? "Zpracovává se…" : "💾 Uložit změny"}
           </button>
         </div>
       </div>
 
-      <EditSidebar carousel={carousel} setCarousel={setCarousel} />
+      {/* Main Content */}
+      <div className="flex flex-1 overflow-hidden">
+        {/* Icon Sidebar */}
+        <div className="w-16 bg-gray-900 border-r border-gray-800 flex flex-col items-center py-4 gap-4 shrink-0 z-20">
+          <div className="group relative flex items-center justify-center w-full">
+            <button
+              onClick={() => setActiveTab(activeTab === 'content' ? null : 'content')}
+              className={`p-3 rounded-xl transition-all duration-200 ${activeTab === 'content'
+                ? 'bg-gray-800 text-white shadow-sm'
+                : 'text-gray-400 hover:bg-gray-800 hover:text-white'
+                }`}
+            >
+              <TableCellsIcon className="h-6 w-6 text-visualy-accent-4" />
+            </button>
+            <div className="absolute left-full ml-2 px-3 py-1.5 bg-gray-900 text-white text-xs font-medium rounded-md border border-gray-800 opacity-0 group-hover:opacity-100 transform -translate-x-2 group-hover:translate-x-0 transition-all duration-200 pointer-events-none whitespace-nowrap z-50 shadow-xl">
+              Obsah
+            </div>
+          </div>
+
+          <div className="group relative flex items-center justify-center w-full">
+            <button
+              onClick={() => setActiveTab(activeTab === 'settings' ? null : 'settings')}
+              className={`p-3 rounded-xl transition-all duration-200 ${activeTab === 'settings'
+                ? 'bg-gray-800 text-white shadow-sm'
+                : 'text-gray-400 hover:bg-gray-800 hover:text-white'
+                }`}
+            >
+              <Cog6ToothIcon className="h-6 w-6 text-visualy-accent-4" />
+            </button>
+            <div className="absolute left-full ml-2 px-3 py-1.5 bg-gray-900 text-white text-xs font-medium rounded-md border border-gray-800 opacity-0 group-hover:opacity-100 transform -translate-x-2 group-hover:translate-x-0 transition-all duration-200 pointer-events-none whitespace-nowrap z-50 shadow-xl">
+              Nastavení
+            </div>
+          </div>
+        </div>
+
+        {/* Secondary Panel (EditSidebar) */}
+        <EditSidebar carousel={carousel} setCarousel={setCarousel} activeTab={activeTab} />
+
+        {/* Preview Area */}
+        <div className="flex-1 p-8 overflow-y-auto flex flex-col items-center bg-gray-50 dark:bg-gray-900/50">
+          <div className="w-full max-w-5xl">
+            <CarouselPreview
+              title={carousel.title}
+              attachments={carousel.attachments}
+              imageSize={carousel.imageSize ?? 64}
+              speed={carousel.speed ?? 20}
+              font={carousel.font ?? 'Arial'}
+              pauseOnHover={carousel.pauseOnHover ?? false}
+              gap={carousel.gap ?? 32}
+            />
+          </div>
+        </div>
+      </div>
 
       {/* Embed Code Modal */}
       {showEmbedModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
           <div className="bg-white dark:bg-gray-800 rounded-xl shadow-2xl p-6 w-full max-w-lg transform transition-all scale-100">
             <div className="flex justify-between items-center mb-4">
-              <h2 className="text-xl font-bold text-gray-900 dark:text-white">Embed kód</h2>
+              <h2 className="text-xl font-bold text-gray-900 dark:text-white">Publikovat widget</h2>
               <button onClick={() => setShowEmbedModal(false)} className="text-gray-400 hover:text-gray-500 cursor-pointer">
                 <XMarkIcon className="h-6 w-6" />
               </button>
@@ -175,8 +212,8 @@ export default function CarouselEditPage() {
                 <ClipboardDocumentIcon className="h-5 w-5" />
               </button>
             </div>
-            <p className="text-sm text-gray-600 dark:text-gray-400 mb-4">
-              <em>Před zkopírováním kódu vše uložte.</em>
+            <p className="text-sm text-gray-600 dark:text-gray-400 mb-4 mt-2">
+              <em>Před zkopírováním kódu nezapomeňte uložit změny.</em>
             </p>
 
             <div className="mt-6 flex justify-end">
