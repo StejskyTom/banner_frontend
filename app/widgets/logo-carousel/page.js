@@ -85,15 +85,16 @@ export default function CarouselListPage() {
   return (
     <div className="p-6">
       <div className="flex justify-between items-center mb-4">
-        <h1 className="text-xl font-bold text-gray-900 dark:text-white">Logo carousely</h1>
+        <div>
+          <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Logo carousel</h1>
+          <p className="mt-2 text-gray-600 dark:text-gray-400">Správa widgetů s logo carousely</p>
+        </div>
         <button
           onClick={handleCreate}
-          className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-indigo-600 text-white text-sm font-medium hover:bg-indigo-500 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600 transition"
+          className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-visualy-accent-4 to-emerald-500 text-white rounded-lg hover:opacity-90 transition-all duration-300 shadow-lg shadow-visualy-accent-4/30 cursor-pointer hover:scale-[1.02]"
         >
-          <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
-          </svg>
-          Přidat nový
+          <PlusIcon className="h-5 w-5" />
+          Nový carousel
         </button>
       </div>
       <div className="overflow-x-auto rounded-xl shadow-lg bg-white dark:bg-gray-900">

@@ -93,10 +93,10 @@ export default function ArticleWidgetsPage() {
                 </div>
                 <button
                     onClick={createWidget}
-                    className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-indigo-600 text-white text-sm font-medium hover:bg-indigo-500 transition shadow-sm"
+                    className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-gradient-to-r from-visualy-accent-4 to-emerald-500 text-white text-sm font-medium hover:opacity-90 transition-all duration-300 shadow-lg shadow-visualy-accent-4/30 hover:scale-[1.02]"
                 >
                     <PlusIcon className="h-4 w-4" />
-                    Vytvořit článek
+                    Nový článek
                 </button>
             </div>
 

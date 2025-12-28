@@ -2,6 +2,8 @@ import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import MainSidebar from './components/MainSidebar';
 
+import Providers from "./components/Providers";
+
 const geistSans = Geist({
   variable: "--font-geist-sans",
   subsets: ["latin"],
@@ -21,7 +23,9 @@ export default function RootLayout({ children }) {
   return (
     <html lang="cs">
       <body className="min-h-screen">
-        {children}        
+        <Providers>
+          {children}
+        </Providers>
       </body>
     </html>
   );

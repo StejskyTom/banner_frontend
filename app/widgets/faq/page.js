@@ -87,18 +87,18 @@ export default function FaqWidgetsPage() {
     };
 
     return (
-        <div className="p-8 w-full">
-            <div className="flex justify-between items-center mb-8">
+        <div className="p-6 w-full">
+            <div className="flex justify-between items-center mb-4">
                 <div>
                     <h1 className="text-3xl font-bold text-gray-900 dark:text-white">FAQ Widgety</h1>
                     <p className="mt-2 text-gray-600 dark:text-gray-400">Správa vašich FAQ sekcí</p>
                 </div>
                 <button
                     onClick={() => setShowCreateModal(true)}
-                    className="flex items-center gap-2 px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition shadow-lg shadow-indigo-500/30 cursor-pointer"
+                    className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-visualy-accent-4 to-emerald-500 text-white rounded-lg hover:opacity-90 transition-all duration-300 shadow-lg shadow-visualy-accent-4/30 cursor-pointer hover:scale-[1.02]"
                 >
                     <PlusIcon className="h-5 w-5" />
-                    Vytvořit nový FAQ
+                    Nové FAQ
                 </button>
             </div>
 

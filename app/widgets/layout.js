@@ -1,6 +1,6 @@
 import { Geist, Geist_Mono } from "next/font/google";
 import "../globals.css";
-import MainSidebar from '../components/MainSidebar';
+import SidebarWrapper from './SidebarWrapper';
 import { ToastProvider } from "../components/ToastProvider";
 
 
@@ -22,10 +22,11 @@ export const metadata = {
 export default function WidgetLayout({ children }) {
   return (
     <div>
-        <ToastProvider>
-          <MainSidebar />
-          <main className="flex-1 sm:ml-64">{children}</main>
-        </ToastProvider>
+      <ToastProvider>
+        <SidebarWrapper>
+          {children}
+        </SidebarWrapper>
+      </ToastProvider>
     </div>
   );
 }
