@@ -326,9 +326,11 @@ function HeurekaFeedsContent() {
   );
 }
 
+import Loader from '../../components/Loader';
+
 export default function HeurekaFeedsPage() {
   return (
-    <Suspense fallback={<div className="p-6">Načítám...</div>}>
+    <Suspense fallback={<Loader />}>
       <HeurekaFeedsContent />
     </Suspense>
   );

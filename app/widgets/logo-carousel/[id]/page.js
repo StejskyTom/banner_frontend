@@ -8,6 +8,8 @@ import { useToast } from "../../../components/ToastProvider";
 import { CodeBracketIcon, ClipboardDocumentIcon, XMarkIcon, ArrowLeftIcon, TableCellsIcon, Cog6ToothIcon } from '@heroicons/react/24/solid';
 import Link from 'next/link';
 
+import Loader from '../../../components/Loader';
+
 export default function CarouselEditPage() {
   const { id } = useParams();
   const [carousel, setCarousel] = useState(null);
@@ -39,7 +41,7 @@ export default function CarouselEditPage() {
     }
   }, [id, showNotification]);
 
-  if (loading) return <p className="p-6 text-gray-500">Načítám...</p>;
+  if (loading) return <Loader />;
   if (!carousel) return <p className="p-6 text-red-500">Nenalezeno...</p>;
 
   const handleSave = async () => {
