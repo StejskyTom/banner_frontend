@@ -1,13 +1,13 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, Suspense } from 'react';
 import { authorizedFetch } from '../../../lib/api';
 import Link from 'next/link';
 import { PencilSquareIcon, TrashIcon, ArrowPathIcon, ShoppingBagIcon, PlusIcon } from '@heroicons/react/24/solid';
 import { useToast } from "../../components/ToastProvider";
 import { useRouter, useSearchParams } from "next/navigation";
 
-export default function HeurekaFeedsPage() {
+function HeurekaFeedsContent() {
   const [feeds, setFeeds] = useState([]);
   const [loading, setLoading] = useState(true);
   const [showConfirm, setShowConfirm] = useState(false);
@@ -323,5 +323,13 @@ export default function HeurekaFeedsPage() {
         </div>
       )}
     </div>
+  );
+}
+
+export default function HeurekaFeedsPage() {
+  return (
+    <Suspense fallback={<div className="p-6">Načítám...</div>}>
+      <HeurekaFeedsContent />
+    </Suspense>
   );
 }
