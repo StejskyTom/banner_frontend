@@ -16,7 +16,7 @@ export default function LoginPage() {
 
   useEffect(() => {
     if (status === 'authenticated') {
-      router.replace('/widgets/logo-carousel');
+      router.replace('/widgets/dashboard');
     }
   }, [status, router]);
 
@@ -32,7 +32,7 @@ export default function LoginPage() {
       });
 
       if (res.ok) {
-        router.push("/widgets/logo-carousel");
+        router.push("/widgets/dashboard");
       } else {
         showNotification('Uživatele se nepodařilo přihlásit', 'error');
         setLoading(false);

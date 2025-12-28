@@ -5,7 +5,7 @@ import { authorizedFetch } from '../../../lib/api';
 import Link from 'next/link';
 import { PencilSquareIcon, TrashIcon, ArrowPathIcon, ShoppingBagIcon, PlusIcon } from '@heroicons/react/24/solid';
 import { useToast } from "../../components/ToastProvider";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 
 export default function HeurekaFeedsPage() {
   const [feeds, setFeeds] = useState([]);
@@ -15,6 +15,7 @@ export default function HeurekaFeedsPage() {
   const [deleteName, setDeleteName] = useState('');
   const showNotification = useToast();
   const router = useRouter();
+  const searchParams = useSearchParams();
 
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [newFeedUrl, setNewFeedUrl] = useState('');
@@ -23,7 +24,10 @@ export default function HeurekaFeedsPage() {
 
   useEffect(() => {
     fetchFeeds();
-  }, []);
+    if (searchParams.get('action') === 'create') {
+      openCreateModal();
+    }
+  }, [searchParams]);
 
   const fetchFeeds = async () => {
     try {

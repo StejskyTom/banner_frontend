@@ -4,13 +4,18 @@ import { useState } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { signOut } from 'next-auth/react';
-import { Menu, LogOut, ChevronLeft, ChevronRight } from 'lucide-react';
+import { Menu, LogOut, ChevronLeft, ChevronRight, LayoutDashboard } from 'lucide-react';
 
 export default function MainSidebar({ isDesktopCollapsed, onDesktopToggle }) {
     const pathname = usePathname();
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
     const navItems = [
+        {
+            label: 'Dashboard',
+            href: '/widgets/dashboard',
+            icon: <LayoutDashboard className="w-5 h-5 text-visualy-accent-4" />,
+        },
         {
             label: 'Logo Carousel',
             href: '/widgets/logo-carousel',
