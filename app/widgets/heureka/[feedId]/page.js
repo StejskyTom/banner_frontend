@@ -9,6 +9,7 @@ import { ChevronDownIcon, ChevronUpIcon, XMarkIcon, ChevronLeftIcon, ChevronRigh
 import { DndContext, closestCenter, KeyboardSensor, PointerSensor, useSensor, useSensors } from '@dnd-kit/core';
 import { arrayMove, SortableContext, sortableKeyboardCoordinates, useSortable, rectSortingStrategy } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
+import Loader from '../../../components/Loader';
 
 const ITEMS_PER_PAGE = 30;
 
@@ -320,7 +321,7 @@ export default function HeurekaFeedDetailPage() {
 
   const totalPages = Math.ceil(totalItems / itemsPerPage);
 
-  if (!feed) return <p className="p-6 text-gray-500">Načítám feed...</p>;
+  if (!feed) return <Loader />;
 
   return (
     <div className="p-6">
