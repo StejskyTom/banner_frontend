@@ -6,6 +6,8 @@ import Link from 'next/link';
 import { PencilSquareIcon, TrashIcon, PlusIcon, UserCircleIcon } from '@heroicons/react/24/solid';
 import { useToast } from "../../components/ToastProvider";
 import { useRouter } from "next/navigation";
+import Loader from '../../components/Loader';
+import { WidgetEmbedGenerator } from '../../components/WidgetEmbedGenerator';
 
 export default function AuthorWidgetsPage() {
     const [widgets, setWidgets] = useState([]);
@@ -87,7 +89,7 @@ export default function AuthorWidgetsPage() {
     };
 
     return (
-        <div className="p-6 w-full">
+        <div className="p-6">
             <div className="flex justify-between items-center mb-4">
                 <div>
                     <h1 className="text-3xl font-bold text-gray-900 dark:text-white">O autorovi</h1>
@@ -95,99 +97,111 @@ export default function AuthorWidgetsPage() {
                 </div>
                 <button
                     onClick={() => setShowCreateModal(true)}
-                    className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-visualy-accent-4 to-emerald-500 text-white rounded-lg hover:opacity-90 transition-all duration-300 shadow-lg shadow-visualy-accent-4/30 cursor-pointer hover:scale-[1.02]"
+                    className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-gradient-to-r from-visualy-accent-4 to-emerald-500 text-white text-sm font-medium hover:opacity-90 transition-all duration-300 shadow-lg shadow-visualy-accent-4/30 hover:scale-[1.02]"
                 >
                     <PlusIcon className="h-5 w-5" />
                     Nový autor
                 </button>
             </div>
 
-            {loading ? (
-                <div className="text-center py-12">
-                    <div className="inline-block h-8 w-8 animate-spin rounded-full border-4 border-solid border-current border-r-transparent align-[-0.125em]" role="status">
-                        <span className="sr-only">Loading...</span>
-                    </div>
-                </div>
-            ) : (
-                <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden">
-                    <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
-                        <thead className="bg-gray-50 dark:bg-gray-900/50">
-                            <tr>
-                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Název</th>
-                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Autor</th>
-                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Vytvořeno</th>
-                                <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Akce</th>
-                            </tr>
-                        </thead>
-                        <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
-                            {widgets.length > 0 ? (
-                                widgets.map((widget) => (
-                                    <tr key={widget.id} className="hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors">
-                                        <td className="px-6 py-4 whitespace-nowrap">
-                                            <div className="flex items-center">
-                                                <div className="h-10 w-10 flex-shrink-0 flex items-center justify-center bg-indigo-100 dark:bg-indigo-900/50 rounded-lg text-indigo-600 dark:text-indigo-400">
-                                                    <UserCircleIcon className="h-6 w-6" />
-                                                </div>
-                                                <div className="ml-4">
-                                                    <div className="text-sm font-medium text-gray-900 dark:text-white">{widget.name}</div>
-                                                </div>
-                                            </div>
-                                        </td>
-                                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
-                                            {widget.authorName || '-'}
-                                        </td>
-                                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
-                                            {new Date(widget.createdAt).toLocaleDateString('cs-CZ')}
-                                        </td>
-                                        <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                                            <div className="flex justify-end gap-3">
-                                                <Link
-                                                    href={`/widgets/author/${widget.id}`}
-                                                    className="text-indigo-600 hover:text-indigo-900 dark:text-indigo-400 dark:hover:text-indigo-300 transition cursor-pointer"
-                                                    title="Upravit"
-                                                >
-                                                    <PencilSquareIcon className="h-5 w-5" />
-                                                </Link>
-                                                <button
-                                                    onClick={() => {
-                                                        setWidgetToDelete(widget);
-                                                        setShowDeleteModal(true);
-                                                    }}
-                                                    className="text-red-600 hover:text-red-900 dark:text-red-400 dark:hover:text-red-300 transition cursor-pointer"
-                                                    title="Smazat"
-                                                >
-                                                    <TrashIcon className="h-5 w-5" />
-                                                </button>
-                                            </div>
-                                        </td>
-                                    </tr>
-                                ))
-                            ) : (
-                                <tr>
-                                    <td colSpan="4" className="px-6 py-16 text-center">
-                                        <div className="flex flex-col items-center justify-center">
-                                            <div className="bg-gray-100 dark:bg-gray-800 p-4 rounded-full mb-4">
-                                                <UserCircleIcon className="h-10 w-10 text-gray-400 dark:text-gray-500" />
-                                            </div>
-                                            <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-1">Zatím nemáte žádné profily</h3>
-                                            <p className="text-gray-500 dark:text-gray-400 mb-6 max-w-sm">
-                                                Vytvořte si profil autora a zobrazte ho na svém webu.
-                                            </p>
-                                            <button
-                                                onClick={() => setShowCreateModal(true)}
-                                                className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-indigo-600 text-white font-medium hover:bg-indigo-700 transition cursor-pointer"
-                                            >
-                                                <PlusIcon className="h-5 w-5" />
-                                                Vytvořit první profil
-                                            </button>
-                                        </div>
+            <div className="overflow-x-auto rounded-xl shadow-lg bg-white dark:bg-gray-900">
+                <table className="w-full text-sm text-left">
+                    <thead className="text-xs uppercase bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-300">
+                        <tr>
+                            <th scope="col" className="px-6 py-4 font-semibold">Název</th>
+                            <th scope="col" className="px-6 py-4 font-semibold">Autor</th>
+                            <th scope="col" className="px-6 py-4 font-semibold">Vytvořeno</th>
+                            <th scope="col" className="px-6 py-4 text-right font-semibold">Akce</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {loading ? (
+                            [...Array(5)].map((_, i) => (
+                                <tr key={i} className={i % 2 === 0 ? 'bg-white dark:bg-gray-900' : 'bg-gray-50 dark:bg-gray-800'}>
+                                    <td className="px-6 py-4">
+                                        <div className="h-5 w-48 bg-gray-200 dark:bg-gray-700 rounded animate-pulse" />
+                                    </td>
+                                    <td className="px-6 py-4">
+                                        <div className="h-5 w-32 bg-gray-200 dark:bg-gray-700 rounded animate-pulse" />
+                                    </td>
+                                    <td className="px-6 py-4">
+                                        <div className="h-5 w-24 bg-gray-200 dark:bg-gray-700 rounded animate-pulse" />
+                                    </td>
+                                    <td className="px-6 py-4 flex justify-end gap-2">
+                                        <div className="h-8 w-8 bg-gray-200 dark:bg-gray-700 rounded-full animate-pulse" />
+                                        <div className="h-8 w-8 bg-gray-200 dark:bg-gray-700 rounded-full animate-pulse" />
+                                        <div className="h-8 w-8 bg-gray-200 dark:bg-gray-700 rounded-full animate-pulse" />
                                     </td>
                                 </tr>
-                            )}
-                        </tbody>
-                    </table>
-                </div>
-            )}
+                            ))
+                        ) : widgets.length > 0 ? (
+                            widgets.map((widget, idx) => (
+                                <tr key={widget.id} className={idx % 2 === 0 ? 'bg-white dark:bg-gray-900' : 'bg-gray-50 dark:bg-gray-800'}>
+                                    <td className="px-6 py-4 font-medium text-gray-900 dark:text-white">
+                                        <div className="flex items-center gap-3">
+                                            <div className="p-2 bg-indigo-100 dark:bg-indigo-900/30 rounded-lg text-indigo-600 dark:text-indigo-400">
+                                                <UserCircleIcon className="h-5 w-5" />
+                                            </div>
+                                            {widget.name}
+                                        </div>
+                                    </td>
+                                    <td className="px-6 py-4 text-gray-700 dark:text-gray-300">
+                                        {widget.authorName || '-'}
+                                    </td>
+                                    <td className="px-6 py-4 text-gray-700 dark:text-gray-300">
+                                        {new Date(widget.createdAt).toLocaleDateString('cs-CZ')}
+                                    </td>
+                                    <td className="px-6 py-4 text-right flex justify-end gap-2">
+                                        <WidgetEmbedGenerator
+                                            widgetId={widget.id}
+                                            widgetType="Author"
+                                            minimal={true}
+                                        />
+                                        <Link
+                                            href={`/widgets/author/${widget.id}`}
+                                            title="Upravit"
+                                            className="p-2 rounded-full hover:bg-blue-100 dark:hover:bg-blue-900 transition"
+                                        >
+                                            <PencilSquareIcon className="h-5 w-5 text-blue-600 dark:text-blue-400" />
+                                        </Link>
+                                        <button
+                                            onClick={() => {
+                                                setWidgetToDelete(widget);
+                                                setShowDeleteModal(true);
+                                            }}
+                                            title="Smazat"
+                                            className="p-2 rounded-full hover:bg-red-100 dark:hover:bg-red-900 transition"
+                                        >
+                                            <TrashIcon className="h-5 w-5 text-red-600 dark:text-red-400" />
+                                        </button>
+                                    </td>
+                                </tr>
+                            ))
+                        ) : (
+                            <tr>
+                                <td colSpan="4" className="px-6 py-16 text-center">
+                                    <div className="flex flex-col items-center justify-center">
+                                        <div className="bg-gray-100 dark:bg-gray-800 p-4 rounded-full mb-4">
+                                            <UserCircleIcon className="h-10 w-10 text-gray-400 dark:text-gray-500" />
+                                        </div>
+                                        <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-1">Zatím nemáte žádné profily</h3>
+                                        <p className="text-gray-500 dark:text-gray-400 mb-6 max-w-sm">
+                                            Vytvořte si profil autora a zobrazte ho na svém webu.
+                                        </p>
+                                        <button
+                                            onClick={() => setShowCreateModal(true)}
+                                            className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-indigo-600 text-white font-medium hover:bg-indigo-700 transition cursor-pointer"
+                                        >
+                                            <PlusIcon className="h-5 w-5" />
+                                            Vytvořit první profil
+                                        </button>
+                                    </div>
+                                </td>
+                            </tr>
+                        )}
+                    </tbody>
+                </table>
+            </div>
 
             {/* Create Modal */}
             {showCreateModal && (

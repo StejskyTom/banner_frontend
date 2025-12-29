@@ -53,6 +53,7 @@ import {
     TableCellsIcon
 } from '@heroicons/react/24/solid';
 import Link from 'next/link';
+import Loader from '../../../components/Loader';
 
 // --- Helper Components ---
 
@@ -1577,7 +1578,7 @@ export default function ArticleEditorPage({ params }) {
         showNotification('Kód zkopírován do schránky', 'success');
     };
 
-    if (loading) return <div className="p-8 text-center text-gray-500">Načítám...</div>;
+    if (loading) return <Loader />;
     if (!widget) return <div className="p-8 text-center text-red-500">Widget nenalezen</div>;
 
     const selectedBlock = widget.content.find(b => b.id === selectedBlockId);

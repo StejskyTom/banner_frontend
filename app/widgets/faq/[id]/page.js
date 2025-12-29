@@ -34,6 +34,7 @@ import {
     verticalListSortingStrategy
 } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
+import Loader from '../../../components/Loader';
 
 // Pure UI Component for the Question Item
 function QuestionItem({ question, onUpdate, onRemove, dragHandleProps, style, className }) {
@@ -240,7 +241,7 @@ export default function FaqWidgetDetailPage() {
         }),
     };
 
-    if (loading) return <div className="p-8 text-center">Načítám...</div>;
+    if (loading) return <Loader />;
     if (!widget) return <div className="p-8 text-center">Widget nenalezen</div>;
 
     const activeQuestion = activeId ? questions.find(q => q.id === activeId) : null;

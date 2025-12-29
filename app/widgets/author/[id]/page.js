@@ -16,6 +16,7 @@ import {
 import Link from 'next/link';
 import UploadAttachment from '../../../components/UploadAttachment';
 import AuthorImageUpload from '../../../components/AuthorImageUpload';
+import Loader from '../../../components/Loader';
 
 export default function AuthorWidgetDetailPage() {
     const { id } = useParams();
@@ -104,7 +105,7 @@ export default function AuthorWidgetDetailPage() {
         showNotification('Kód zkopírován do schránky', 'success');
     };
 
-    if (loading) return <div className="p-8 text-center">Načítám...</div>;
+    if (loading) return <Loader />;
     if (!widget) return <div className="p-8 text-center">Widget nenalezen</div>;
 
     return (

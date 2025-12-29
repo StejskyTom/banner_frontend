@@ -78,9 +78,7 @@ export default function ArticleWidgetsPage() {
         }
     };
 
-    if (loading) {
-        return <div className="p-8 text-center text-gray-500">Načítám...</div>;
-    }
+
 
     return (
         <div className="p-6">
@@ -111,11 +109,18 @@ export default function ArticleWidgetsPage() {
                     </thead>
                     <tbody>
                         {loading ? (
-                            [...Array(3)].map((_, i) => (
+                            [...Array(5)].map((_, i) => (
                                 <tr key={i} className={i % 2 === 0 ? 'bg-white dark:bg-gray-900' : 'bg-gray-50 dark:bg-gray-800'}>
-                                    <td className="px-6 py-4"><div className="h-5 w-48 bg-gray-200 dark:bg-gray-700 rounded animate-pulse" /></td>
-                                    <td className="px-6 py-4"><div className="h-5 w-32 bg-gray-200 dark:bg-gray-700 rounded animate-pulse" /></td>
-                                    <td className="px-6 py-4"><div className="h-8 w-24 bg-gray-200 dark:bg-gray-700 rounded animate-pulse" /></td>
+                                    <td className="px-6 py-4">
+                                        <div className="h-5 w-48 bg-gray-200 dark:bg-gray-700 rounded animate-pulse" />
+                                    </td>
+                                    <td className="px-6 py-4">
+                                        <div className="h-5 w-32 bg-gray-200 dark:bg-gray-700 rounded animate-pulse" />
+                                    </td>
+                                    <td className="px-6 py-4 flex justify-end gap-2">
+                                        <div className="h-8 w-8 bg-gray-200 dark:bg-gray-700 rounded-full animate-pulse" />
+                                        <div className="h-8 w-8 bg-gray-200 dark:bg-gray-700 rounded-full animate-pulse" />
+                                    </td>
                                 </tr>
                             ))
                         ) : widgets.length > 0 ? (
