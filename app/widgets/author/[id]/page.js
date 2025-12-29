@@ -5,31 +5,26 @@ import { useParams } from 'next/navigation';
 import { authorizedFetch } from '../../../../lib/api';
 import { useToast } from "../../../components/ToastProvider";
 import {
-    ChevronLeftIcon,
+    ArrowLeftIcon,
     CodeBracketIcon,
-    ClipboardDocumentIcon,
-    XMarkIcon,
     CheckIcon,
     PencilSquareIcon,
-    PhotoIcon
+    XMarkIcon,
+    TableCellsIcon,
+    Cog6ToothIcon,
+    ClipboardDocumentIcon
 } from '@heroicons/react/24/solid';
 import Link from 'next/link';
-import UploadAttachment from '../../../components/UploadAttachment';
-import AuthorImageUpload from '../../../components/AuthorImageUpload';
 import Loader from '../../../components/Loader';
+import AuthorEditSidebar from '../../../components/AuthorEditSidebar';
+import AuthorPreview from '../../../components/AuthorPreview';
 
 export default function AuthorWidgetDetailPage() {
     const { id } = useParams();
     const [widget, setWidget] = useState(null);
     const [loading, setLoading] = useState(true);
     const [saving, setSaving] = useState(false);
-
-    // Form State
-    const [authorName, setAuthorName] = useState('');
-    const [authorTitle, setAuthorTitle] = useState('');
-    const [authorBio, setAuthorBio] = useState('');
-    const [authorPhotoUrl, setAuthorPhotoUrl] = useState('');
-    const [layout, setLayout] = useState('centered');
+    const [activeTab, setActiveTab] = useState('content');
 
     const [showEmbedModal, setShowEmbedModal] = useState(false);
     const [isEditingName, setIsEditingName] = useState(false);
@@ -50,11 +45,6 @@ export default function AuthorWidgetDetailPage() {
                 const data = await res.json();
                 setWidget(data);
                 setEditNameValue(data.name);
-                setAuthorName(data.authorName || '');
-                setAuthorTitle(data.authorTitle || '');
-                setAuthorBio(data.authorBio || '');
-                setAuthorPhotoUrl(data.authorPhotoUrl || '');
-                setLayout(data.layout || 'centered');
             } else {
                 showNotification('Nepodařilo se načíst widget', 'error');
             }
@@ -71,12 +61,14 @@ export default function AuthorWidgetDetailPage() {
             const res = await authorizedFetch(`/author-widgets/${id}`, {
                 method: 'PUT',
                 body: JSON.stringify({
-                    name: editNameValue,
-                    authorName,
-                    authorTitle,
-                    authorBio,
-                    authorPhotoUrl,
-                    layout
+                    name: widget.name,
+                    authorName: widget.authorName,
+                    authorTitle: widget.authorTitle,
+                    authorBio: widget.authorBio,
+                    authorPhotoUrl: widget.authorPhotoUrl,
+                    layout: widget.layout,
+                    backgroundColor: widget.backgroundColor,
+                    borderRadius: widget.borderRadius
                 })
             });
 
@@ -109,230 +101,94 @@ export default function AuthorWidgetDetailPage() {
     if (!widget) return <div className="p-8 text-center">Widget nenalezen</div>;
 
     return (
-        <div className="p-6 max-w-7xl mx-auto">
-            {/* Header */}
-            <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-8">
+        <div className="flex flex-col h-screen bg-gray-50 dark:bg-gray-900">
+            {/* Top Bar */}
+            <div className="h-16 bg-gray-900 border-b border-gray-800 flex justify-between items-center px-6 shrink-0 z-10">
                 <div className="flex items-center gap-4">
                     <Link
                         href="/widgets/author"
-                        className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition text-gray-500"
+                        className="p-2 rounded-lg hover:bg-gray-800 text-gray-400 hover:text-white transition-colors"
                     >
-                        <ChevronLeftIcon className="h-5 w-5" />
+                        <ArrowLeftIcon className="h-5 w-5" />
                     </Link>
-
-                    {isEditingName ? (
-                        <div className="flex items-center gap-2">
-                            <input
-                                type="text"
-                                value={editNameValue}
-                                onChange={(e) => setEditNameValue(e.target.value)}
-                                className="text-2xl font-bold text-gray-900 dark:text-white bg-transparent border-b-2 border-indigo-500 focus:outline-none"
-                                autoFocus
-                            />
-                            <button
-                                onClick={handleSave}
-                                className="p-1 text-green-600 hover:text-green-700 transition cursor-pointer"
-                                title="Uložit název"
-                            >
-                                <CheckIcon className="h-6 w-6" />
-                            </button>
-                            <button
-                                onClick={() => {
-                                    setIsEditingName(false);
-                                    setEditNameValue(widget.name);
-                                }}
-                                className="p-1 text-red-600 hover:text-red-700 transition cursor-pointer"
-                                title="Zrušit"
-                            >
-                                <XMarkIcon className="h-6 w-6" />
-                            </button>
-                        </div>
-                    ) : (
-                        <div className="flex items-center gap-2 group">
-                            <h1 className="text-2xl font-bold text-gray-900 dark:text-white">{widget.name}</h1>
-                            <button
-                                onClick={() => setIsEditingName(true)}
-                                className="opacity-0 group-hover:opacity-100 transition p-1 text-gray-400 hover:text-indigo-600 cursor-pointer"
-                                title="Upravit název"
-                            >
-                                <PencilSquareIcon className="h-5 w-5" />
-                            </button>
-                        </div>
-                    )}
+                    <h1 className="text-lg font-semibold text-white truncate max-w-md">
+                        {widget.name}
+                    </h1>
                 </div>
 
-                <div className="flex gap-3">
+                <div className="flex items-center gap-3">
                     <button
                         onClick={() => setShowEmbedModal(true)}
-                        className="px-4 py-2 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition flex items-center gap-2 cursor-pointer"
+                        className="px-4 py-2 rounded-lg bg-gray-800 border border-gray-700 text-gray-300 hover:bg-gray-700 hover:text-white transition-colors font-medium text-sm flex items-center gap-2"
                     >
-                        <CodeBracketIcon className="h-5 w-5" />
-                        Embed kód
+                        <CodeBracketIcon className="h-4 w-4" />
+                        Publikovat
                     </button>
+
                     <button
-                        onClick={handleSave}
                         disabled={saving}
-                        className="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2 cursor-pointer"
+                        onClick={handleSave}
+                        className="px-4 py-2 rounded-lg bg-visualy-accent-4 text-white hover:bg-visualy-accent-4/90 transition-colors font-medium text-sm flex items-center gap-2 disabled:opacity-70 disabled:cursor-not-allowed shadow-sm"
                     >
-                        {saving ? 'Ukládám...' : 'Uložit změny'}
+                        {saving ? (
+                            <svg className="animate-spin h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"></path>
+                            </svg>
+                        ) : (
+                            "Uložit"
+                        )}
                     </button>
                 </div>
             </div>
 
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-                {/* Editor Column */}
-                <div className="space-y-6">
-                    <div className="bg-white dark:bg-gray-800 p-6 rounded-xl border border-gray-200 dark:border-gray-700 shadow-sm">
-                        <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Údaje o autorovi</h2>
-
-                        <div className="mb-6">
-                            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                                Rozložení
-                            </label>
-                            <div className="grid grid-cols-2 gap-4">
-                                <button
-                                    onClick={() => setLayout('centered')}
-                                    className={`p-4 border-2 rounded-xl flex flex-col items-center gap-2 transition ${layout === 'centered'
-                                        ? 'border-indigo-600 bg-indigo-50 dark:bg-indigo-900/20 dark:border-indigo-500'
-                                        : 'border-gray-200 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600'
-                                        }`}
-                                >
-                                    <div className="w-full h-20 bg-gray-100 dark:bg-gray-800 rounded-lg flex flex-col items-center justify-center gap-1 p-2">
-                                        <div className="w-8 h-8 rounded-full bg-gray-300 dark:bg-gray-600"></div>
-                                        <div className="w-16 h-2 bg-gray-300 dark:bg-gray-600 rounded"></div>
-                                        <div className="w-12 h-2 bg-gray-300 dark:bg-gray-600 rounded"></div>
-                                    </div>
-                                    <span className={`text-sm font-medium ${layout === 'centered' ? 'text-indigo-600 dark:text-indigo-400' : 'text-gray-600 dark:text-gray-400'}`}>
-                                        Na střed
-                                    </span>
-                                </button>
-
-                                <button
-                                    onClick={() => setLayout('side-by-side')}
-                                    className={`p-4 border-2 rounded-xl flex flex-col items-center gap-2 transition ${layout === 'side-by-side'
-                                        ? 'border-indigo-600 bg-indigo-50 dark:bg-indigo-900/20 dark:border-indigo-500'
-                                        : 'border-gray-200 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600'
-                                        }`}
-                                >
-                                    <div className="w-full h-20 bg-gray-100 dark:bg-gray-800 rounded-lg flex items-center gap-2 p-2">
-                                        <div className="w-10 h-10 rounded-full bg-gray-300 dark:bg-gray-600 flex-shrink-0"></div>
-                                        <div className="flex-1 flex flex-col gap-1">
-                                            <div className="w-full h-2 bg-gray-300 dark:bg-gray-600 rounded"></div>
-                                            <div className="w-2/3 h-2 bg-gray-300 dark:bg-gray-600 rounded"></div>
-                                        </div>
-                                    </div>
-                                    <span className={`text-sm font-medium ${layout === 'side-by-side' ? 'text-indigo-600 dark:text-indigo-400' : 'text-gray-600 dark:text-gray-400'}`}>
-                                        Vedle sebe
-                                    </span>
-                                </button>
-                            </div>
+            {/* Main Content */}
+            <div className="flex flex-1 overflow-hidden">
+                {/* Icon Sidebar */}
+                <div className="w-16 bg-gray-900 border-r border-gray-800 flex flex-col items-center py-4 gap-4 shrink-0 z-20">
+                    <div className="group relative flex items-center justify-center w-full">
+                        <button
+                            onClick={() => setActiveTab(activeTab === 'content' ? null : 'content')}
+                            className={`p-3 rounded-xl transition-all duration-200 ${activeTab === 'content'
+                                ? 'bg-gray-800 text-white shadow-sm'
+                                : 'text-gray-400 hover:bg-gray-800 hover:text-white'
+                                }`}
+                        >
+                            <TableCellsIcon className="h-6 w-6 text-visualy-accent-4" />
+                        </button>
+                        <div className="absolute left-full ml-2 px-3 py-1.5 bg-gray-900 text-white text-xs font-medium rounded-md border border-gray-800 opacity-0 group-hover:opacity-100 transform -translate-x-2 group-hover:translate-x-0 transition-all duration-200 pointer-events-none whitespace-nowrap z-50 shadow-xl">
+                            Obsah
                         </div>
+                    </div>
 
-                        <div className="space-y-4">
-                            <div>
-                                <div>
-                                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                                        Fotografie autora
-                                    </label>
-
-                                    <AuthorImageUpload
-                                        widgetId={id}
-                                        onUploadComplete={(url) => setAuthorPhotoUrl(url)}
-                                    />
-
-                                    <div className="mt-4">
-                                        <label className="block text-xs font-medium text-gray-500 dark:text-gray-400 mb-1">
-                                            Nebo vložte URL ručně
-                                        </label>
-                                        <input
-                                            type="text"
-                                            value={authorPhotoUrl}
-                                            onChange={(e) => setAuthorPhotoUrl(e.target.value)}
-                                            placeholder="https://example.com/photo.jpg"
-                                            className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-indigo-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-white text-sm"
-                                        />
-                                    </div>
-                                </div>              </div>
-
-                            <div>
-                                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                                    Jméno a příjmení
-                                </label>
-                                <input
-                                    type="text"
-                                    value={authorName}
-                                    onChange={(e) => setAuthorName(e.target.value)}
-                                    placeholder="Např. Jan Novák"
-                                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-indigo-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
-                                />
-                            </div>
-
-                            <div>
-                                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                                    Titul / Krátký popis
-                                </label>
-                                <input
-                                    type="text"
-                                    value={authorTitle}
-                                    onChange={(e) => setAuthorTitle(e.target.value)}
-                                    placeholder="Např. Specialista na SEO"
-                                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-indigo-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
-                                />
-                            </div>
-
-                            <div>
-                                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                                    Bio (dlouhý text)
-                                </label>
-                                <textarea
-                                    value={authorBio}
-                                    onChange={(e) => setAuthorBio(e.target.value)}
-                                    placeholder="Napište něco o sobě..."
-                                    rows={6}
-                                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-indigo-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
-                                />
-                            </div>
+                    <div className="group relative flex items-center justify-center w-full">
+                        <button
+                            onClick={() => setActiveTab(activeTab === 'settings' ? null : 'settings')}
+                            className={`p-3 rounded-xl transition-all duration-200 ${activeTab === 'settings'
+                                ? 'bg-gray-800 text-white shadow-sm'
+                                : 'text-gray-400 hover:bg-gray-800 hover:text-white'
+                                }`}
+                        >
+                            <Cog6ToothIcon className="h-6 w-6 text-visualy-accent-4" />
+                        </button>
+                        <div className="absolute left-full ml-2 px-3 py-1.5 bg-gray-900 text-white text-xs font-medium rounded-md border border-gray-800 opacity-0 group-hover:opacity-100 transform -translate-x-2 group-hover:translate-x-0 transition-all duration-200 pointer-events-none whitespace-nowrap z-50 shadow-xl">
+                            Nastavení
                         </div>
                     </div>
                 </div>
 
-                {/* Preview Column */}
-                <div className="lg:sticky lg:top-8 h-fit">
-                    <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Náhled</h2>
-                    <div className={`bg-white rounded-xl shadow-lg border border-gray-100 p-8 max-w-2xl mx-auto ${layout === 'side-by-side' ? 'flex flex-col sm:flex-row items-start gap-8 text-left' : 'text-center'
-                        }`}>
-                        {authorPhotoUrl ? (
-                            <img
-                                src={authorPhotoUrl}
-                                alt={authorName}
-                                className={`w-32 h-32 rounded-full object-cover border-4 border-gray-100 flex-shrink-0 ${layout === 'side-by-side' ? '' : 'mx-auto mb-5'
-                                    }`}
-                                onError={(e) => { e.target.src = 'https://via.placeholder.com/150?text=Foto'; }}
-                            />
-                        ) : (
-                            <div className={`w-32 h-32 rounded-full bg-gray-100 flex items-center justify-center text-gray-400 flex-shrink-0 ${layout === 'side-by-side' ? '' : 'mx-auto mb-5'
-                                }`}>
-                                <PhotoIcon className="h-12 w-12" />
-                            </div>
-                        )}
+                {/* Edit Sidebar */}
+                {activeTab && (
+                    <AuthorEditSidebar
+                        widget={widget}
+                        setWidget={setWidget}
+                        activeTab={activeTab}
+                    />
+                )}
 
-                        <div className="flex-1">
-                            <h3 className="text-2xl font-bold text-gray-900 mb-2">
-                                {authorName || 'Jméno Autora'}
-                            </h3>
-
-                            <div className="text-indigo-600 font-medium uppercase tracking-wide text-sm mb-5">
-                                {authorTitle || 'Titul / Pozice'}
-                            </div>
-
-                            <p className="text-gray-600 leading-relaxed text-base">
-                                {authorBio || 'Zde se zobrazí váš životopis nebo popis...'}
-                            </p>
-                        </div>
-                    </div>
-                    <p className="mt-4 text-xs text-gray-400 text-center">
-                        Poznámka: Toto je pouze náhled. Finální vzhled závisí na CSS vašeho webu.
-                    </p>
+                {/* Preview Area */}
+                <div className="flex-1 overflow-hidden bg-gray-50 dark:bg-gray-900/50 relative">
+                    <AuthorPreview widget={widget} />
                 </div>
             </div>
 
@@ -341,7 +197,7 @@ export default function AuthorWidgetDetailPage() {
                 <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
                     <div className="bg-white dark:bg-gray-800 rounded-xl shadow-2xl p-6 w-full max-w-lg transform transition-all scale-100">
                         <div className="flex justify-between items-center mb-4">
-                            <h2 className="text-xl font-bold text-gray-900 dark:text-white">Embed kód</h2>
+                            <h2 className="text-xl font-bold text-gray-900 dark:text-white">Publikovat widget</h2>
                             <button onClick={() => setShowEmbedModal(false)} className="text-gray-400 hover:text-gray-500 cursor-pointer">
                                 <XMarkIcon className="h-6 w-6" />
                             </button>
@@ -363,6 +219,9 @@ export default function AuthorWidgetDetailPage() {
                                 <ClipboardDocumentIcon className="h-5 w-5" />
                             </button>
                         </div>
+                        <p className="text-sm text-gray-600 dark:text-gray-400 mb-4 mt-2">
+                            <em>Před zkopírováním kódu nezapomeňte uložit změny.</em>
+                        </p>
 
                         <div className="mt-6 flex justify-end">
                             <button
@@ -375,7 +234,6 @@ export default function AuthorWidgetDetailPage() {
                     </div>
                 </div>
             )}
-
         </div>
     );
 }

@@ -1,9 +1,6 @@
 'use client';
 
 import { useState } from 'react';
-import { Slider } from "@/components/ui/slider";
-import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from "@/components/ui/select";
-import { Separator } from "@/components/ui/separator";
 import { Upload } from "lucide-react";
 import UploadAttachment from "../../app/components/UploadAttachment";
 import { useToast } from "../../app/components/ToastProvider";
@@ -15,7 +12,8 @@ import {
 import { arrayMove, SortableContext, rectSortingStrategy, useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
 import { TrashIcon } from '@heroicons/react/24/outline';
-import { Switch } from "@/components/ui/switch";
+import RangeSlider from './RangeSlider';
+import Toggle from './Toggle';
 
 function SectionTitle({ icon, title }) {
   return (
@@ -138,24 +136,20 @@ export default function EditSidebar({ carousel, setCarousel, activeTab }) {
 
               <div>
                 <label className="text-xs font-medium text-gray-400 mb-1.5 block">Font</label>
-                <Select
+                <select
                   value={carousel.font || "sans-serif"}
-                  onValueChange={(val) => setCarousel({ ...carousel, font: val })}
+                  onChange={(e) => setCarousel({ ...carousel, font: e.target.value })}
+                  className="w-full bg-gray-800 border border-gray-700 text-white text-sm px-3 py-2 rounded focus:outline-none focus:ring-1 focus:ring-indigo-500"
                 >
-                  <SelectTrigger className="w-full bg-gray-800 border-gray-700 text-white">
-                    <SelectValue placeholder="Vyber font" />
-                  </SelectTrigger>
-                  <SelectContent className="bg-gray-800 border-gray-700 text-white">
-                    <SelectItem value="sans-serif" className="focus:bg-gray-700 focus:text-white">Sans Serif</SelectItem>
-                    <SelectItem value="serif" className="focus:bg-gray-700 focus:text-white">Serif</SelectItem>
-                    <SelectItem value="monospace" className="focus:bg-gray-700 focus:text-white">Monospace</SelectItem>
-                    <SelectItem value="cursive" className="focus:bg-gray-700 focus:text-white">Cursive</SelectItem>
-                  </SelectContent>
-                </Select>
+                  <option value="sans-serif">Sans Serif</option>
+                  <option value="serif">Serif</option>
+                  <option value="monospace">Monospace</option>
+                  <option value="cursive">Cursive</option>
+                </select>
               </div>
             </div>
 
-            <Separator className="bg-gray-800 mb-6" />
+            <hr className="border-gray-800 mb-6" />
 
             <UploadAttachment widgetId={carousel.id} carousel={carousel} setCarousel={setCarousel} />
 
@@ -192,13 +186,12 @@ export default function EditSidebar({ carousel, setCarousel, activeTab }) {
               <label className="text-xs font-medium text-gray-400 mb-3 block">
                 Velikost obrázků ({carousel.imageSize || 64}px)
               </label>
-              <Slider
+              <RangeSlider
                 min={32}
                 max={128}
                 step={4}
-                value={[carousel.imageSize || 64]}
-                onValueChange={(val) => setCarousel({ ...carousel, imageSize: val[0] })}
-                className="py-2"
+                value={carousel.imageSize || 64}
+                onChange={(e) => setCarousel({ ...carousel, imageSize: parseInt(e.target.value) })}
               />
             </div>
 
@@ -206,42 +199,35 @@ export default function EditSidebar({ carousel, setCarousel, activeTab }) {
               <label className="text-xs font-medium text-gray-400 mb-3 block">
                 Mezera ({carousel.gap || 32}px)
               </label>
-              <Slider
+              <RangeSlider
                 min={0}
                 max={100}
                 step={4}
-                value={[carousel.gap || 32]}
-                onValueChange={(val) => setCarousel({ ...carousel, gap: val[0] })}
-                className="py-2"
+                value={carousel.gap || 32}
+                onChange={(e) => setCarousel({ ...carousel, gap: parseInt(e.target.value) })}
               />
             </div>
 
-            <Separator className="bg-gray-800" />
+            <hr className="border-gray-800" />
 
             <div>
               <label className="text-xs font-medium text-gray-400 mb-3 block">
                 Rychlost ({carousel.speed || 20}s)
               </label>
-              <Slider
+              <RangeSlider
                 min={5}
                 max={60}
                 step={1}
-                value={[carousel.speed || 20]}
-                onValueChange={(val) => setCarousel({ ...carousel, speed: val[0] })}
-                className="py-2"
+                value={carousel.speed || 20}
+                onChange={(e) => setCarousel({ ...carousel, speed: parseInt(e.target.value) })}
               />
             </div>
 
-            <div className="flex items-center space-x-3 pt-2">
-              <Switch
-                id="pauseOnHover"
-                checked={carousel.pauseOnHover || false}
-                onCheckedChange={(checked) => setCarousel({ ...carousel, pauseOnHover: checked })}
-              />
-              <label htmlFor="pauseOnHover" className="text-sm font-medium text-gray-300 select-none cursor-pointer">
-                Zastavit při najetí myši
-              </label>
-            </div>
+            <Toggle
+              checked={carousel.pauseOnHover || false}
+              onChange={(checked) => setCarousel({ ...carousel, pauseOnHover: checked })}
+              label="Zastavit při najetí myši"
+            />
           </div>
         )}
       </div>

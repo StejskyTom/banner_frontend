@@ -17,7 +17,7 @@ export default function MainSidebar({ isDesktopCollapsed, onDesktopToggle }) {
             icon: <LayoutDashboard className="w-5 h-5 text-visualy-accent-4" />,
         },
         {
-            label: 'Logo Carousel',
+            label: 'Logo',
             href: '/widgets/logo-carousel',
             icon: (
                 <svg
@@ -31,7 +31,7 @@ export default function MainSidebar({ isDesktopCollapsed, onDesktopToggle }) {
             ),
         },
         {
-            label: 'Heureka Produkty',
+            label: 'Produkty',
             href: '/widgets/heureka',
             icon: (
                 <svg
@@ -45,7 +45,7 @@ export default function MainSidebar({ isDesktopCollapsed, onDesktopToggle }) {
             ),
         },
         {
-            label: 'FAQ Sekce',
+            label: 'FAQ',
             href: '/widgets/faq',
             icon: (
                 <svg
@@ -73,7 +73,7 @@ export default function MainSidebar({ isDesktopCollapsed, onDesktopToggle }) {
             ),
         },
         {
-            label: 'O autorovi',
+            label: 'Autor',
             href: '/widgets/author',
             icon: (
                 <svg

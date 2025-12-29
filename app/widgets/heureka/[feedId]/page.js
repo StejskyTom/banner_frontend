@@ -4,7 +4,6 @@ import { useParams } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { authorizedFetch } from '../../../../lib/api';
 import { useToast } from "../../../components/ToastProvider";
-import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from "@/components/ui/select";
 import { ChevronDownIcon, ChevronUpIcon, XMarkIcon, ChevronLeftIcon, ChevronRightIcon, PencilSquareIcon, CheckIcon, Cog6ToothIcon, CodeBracketIcon, ClipboardDocumentIcon, CheckCircleIcon, EyeIcon } from '@heroicons/react/24/solid';
 import { DndContext, closestCenter, KeyboardSensor, PointerSensor, useSensor, useSensors } from '@dnd-kit/core';
 import { arrayMove, SortableContext, sortableKeyboardCoordinates, useSortable, rectSortingStrategy } from '@dnd-kit/sortable';
@@ -422,16 +421,15 @@ export default function HeurekaFeedDetailPage() {
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                   Typ zobrazení
                 </label>
-                <Select value={layout} onValueChange={setLayout}>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Vyberte zobrazení" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="carousel">Carousel (posuvník)</SelectItem>
-                    <SelectItem value="grid">Mřížka (Grid)</SelectItem>
-                    <SelectItem value="list">Seznam (List)</SelectItem>
-                  </SelectContent>
-                </Select>
+                <select
+                  value={layout}
+                  onChange={(e) => setLayout(e.target.value)}
+                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                >
+                  <option value="carousel">Carousel (posuvník)</option>
+                  <option value="grid">Mřížka (Grid)</option>
+                  <option value="list">Seznam (List)</option>
+                </select>
               </div>
 
               {layout === 'grid' && (
@@ -663,19 +661,18 @@ export default function HeurekaFeedDetailPage() {
           </div>
           <div>
             <label className="text-sm font-medium text-gray-700 dark:text-gray-300">Kategorie</label>
-            <Select value={selectedCategory} onValueChange={setSelectedCategory}>
-              <SelectTrigger className="mt-1 w-full">
-                <SelectValue placeholder="Všechny kategorie" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">Všechny kategorie</SelectItem>
-                {categories.map(cat => (
-                  <SelectItem key={cat.name} value={cat.name}>
-                    {cat.name} ({cat.productCount})
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+            <select
+              value={selectedCategory}
+              onChange={(e) => setSelectedCategory(e.target.value)}
+              className="mt-1 w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+            >
+              <option value="all">Všechny kategorie</option>
+              {categories.map(cat => (
+                <option key={cat.name} value={cat.name}>
+                  {cat.name} ({cat.productCount})
+                </option>
+              ))}
+            </select>
           </div>
           <div className="flex items-end">
             <button
@@ -693,17 +690,16 @@ export default function HeurekaFeedDetailPage() {
         {/* Left: Sort */}
         <div className="flex items-center gap-2 w-full md:w-auto">
           <span className="text-sm text-gray-500 dark:text-gray-400 whitespace-nowrap">Řazení:</span>
-          <Select value={sortBy} onValueChange={setSortBy}>
-            <SelectTrigger className="w-[180px]">
-              <SelectValue placeholder="Řazení" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="name_asc">Název (A-Z)</SelectItem>
-              <SelectItem value="name_desc">Název (Z-A)</SelectItem>
-              <SelectItem value="price_asc">Cena (nejlevnější)</SelectItem>
-              <SelectItem value="price_desc">Cena (nejdražší)</SelectItem>
-            </SelectContent>
-          </Select>
+          <select
+            value={sortBy}
+            onChange={(e) => setSortBy(e.target.value)}
+            className="w-[180px] px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+          >
+            <option value="name_asc">Název (A-Z)</option>
+            <option value="name_desc">Název (Z-A)</option>
+            <option value="price_asc">Cena (nejlevnější)</option>
+            <option value="price_desc">Cena (nejdražší)</option>
+          </select>
         </div>
 
         {/* Center: Stats */}
@@ -714,18 +710,17 @@ export default function HeurekaFeedDetailPage() {
         {/* Right: Items per page */}
         <div className="flex items-center gap-2 w-full md:w-auto justify-end">
           <span className="text-sm text-gray-500 dark:text-gray-400 whitespace-nowrap">Na stránku:</span>
-          <Select value={itemsPerPage.toString()} onValueChange={(val) => { setItemsPerPage(Number(val)); setPage(1); }}>
-            <SelectTrigger className="w-[80px]">
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="12">12</SelectItem>
-              <SelectItem value="24">24</SelectItem>
-              <SelectItem value="30">30</SelectItem>
-              <SelectItem value="60">60</SelectItem>
-              <SelectItem value="100">100</SelectItem>
-            </SelectContent>
-          </Select>
+          <select
+            value={itemsPerPage.toString()}
+            onChange={(e) => { setItemsPerPage(Number(e.target.value)); setPage(1); }}
+            className="w-[80px] px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+          >
+            <option value="12">12</option>
+            <option value="24">24</option>
+            <option value="30">30</option>
+            <option value="60">60</option>
+            <option value="100">100</option>
+          </select>
         </div>
       </div>
 
@@ -798,24 +793,23 @@ export default function HeurekaFeedDetailPage() {
                         <img
                           src={product.imgUrl}
                           alt={product.productName}
-                          className="w-20 h-20 object-contain rounded-lg bg-white p-1"
+                          className="w-20 h-20 object-contain rounded bg-white p-1"
                         />
                       ) : (
-                        <div className="w-20 h-20 bg-gray-100 dark:bg-gray-700 rounded-lg flex items-center justify-center text-gray-400">
-                          <span className="text-xs">Bez foto</span>
+                        <div className="w-20 h-20 bg-gray-100 dark:bg-gray-700 rounded flex items-center justify-center">
+                          <span className="text-gray-400 text-xs">Bez foto</span>
                         </div>
                       )}
-
                       <div className="flex-1 min-w-0">
-                        <h3 className="font-semibold text-sm text-gray-900 dark:text-white line-clamp-2 mb-1 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">
+                        <h3 className="font-medium text-gray-900 dark:text-white line-clamp-2 mb-1" title={product.productName}>
                           {product.productName}
                         </h3>
                         <p className="text-lg font-bold text-green-600">
                           {product.priceVat} Kč
                         </p>
-                        {product.category && (
-                          <p className="text-xs text-gray-500 mt-1 line-clamp-1">{product.category.name}</p>
-                        )}
+                        <p className="text-xs text-gray-500 mt-1">
+                          ID: {product.itemId}
+                        </p>
                       </div>
                     </div>
                   </div>
@@ -823,33 +817,57 @@ export default function HeurekaFeedDetailPage() {
               })}
             </div>
 
-            {/* Pagination Controls */}
+            {/* Pagination */}
             {totalPages > 1 && (
-              <div className="flex justify-center items-center gap-4 mt-8">
+              <div className="mt-8 flex justify-center items-center gap-2">
                 <button
                   onClick={() => setPage(p => Math.max(1, p - 1))}
                   disabled={page === 1}
-                  className="p-2 rounded-lg border border-gray-300 dark:border-gray-600 disabled:opacity-50 hover:bg-gray-100 dark:hover:bg-gray-800 transition cursor-pointer"
+                  className="p-2 rounded-lg border border-gray-300 dark:border-gray-600 hover:bg-gray-100 dark:hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed transition"
                 >
-                  <ChevronLeftIcon className="h-5 w-5" />
+                  <ChevronLeftIcon className="h-5 w-5 text-gray-600 dark:text-gray-400" />
                 </button>
-                <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
-                  Strana {page} z {totalPages}
-                </span>
+
+                <div className="flex items-center gap-1">
+                  {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
+                    let pageNum;
+                    if (totalPages <= 5) {
+                      pageNum = i + 1;
+                    } else if (page <= 3) {
+                      pageNum = i + 1;
+                    } else if (page >= totalPages - 2) {
+                      pageNum = totalPages - 4 + i;
+                    } else {
+                      pageNum = page - 2 + i;
+                    }
+
+                    return (
+                      <button
+                        key={pageNum}
+                        onClick={() => setPage(pageNum)}
+                        className={`w-8 h-8 rounded-lg flex items-center justify-center text-sm font-medium transition ${page === pageNum
+                          ? 'bg-indigo-600 text-white'
+                          : 'text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700'
+                          }`}
+                      >
+                        {pageNum}
+                      </button>
+                    );
+                  })}
+                </div>
+
                 <button
                   onClick={() => setPage(p => Math.min(totalPages, p + 1))}
                   disabled={page === totalPages}
-                  className="p-2 rounded-lg border border-gray-300 dark:border-gray-600 disabled:opacity-50 hover:bg-gray-100 dark:hover:bg-gray-800 transition cursor-pointer"
+                  className="p-2 rounded-lg border border-gray-300 dark:border-gray-600 hover:bg-gray-100 dark:hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed transition"
                 >
-                  <ChevronRightIcon className="h-5 w-5" />
+                  <ChevronRightIcon className="h-5 w-5 text-gray-600 dark:text-gray-400" />
                 </button>
               </div>
             )}
           </>
         )
       }
-
-
-    </div >
+    </div>
   );
 }
