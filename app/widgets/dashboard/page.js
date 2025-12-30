@@ -177,111 +177,123 @@ export default function DashboardPage() {
     };
 
     return (
-        <div className="flex-1 flex flex-col justify-center p-8 w-full max-w-7xl mx-auto min-h-[calc(100vh-2rem)]">
-            {/* Header */}
-            <div className="mb-6">
-                <h1 className="text-4xl font-bold text-gray-900 dark:text-white mb-2">
-                    Vítejte zpět, {session?.user?.name || 'uživateli'} 👋
+        <div className="flex flex-col h-screen bg-gray-50 dark:bg-gray-900">
+            {/* Top Bar */}
+            <div className="h-16 bg-gray-900 border-b border-gray-800 flex justify-between items-center px-6 shrink-0 z-10">
+                <h1 className="text-lg font-semibold text-white">
+                    Dashboard
                 </h1>
-                <p className="text-lg text-gray-600 dark:text-gray-400">
-                    Zde je přehled vašich widgetů a rychlé akce.
-                </p>
             </div>
 
-            {/* Stats Grid */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-12">
-                {cards.map((card) => (
-                    <Link
-                        key={card.title}
-                        href={card.href}
-                        className="group relative bg-white dark:bg-gray-800 rounded-2xl p-6 shadow-sm border border-gray-100 dark:border-gray-700 hover:shadow-md transition-all duration-300 hover:-translate-y-1"
-                    >
-                        <div className="flex justify-between items-start mb-4">
-                            <div className={`p-3 rounded-xl ${card.bgColor} ${card.color}`}>
-                                <card.icon className="w-8 h-8" />
-                            </div>
-                            <div className="flex items-center gap-1 text-gray-400 group-hover:text-visualy-accent-4 transition-colors">
-                                <span className="text-sm font-medium">Přejít</span>
-                                <ArrowRightIcon className="w-4 h-4" />
-                            </div>
-                        </div>
+            {/* Main Content */}
+            <div className="flex-1 overflow-y-auto p-8">
+                <div className="max-w-7xl mx-auto">
+                    {/* Welcome Header */}
+                    <div className="mb-8">
+                        <h2 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">
+                            Vítejte zpět, {session?.user?.name || 'uživateli'} 👋
+                        </h2>
+                        <p className="text-lg text-gray-600 dark:text-gray-400">
+                            Zde je přehled vašich widgetů a rychlé akce.
+                        </p>
+                    </div>
 
-                        <div>
-                            <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-1">
-                                {card.title}
-                            </h3>
-                            <div className="flex items-baseline gap-2">
-                                <span className="text-3xl font-bold text-gray-900 dark:text-white">
-                                    {loading ? '-' : card.count}
-                                </span>
-                                <span className="text-sm text-gray-500 dark:text-gray-400">
-                                    vytvořeno
-                                </span>
-                            </div>
-                        </div>
-                    </Link>
-                ))}
-            </div>
+                    {/* Stats Grid */}
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-12">
+                        {cards.map((card) => (
+                            <Link
+                                key={card.title}
+                                href={card.href}
+                                className="group relative bg-white dark:bg-gray-800 rounded-2xl p-6 shadow-sm border border-gray-100 dark:border-gray-700 hover:shadow-md transition-all duration-300 hover:-translate-y-1"
+                            >
+                                <div className="flex justify-between items-start mb-4">
+                                    <div className={`p-3 rounded-xl ${card.bgColor} ${card.color}`}>
+                                        <card.icon className="w-8 h-8" />
+                                    </div>
+                                    <div className="flex items-center gap-1 text-gray-400 group-hover:text-visualy-accent-4 transition-colors">
+                                        <span className="text-sm font-medium">Přejít</span>
+                                        <ArrowRightIcon className="w-4 h-4" />
+                                    </div>
+                                </div>
 
-            {/* Quick Actions */}
-            <div>
-                <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-6">
-                    Rychlé akce
-                </h2>
-                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
-                    <button
-                        onClick={() => handleCreate('logo')}
-                        disabled={creating === 'logo'}
-                        className="flex items-center gap-3 p-4 bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 hover:border-visualy-accent-4/50 dark:hover:border-visualy-accent-4/50 transition-all group text-left w-full cursor-pointer disabled:opacity-50"
-                    >
-                        <div className="p-2 bg-gradient-to-br from-visualy-accent-4 to-emerald-500 rounded-lg text-white shadow-lg shadow-visualy-accent-4/20 group-hover:scale-110 transition-transform duration-300">
-                            {creating === 'logo' ? <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" /> : <PlusIcon className="w-5 h-5" />}
-                        </div>
-                        <span className="font-medium text-gray-700 dark:text-gray-200">Carousel</span>
-                    </button>
+                                <div>
+                                    <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-1">
+                                        {card.title}
+                                    </h3>
+                                    <div className="flex items-baseline gap-2">
+                                        <span className="text-3xl font-bold text-gray-900 dark:text-white">
+                                            {loading ? '-' : card.count}
+                                        </span>
+                                        <span className="text-sm text-gray-500 dark:text-gray-400">
+                                            vytvořeno
+                                        </span>
+                                    </div>
+                                </div>
+                            </Link>
+                        ))}
+                    </div>
 
-                    <Link
-                        href="/widgets/heureka?action=create"
-                        className="flex items-center gap-3 p-4 bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 hover:border-visualy-accent-4/50 dark:hover:border-visualy-accent-4/50 transition-all group"
-                    >
-                        <div className="p-2 bg-gradient-to-br from-visualy-accent-4 to-emerald-500 rounded-lg text-white shadow-lg shadow-visualy-accent-4/20 group-hover:scale-110 transition-transform duration-300">
-                            <PlusIcon className="w-5 h-5" />
-                        </div>
-                        <span className="font-medium text-gray-700 dark:text-gray-200">Produkt</span>
-                    </Link>
+                    {/* Quick Actions */}
+                    <div>
+                        <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-6">
+                            Rychlé akce
+                        </h2>
+                        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
+                            <button
+                                onClick={() => handleCreate('logo')}
+                                disabled={creating === 'logo'}
+                                className="flex items-center gap-3 p-4 bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 hover:border-visualy-accent-4/50 dark:hover:border-visualy-accent-4/50 transition-all group text-left w-full cursor-pointer disabled:opacity-50"
+                            >
+                                <div className="p-2 bg-gradient-to-br from-visualy-accent-4 to-emerald-500 rounded-lg text-white shadow-lg shadow-visualy-accent-4/20 group-hover:scale-110 transition-transform duration-300">
+                                    {creating === 'logo' ? <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" /> : <PlusIcon className="w-5 h-5" />}
+                                </div>
+                                <span className="font-medium text-gray-700 dark:text-gray-200">Carousel</span>
+                            </button>
 
-                    <button
-                        onClick={() => handleCreate('faq')}
-                        disabled={creating === 'faq'}
-                        className="flex items-center gap-3 p-4 bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 hover:border-visualy-accent-4/50 dark:hover:border-visualy-accent-4/50 transition-all group text-left w-full cursor-pointer disabled:opacity-50"
-                    >
-                        <div className="p-2 bg-gradient-to-br from-visualy-accent-4 to-emerald-500 rounded-lg text-white shadow-lg shadow-visualy-accent-4/20 group-hover:scale-110 transition-transform duration-300">
-                            {creating === 'faq' ? <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" /> : <PlusIcon className="w-5 h-5" />}
-                        </div>
-                        <span className="font-medium text-gray-700 dark:text-gray-200">FAQ</span>
-                    </button>
+                            <Link
+                                href="/widgets/heureka?action=create"
+                                className="flex items-center gap-3 p-4 bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 hover:border-visualy-accent-4/50 dark:hover:border-visualy-accent-4/50 transition-all group"
+                            >
+                                <div className="p-2 bg-gradient-to-br from-visualy-accent-4 to-emerald-500 rounded-lg text-white shadow-lg shadow-visualy-accent-4/20 group-hover:scale-110 transition-transform duration-300">
+                                    <PlusIcon className="w-5 h-5" />
+                                </div>
+                                <span className="font-medium text-gray-700 dark:text-gray-200">Produkt</span>
+                            </Link>
 
-                    <button
-                        onClick={() => handleCreate('article')}
-                        disabled={creating === 'article'}
-                        className="flex items-center gap-3 p-4 bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 hover:border-visualy-accent-4/50 dark:hover:border-visualy-accent-4/50 transition-all group text-left w-full cursor-pointer disabled:opacity-50"
-                    >
-                        <div className="p-2 bg-gradient-to-br from-visualy-accent-4 to-emerald-500 rounded-lg text-white shadow-lg shadow-visualy-accent-4/20 group-hover:scale-110 transition-transform duration-300">
-                            {creating === 'article' ? <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" /> : <PlusIcon className="w-5 h-5" />}
-                        </div>
-                        <span className="font-medium text-gray-700 dark:text-gray-200">Článek</span>
-                    </button>
+                            <button
+                                onClick={() => handleCreate('faq')}
+                                disabled={creating === 'faq'}
+                                className="flex items-center gap-3 p-4 bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 hover:border-visualy-accent-4/50 dark:hover:border-visualy-accent-4/50 transition-all group text-left w-full cursor-pointer disabled:opacity-50"
+                            >
+                                <div className="p-2 bg-gradient-to-br from-visualy-accent-4 to-emerald-500 rounded-lg text-white shadow-lg shadow-visualy-accent-4/20 group-hover:scale-110 transition-transform duration-300">
+                                    {creating === 'faq' ? <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" /> : <PlusIcon className="w-5 h-5" />}
+                                </div>
+                                <span className="font-medium text-gray-700 dark:text-gray-200">FAQ</span>
+                            </button>
 
-                    <button
-                        onClick={() => handleCreate('author')}
-                        disabled={creating === 'author'}
-                        className="flex items-center gap-3 p-4 bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 hover:border-visualy-accent-4/50 dark:hover:border-visualy-accent-4/50 transition-all group text-left w-full cursor-pointer disabled:opacity-50"
-                    >
-                        <div className="p-2 bg-gradient-to-br from-visualy-accent-4 to-emerald-500 rounded-lg text-white shadow-lg shadow-visualy-accent-4/20 group-hover:scale-110 transition-transform duration-300">
-                            {creating === 'author' ? <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" /> : <PlusIcon className="w-5 h-5" />}
+                            <button
+                                onClick={() => handleCreate('article')}
+                                disabled={creating === 'article'}
+                                className="flex items-center gap-3 p-4 bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 hover:border-visualy-accent-4/50 dark:hover:border-visualy-accent-4/50 transition-all group text-left w-full cursor-pointer disabled:opacity-50"
+                            >
+                                <div className="p-2 bg-gradient-to-br from-visualy-accent-4 to-emerald-500 rounded-lg text-white shadow-lg shadow-visualy-accent-4/20 group-hover:scale-110 transition-transform duration-300">
+                                    {creating === 'article' ? <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" /> : <PlusIcon className="w-5 h-5" />}
+                                </div>
+                                <span className="font-medium text-gray-700 dark:text-gray-200">Článek</span>
+                            </button>
+
+                            <button
+                                onClick={() => handleCreate('author')}
+                                disabled={creating === 'author'}
+                                className="flex items-center gap-3 p-4 bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 hover:border-visualy-accent-4/50 dark:hover:border-visualy-accent-4/50 transition-all group text-left w-full cursor-pointer disabled:opacity-50"
+                            >
+                                <div className="p-2 bg-gradient-to-br from-visualy-accent-4 to-emerald-500 rounded-lg text-white shadow-lg shadow-visualy-accent-4/20 group-hover:scale-110 transition-transform duration-300">
+                                    {creating === 'author' ? <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" /> : <PlusIcon className="w-5 h-5" />}
+                                </div>
+                                <span className="font-medium text-gray-700 dark:text-gray-200">Autor</span>
+                            </button>
                         </div>
-                        <span className="font-medium text-gray-700 dark:text-gray-200">Autor</span>
-                    </button>
+                    </div>
                 </div>
             </div>
         </div>

@@ -141,98 +141,104 @@ function HeurekaFeedsContent() {
   };
 
   return (
-    <div className="p-6">
-      <div className="flex justify-between items-center mb-4">
-        <div>
-          <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Produktové widgety</h1>
-          <p className="mt-2 text-gray-600 dark:text-gray-400">Správa produktových widgetů</p>
-        </div>
+    <div className="flex flex-col h-screen bg-gray-50 dark:bg-gray-900">
+      {/* Top Bar */}
+      <div className="h-16 bg-gray-900 border-b border-gray-800 flex justify-between items-center px-6 shrink-0 z-10">
+        <h1 className="text-lg font-semibold text-white">
+          Produktové widgety
+        </h1>
         <button
           onClick={openCreateModal}
-          className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-visualy-accent-4 to-emerald-500 text-white rounded-lg hover:opacity-90 transition-all duration-300 shadow-lg shadow-visualy-accent-4/30 cursor-pointer hover:scale-[1.02]"
+          className="flex items-center gap-2 px-4 py-2 bg-visualy-accent-4 text-white rounded-lg hover:bg-visualy-accent-4/90 transition-all duration-300 shadow-lg shadow-visualy-accent-4/20 cursor-pointer text-sm font-medium"
         >
-          <PlusIcon className="h-5 w-5" />
+          <PlusIcon className="h-4 w-4" />
           Nový produkt
         </button>
       </div>
 
-      <div className="overflow-x-auto rounded-xl shadow-lg bg-white dark:bg-gray-900">
-        <table className="w-full text-sm text-left">
-          <thead className="text-xs uppercase bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-300">
-            <tr>
-              <th scope="col" className="px-6 py-4 font-semibold">Název</th>
-              <th scope="col" className="px-6 py-4 font-semibold">Počet produktů</th>
-              <th scope="col" className="px-6 py-4 font-semibold">Poslední sync</th>
-              <th scope="col" className="px-6 py-4 text-right font-semibold">Akce</th>
-            </tr>
-          </thead>
-          <tbody>
-            {loading ? (
-              [...Array(3)].map((_, i) => (
-                <tr key={i} className={i % 2 === 0 ? 'bg-white dark:bg-gray-900' : 'bg-gray-50 dark:bg-gray-800'}>
-                  <td className="px-6 py-4"><div className="h-5 w-48 bg-gray-200 dark:bg-gray-700 rounded animate-pulse" /></td>
-                  <td className="px-6 py-4"><div className="h-5 w-12 bg-gray-200 dark:bg-gray-700 rounded animate-pulse" /></td>
-                  <td className="px-6 py-4"><div className="h-5 w-32 bg-gray-200 dark:bg-gray-700 rounded animate-pulse" /></td>
-                  <td className="px-6 py-4"><div className="h-8 w-24 bg-gray-200 dark:bg-gray-700 rounded animate-pulse" /></td>
+      {/* Main Content */}
+      <div className="flex-1 overflow-y-auto p-8">
+        <div className="max-w-7xl mx-auto">
+
+          <div className="overflow-x-auto rounded-xl shadow-lg bg-white dark:bg-gray-900">
+            <table className="w-full text-sm text-left">
+              <thead className="text-xs uppercase bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-300">
+                <tr>
+                  <th scope="col" className="px-6 py-4 font-semibold">Název</th>
+                  <th scope="col" className="px-6 py-4 font-semibold">Počet produktů</th>
+                  <th scope="col" className="px-6 py-4 font-semibold">Poslední sync</th>
+                  <th scope="col" className="px-6 py-4 text-right font-semibold">Akce</th>
                 </tr>
-              ))
-            ) : feeds.length > 0 ? (
-              feeds.map((feed, idx) => (
-                <tr key={feed.id} className={idx % 2 === 0 ? 'bg-white dark:bg-gray-900' : 'bg-gray-50 dark:bg-gray-800'}>
-                  <td className="px-6 py-4 font-medium text-gray-900 dark:text-white">{feed.name}</td>
-                  <td className="px-6 py-4 text-gray-700 dark:text-gray-300">{feed.productCount ?? 0}</td>
-                  <td className="px-6 py-4 text-gray-700 dark:text-gray-300">
-                    {feed.lastSyncedAt ? new Date(feed.lastSyncedAt).toLocaleString() : 'Nikdy'}
-                  </td>
-                  <td className="px-6 py-4 text-right flex justify-end gap-2">
-                    <button
-                      onClick={() => handleSync(feed.id)}
-                      title="Synchronizovat"
-                      className="p-2 rounded-full hover:bg-green-100 dark:hover:bg-green-900 transition"
-                    >
-                      <ArrowPathIcon className="h-5 w-5 text-green-600 dark:text-green-400" />
-                    </button>
-                    <Link
-                      href={`/widgets/heureka/${feed.id}`}
-                      title="Detail"
-                      className="p-2 rounded-full hover:bg-blue-100 dark:hover:bg-blue-900 transition"
-                    >
-                      <PencilSquareIcon className="h-5 w-5 text-blue-600 dark:text-blue-400" />
-                    </Link>
-                    <button
-                      onClick={() => handleDeleteClick(feed.id, feed.name)}
-                      title="Smazat"
-                      className="p-2 rounded-full hover:bg-red-100 dark:hover:bg-red-900 transition"
-                    >
-                      <TrashIcon className="h-5 w-5 text-red-600 dark:text-red-400" />
-                    </button>
-                  </td>
-                </tr>
-              ))
-            ) : (
-              <tr>
-                <td colSpan="4" className="px-6 py-16 text-center">
-                  <div className="flex flex-col items-center justify-center">
-                    <div className="bg-gray-100 dark:bg-gray-800 p-4 rounded-full mb-4">
-                      <ShoppingBagIcon className="h-10 w-10 text-gray-400 dark:text-gray-500" />
-                    </div>
-                    <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-1">Zatím nemáte žádné feedy</h3>
-                    <p className="text-gray-500 dark:text-gray-400 mb-6 max-w-sm">
-                      Přidejte svůj první XML feed z Heureky a začněte zobrazovat produkty na svém webu.
-                    </p>
-                    <button
-                      onClick={openCreateModal}
-                      className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-indigo-600 text-white font-medium hover:bg-indigo-700 transition cursor-pointer"
-                    >
-                      <PlusIcon className="h-5 w-5" />
-                      Vytvořit první feed
-                    </button>
-                  </div>
-                </td>
-              </tr>
-            )}
-          </tbody>
-        </table>
+              </thead>
+              <tbody>
+                {loading ? (
+                  [...Array(3)].map((_, i) => (
+                    <tr key={i} className={i % 2 === 0 ? 'bg-white dark:bg-gray-900' : 'bg-gray-50 dark:bg-gray-800'}>
+                      <td className="px-6 py-4"><div className="h-5 w-48 bg-gray-200 dark:bg-gray-700 rounded animate-pulse" /></td>
+                      <td className="px-6 py-4"><div className="h-5 w-12 bg-gray-200 dark:bg-gray-700 rounded animate-pulse" /></td>
+                      <td className="px-6 py-4"><div className="h-5 w-32 bg-gray-200 dark:bg-gray-700 rounded animate-pulse" /></td>
+                      <td className="px-6 py-4"><div className="h-8 w-24 bg-gray-200 dark:bg-gray-700 rounded animate-pulse" /></td>
+                    </tr>
+                  ))
+                ) : feeds.length > 0 ? (
+                  feeds.map((feed, idx) => (
+                    <tr key={feed.id} className={idx % 2 === 0 ? 'bg-white dark:bg-gray-900' : 'bg-gray-50 dark:bg-gray-800'}>
+                      <td className="px-6 py-4 font-medium text-gray-900 dark:text-white">{feed.name}</td>
+                      <td className="px-6 py-4 text-gray-700 dark:text-gray-300">{feed.productCount ?? 0}</td>
+                      <td className="px-6 py-4 text-gray-700 dark:text-gray-300">
+                        {feed.lastSyncedAt ? new Date(feed.lastSyncedAt).toLocaleString() : 'Nikdy'}
+                      </td>
+                      <td className="px-6 py-4 text-right flex justify-end gap-2">
+                        <button
+                          onClick={() => handleSync(feed.id)}
+                          title="Synchronizovat"
+                          className="p-2 rounded-full hover:bg-green-100 dark:hover:bg-green-900 transition"
+                        >
+                          <ArrowPathIcon className="h-5 w-5 text-green-600 dark:text-green-400" />
+                        </button>
+                        <Link
+                          href={`/widgets/heureka/${feed.id}`}
+                          title="Detail"
+                          className="p-2 rounded-full hover:bg-blue-100 dark:hover:bg-blue-900 transition"
+                        >
+                          <PencilSquareIcon className="h-5 w-5 text-blue-600 dark:text-blue-400" />
+                        </Link>
+                        <button
+                          onClick={() => handleDeleteClick(feed.id, feed.name)}
+                          title="Smazat"
+                          className="p-2 rounded-full hover:bg-red-100 dark:hover:bg-red-900 transition"
+                        >
+                          <TrashIcon className="h-5 w-5 text-red-600 dark:text-red-400" />
+                        </button>
+                      </td>
+                    </tr>
+                  ))
+                ) : (
+                  <tr>
+                    <td colSpan="4" className="px-6 py-16 text-center">
+                      <div className="flex flex-col items-center justify-center">
+                        <div className="bg-gray-100 dark:bg-gray-800 p-4 rounded-full mb-4">
+                          <ShoppingBagIcon className="h-10 w-10 text-gray-400 dark:text-gray-500" />
+                        </div>
+                        <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-1">Zatím nemáte žádné feedy</h3>
+                        <p className="text-gray-500 dark:text-gray-400 mb-6 max-w-sm">
+                          Přidejte svůj první XML feed z Heureky a začněte zobrazovat produkty na svém webu.
+                        </p>
+                        <button
+                          onClick={openCreateModal}
+                          className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-indigo-600 text-white font-medium hover:bg-indigo-700 transition cursor-pointer"
+                        >
+                          <PlusIcon className="h-5 w-5" />
+                          Vytvořit první feed
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                )}
+              </tbody>
+            </table>
+          </div>
+        </div>
       </div>
 
       {/* Create Feed Modal */}
