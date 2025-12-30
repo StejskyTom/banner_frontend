@@ -3,10 +3,11 @@
 import { useEffect, useState } from 'react';
 import { authorizedFetch } from '../../../lib/api';
 import Link from 'next/link';
-import { PencilSquareIcon, TrashIcon, PhotoIcon, PlusIcon } from '@heroicons/react/24/solid';
+import { PencilSquareIcon, TrashIcon, PhotoIcon, PlusIcon, EllipsisVerticalIcon, CodeBracketIcon } from '@heroicons/react/24/solid';
 import { WidgetEmbedGenerator } from '../../components/WidgetEmbedGenerator';
 import { useToast } from "../../../app/components/ToastProvider";
 import { useRouter } from "next/navigation";
+import { Dropdown, DropdownItem } from '../../components/Dropdown';
 
 export default function CarouselListPage() {
   const [carousels, setCarousels] = useState([]);
@@ -16,6 +17,10 @@ export default function CarouselListPage() {
   const [showConfirm, setShowConfirm] = useState(false);
   const [deleteId, setDeleteId] = useState(null);
   const [deleteTitle, setDeleteTitle] = useState('');
+
+  // embed modal state
+  const [embedWidgetId, setEmbedWidgetId] = useState(null);
+
   const showNotification = useToast();
   const router = useRouter();
 
@@ -102,7 +107,7 @@ export default function CarouselListPage() {
       <div className="flex-1 overflow-y-auto p-8">
         <div className="max-w-7xl mx-auto">
 
-          <div className="overflow-x-auto rounded-xl shadow-lg bg-white dark:bg-gray-900">
+          <div className="overflow-visible rounded-xl shadow-lg bg-white dark:bg-gray-900">
             <table className="w-full text-sm text-left">
               <thead className="text-xs uppercase bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-300">
                 <tr>
@@ -111,7 +116,7 @@ export default function CarouselListPage() {
                   <th scope="col" className="px-6 py-4 text-right font-semibold">Akce</th>
                 </tr>
               </thead>
-              <tbody>
+              <tbody className="divide-y divide-gray-100 dark:divide-gray-800">
                 {loading ? (
                   // Skeleton rows
                   [...Array(5)].map((_, i) => (
@@ -130,8 +135,6 @@ export default function CarouselListPage() {
                       </td>
                       <td className="px-6 py-4 flex justify-end gap-2">
                         <div className="h-8 w-8 bg-gray-200 dark:bg-gray-700 rounded-full animate-pulse" />
-                        <div className="h-8 w-8 bg-gray-200 dark:bg-gray-700 rounded-full animate-pulse" />
-                        <div className="h-8 w-8 bg-gray-200 dark:bg-gray-700 rounded-full animate-pulse" />
                       </td>
                     </tr>
                   ))
@@ -139,10 +142,7 @@ export default function CarouselListPage() {
                   carousels.map((carousel, idx) => (
                     <tr
                       key={carousel.id}
-                      className={idx % 2 === 0
-                        ? 'bg-white dark:bg-gray-900'
-                        : 'bg-gray-50 dark:bg-gray-800'
-                      }
+                      className="bg-white dark:bg-gray-900 hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors"
                     >
                       <td className="px-6 py-4 font-medium text-gray-900 dark:text-white">
                         {carousel.title}
@@ -150,25 +150,35 @@ export default function CarouselListPage() {
                       <td className="px-6 py-4 text-gray-700 dark:text-gray-300">
                         {carousel.attachments?.length ?? 0}
                       </td>
-                      <td className="px-6 py-4 text-right flex justify-end gap-2">
-                        <Link
-                          href={`/widgets/logo-carousel/${carousel.id}`}
-                          title="Editovat"
-                          className="p-2 rounded-full hover:bg-blue-100 dark:hover:bg-blue-900 transition"
+                      <td className="px-6 py-4 text-right">
+                        <Dropdown
+                          trigger={
+                            <button className="p-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-500 dark:text-gray-400 transition-colors">
+                              <EllipsisVerticalIcon className="h-5 w-5" />
+                            </button>
+                          }
                         >
-                          <PencilSquareIcon className="h-5 w-5 text-blue-600 dark:text-blue-400" />
-                        </Link>
-                        <button
-                          onClick={() => handleDeleteClick(carousel.id, carousel.title)}
-                          title="Smazat"
-                          className="p-2 rounded-full hover:bg-red-100 dark:hover:bg-red-900 transition"
-                        >
-                          <TrashIcon className="h-5 w-5 text-red-600 dark:text-red-400" />
-                        </button>
-                        <WidgetEmbedGenerator
-                          widgetId={carousel.id}
-                          widgetType="Logo"
-                        />
+                          <DropdownItem
+                            icon={PencilSquareIcon}
+                            onClick={() => router.push(`/widgets/logo-carousel/${carousel.id}`)}
+                          >
+                            Upravit
+                          </DropdownItem>
+                          <DropdownItem
+                            icon={CodeBracketIcon}
+                            onClick={() => setEmbedWidgetId(carousel.id)}
+                          >
+                            Publikovat
+                          </DropdownItem>
+                          <div className="my-1 border-t border-gray-100 dark:border-gray-700" />
+                          <DropdownItem
+                            icon={TrashIcon}
+                            danger={true}
+                            onClick={() => handleDeleteClick(carousel.id, carousel.title)}
+                          >
+                            Odstranit
+                          </DropdownItem>
+                        </Dropdown>
                       </td>
                     </tr>
                   ))
@@ -200,29 +210,37 @@ export default function CarouselListPage() {
         </div>
       </div>
 
+      {/* Embed Generator Modal (Global) */}
+      <WidgetEmbedGenerator
+        open={!!embedWidgetId}
+        onClose={() => setEmbedWidgetId(null)}
+        widgetId={embedWidgetId}
+        widgetType="Logo"
+      />
+
       {/* Confirm delete modal */}
       {showConfirm && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
-          <div className="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-6 w-full max-w-sm">
-            <h2 className="text-lg font-semibold text-gray-900 dark:text-white">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">
+          <div className="bg-white dark:bg-gray-800 rounded-xl shadow-2xl p-6 w-full max-w-sm transform transition-all scale-100">
+            <h2 className="text-lg font-bold text-gray-900 dark:text-white mb-2">
               Opravdu smazat?
             </h2>
-            <p className="mt-2 text-sm text-gray-600 dark:text-gray-300">
-              Chcete opravdu smazat widget <strong>{deleteTitle}</strong>?
-              Tuto akci nelze vrátit zpět.
+            <p className="text-gray-500 dark:text-gray-400 mb-6">
+              Chcete opravdu smazat widget "{deleteTitle}"?
+              Tato akce je nevratná.
             </p>
-            <div className="mt-6 flex justify-between gap-3">
+            <div className="flex justify-end gap-3">
               <button
                 onClick={() => setShowConfirm(false)}
-                className="px-4 py-2 rounded-lg bg-gray-200 text-gray-800 hover:bg-gray-300 dark:bg-gray-700 dark:text-gray-200 dark:hover:bg-gray-600 transition"
+                className="px-4 py-2 rounded-lg bg-gray-100 text-gray-700 hover:bg-gray-200 dark:bg-gray-700 dark:text-gray-300 dark:hover:bg-gray-600 transition"
               >
-                Ne
+                Zrušit
               </button>
               <button
                 onClick={confirmDelete}
                 className="px-4 py-2 rounded-lg bg-red-600 text-white hover:bg-red-700 transition"
               >
-                Ano, smazat
+                Smazat
               </button>
             </div>
           </div>

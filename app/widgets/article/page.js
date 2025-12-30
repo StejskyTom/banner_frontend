@@ -4,8 +4,10 @@
 import { useState, useEffect } from 'react';
 import { authorizedFetch } from '../../../lib/api';
 import Link from 'next/link';
-import { PlusIcon, PencilSquareIcon, TrashIcon, DocumentTextIcon } from '@heroicons/react/24/solid';
+import { PlusIcon, PencilSquareIcon, TrashIcon, DocumentTextIcon, EllipsisVerticalIcon, CodeBracketIcon } from '@heroicons/react/24/solid';
 import { useToast } from '../../components/ToastProvider';
+import { Dropdown, DropdownItem } from '../../components/Dropdown';
+import { WidgetEmbedGenerator } from '../../components/WidgetEmbedGenerator';
 
 export default function ArticleWidgetsPage() {
     const [widgets, setWidgets] = useState([]);
@@ -13,6 +15,7 @@ export default function ArticleWidgetsPage() {
     const [showConfirm, setShowConfirm] = useState(false);
     const [deleteId, setDeleteId] = useState(null);
     const [deleteName, setDeleteName] = useState('');
+    const [embedWidgetId, setEmbedWidgetId] = useState(null);
     const showNotification = useToast();
 
     useEffect(() => {
@@ -120,7 +123,6 @@ export default function ArticleWidgetsPage() {
                                             </td>
                                             <td className="px-6 py-4 flex justify-end gap-2">
                                                 <div className="h-8 w-8 bg-gray-200 dark:bg-gray-700 rounded-full animate-pulse" />
-                                                <div className="h-8 w-8 bg-gray-200 dark:bg-gray-700 rounded-full animate-pulse" />
                                             </td>
                                         </tr>
                                     ))
@@ -138,21 +140,35 @@ export default function ArticleWidgetsPage() {
                                             <td className="px-6 py-4 text-gray-700 dark:text-gray-300">
                                                 {new Date(widget.updatedAt).toLocaleDateString('cs-CZ')}
                                             </td>
-                                            <td className="px-6 py-4 text-right flex justify-end gap-2">
-                                                <Link
-                                                    href={`/widgets/article/${widget.id}`}
-                                                    title="Upravit"
-                                                    className="p-2 rounded-full hover:bg-blue-100 dark:hover:bg-blue-900 transition"
+                                            <td className="px-6 py-4 text-right">
+                                                <Dropdown
+                                                    trigger={
+                                                        <button className="p-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-500 dark:text-gray-400 transition-colors">
+                                                            <EllipsisVerticalIcon className="h-5 w-5" />
+                                                        </button>
+                                                    }
                                                 >
-                                                    <PencilSquareIcon className="h-5 w-5 text-blue-600 dark:text-blue-400" />
-                                                </Link>
-                                                <button
-                                                    onClick={() => handleDeleteClick(widget.id, widget.name)}
-                                                    title="Smazat"
-                                                    className="p-2 rounded-full hover:bg-red-100 dark:hover:bg-red-900 transition"
-                                                >
-                                                    <TrashIcon className="h-5 w-5 text-red-600 dark:text-red-400" />
-                                                </button>
+                                                    <DropdownItem
+                                                        icon={PencilSquareIcon}
+                                                        onClick={() => window.location.href = `/widgets/article/${widget.id}`}
+                                                    >
+                                                        Upravit
+                                                    </DropdownItem>
+                                                    <DropdownItem
+                                                        icon={CodeBracketIcon}
+                                                        onClick={() => setEmbedWidgetId(widget.id)}
+                                                    >
+                                                        Publikovat
+                                                    </DropdownItem>
+                                                    <div className="my-1 border-t border-gray-100 dark:border-gray-700" />
+                                                    <DropdownItem
+                                                        icon={TrashIcon}
+                                                        danger={true}
+                                                        onClick={() => handleDeleteClick(widget.id, widget.name)}
+                                                    >
+                                                        Odstranit
+                                                    </DropdownItem>
+                                                </Dropdown>
                                             </td>
                                         </tr>
                                     ))
@@ -183,6 +199,14 @@ export default function ArticleWidgetsPage() {
                     </div>
                 </div>
             </div>
+
+            {/* Embed Generator Modal */}
+            <WidgetEmbedGenerator
+                open={!!embedWidgetId}
+                onClose={() => setEmbedWidgetId(null)}
+                widgetId={embedWidgetId}
+                widgetType="Article"
+            />
 
             {/* Delete confirmation modal */}
             {showConfirm && (

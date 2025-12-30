@@ -3,11 +3,12 @@
 import { useState, useEffect } from 'react';
 import { authorizedFetch } from '../../../lib/api';
 import Link from 'next/link';
-import { PencilSquareIcon, TrashIcon, PlusIcon, UserCircleIcon } from '@heroicons/react/24/solid';
+import { PencilSquareIcon, TrashIcon, PlusIcon, UserCircleIcon, EllipsisVerticalIcon, CodeBracketIcon } from '@heroicons/react/24/solid';
 import { useToast } from "../../components/ToastProvider";
 import { useRouter } from "next/navigation";
 import Loader from '../../components/Loader';
 import { WidgetEmbedGenerator } from '../../components/WidgetEmbedGenerator';
+import { Dropdown, DropdownItem } from '../../components/Dropdown';
 
 export default function AuthorWidgetsPage() {
     const [widgets, setWidgets] = useState([]);
@@ -17,6 +18,7 @@ export default function AuthorWidgetsPage() {
     const [creating, setCreating] = useState(false);
     const [showDeleteModal, setShowDeleteModal] = useState(false);
     const [widgetToDelete, setWidgetToDelete] = useState(null);
+    const [embedWidgetId, setEmbedWidgetId] = useState(null);
 
     const showNotification = useToast();
     const router = useRouter();
@@ -133,8 +135,6 @@ export default function AuthorWidgetsPage() {
                                             </td>
                                             <td className="px-6 py-4 flex justify-end gap-2">
                                                 <div className="h-8 w-8 bg-gray-200 dark:bg-gray-700 rounded-full animate-pulse" />
-                                                <div className="h-8 w-8 bg-gray-200 dark:bg-gray-700 rounded-full animate-pulse" />
-                                                <div className="h-8 w-8 bg-gray-200 dark:bg-gray-700 rounded-full animate-pulse" />
                                             </td>
                                         </tr>
                                     ))
@@ -155,29 +155,38 @@ export default function AuthorWidgetsPage() {
                                             <td className="px-6 py-4 text-gray-700 dark:text-gray-300">
                                                 {new Date(widget.createdAt).toLocaleDateString('cs-CZ')}
                                             </td>
-                                            <td className="px-6 py-4 text-right flex justify-end gap-2">
-                                                <WidgetEmbedGenerator
-                                                    widgetId={widget.id}
-                                                    widgetType="Author"
-                                                    minimal={true}
-                                                />
-                                                <Link
-                                                    href={`/widgets/author/${widget.id}`}
-                                                    title="Upravit"
-                                                    className="p-2 rounded-full hover:bg-blue-100 dark:hover:bg-blue-900 transition"
+                                            <td className="px-6 py-4 text-right">
+                                                <Dropdown
+                                                    trigger={
+                                                        <button className="p-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-500 dark:text-gray-400 transition-colors">
+                                                            <EllipsisVerticalIcon className="h-5 w-5" />
+                                                        </button>
+                                                    }
                                                 >
-                                                    <PencilSquareIcon className="h-5 w-5 text-blue-600 dark:text-blue-400" />
-                                                </Link>
-                                                <button
-                                                    onClick={() => {
-                                                        setWidgetToDelete(widget);
-                                                        setShowDeleteModal(true);
-                                                    }}
-                                                    title="Smazat"
-                                                    className="p-2 rounded-full hover:bg-red-100 dark:hover:bg-red-900 transition"
-                                                >
-                                                    <TrashIcon className="h-5 w-5 text-red-600 dark:text-red-400" />
-                                                </button>
+                                                    <DropdownItem
+                                                        icon={PencilSquareIcon}
+                                                        onClick={() => router.push(`/widgets/author/${widget.id}`)}
+                                                    >
+                                                        Upravit
+                                                    </DropdownItem>
+                                                    <DropdownItem
+                                                        icon={CodeBracketIcon}
+                                                        onClick={() => setEmbedWidgetId(widget.id)}
+                                                    >
+                                                        Publikovat
+                                                    </DropdownItem>
+                                                    <div className="my-1 border-t border-gray-100 dark:border-gray-700" />
+                                                    <DropdownItem
+                                                        icon={TrashIcon}
+                                                        danger={true}
+                                                        onClick={() => {
+                                                            setWidgetToDelete(widget);
+                                                            setShowDeleteModal(true);
+                                                        }}
+                                                    >
+                                                        Odstranit
+                                                    </DropdownItem>
+                                                </Dropdown>
                                             </td>
                                         </tr>
                                     ))
@@ -208,6 +217,14 @@ export default function AuthorWidgetsPage() {
                     </div>
                 </div>
             </div>
+
+            {/* Embed Generator Modal */}
+            <WidgetEmbedGenerator
+                open={!!embedWidgetId}
+                onClose={() => setEmbedWidgetId(null)}
+                widgetId={embedWidgetId}
+                widgetType="Author"
+            />
 
             {/* Create Modal */}
             {showCreateModal && (

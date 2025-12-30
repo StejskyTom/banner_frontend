@@ -3,10 +3,11 @@
 import { useState, useEffect } from 'react';
 import { authorizedFetch } from '../../../lib/api';
 import Link from 'next/link';
-import { PencilSquareIcon, TrashIcon, PlusIcon, QuestionMarkCircleIcon } from '@heroicons/react/24/solid';
+import { PencilSquareIcon, TrashIcon, PlusIcon, QuestionMarkCircleIcon, EllipsisVerticalIcon, CodeBracketIcon } from '@heroicons/react/24/solid';
 import { useToast } from "../../components/ToastProvider";
 import { useRouter } from "next/navigation";
 import Loader from '../../components/Loader';
+import { Dropdown, DropdownItem } from '../../components/Dropdown';
 import { WidgetEmbedGenerator } from '../../components/WidgetEmbedGenerator';
 
 export default function FaqWidgetsPage() {
@@ -17,6 +18,7 @@ export default function FaqWidgetsPage() {
     const [creating, setCreating] = useState(false);
     const [showDeleteModal, setShowDeleteModal] = useState(false);
     const [widgetToDelete, setWidgetToDelete] = useState(null);
+    const [embedWidgetId, setEmbedWidgetId] = useState(null);
 
     const showNotification = useToast();
     const router = useRouter();
@@ -155,29 +157,38 @@ export default function FaqWidgetsPage() {
                                             <td className="px-6 py-4 text-gray-700 dark:text-gray-300">
                                                 {new Date(widget.createdAt).toLocaleDateString('cs-CZ')}
                                             </td>
-                                            <td className="px-6 py-4 text-right flex justify-end gap-2">
-                                                <WidgetEmbedGenerator
-                                                    widgetId={widget.id}
-                                                    widgetType="FAQ"
-                                                    minimal={true}
-                                                />
-                                                <Link
-                                                    href={`/widgets/faq/${widget.id}`}
-                                                    title="Upravit"
-                                                    className="p-2 rounded-full hover:bg-blue-100 dark:hover:bg-blue-900 transition"
+                                            <td className="px-6 py-4 text-right">
+                                                <Dropdown
+                                                    trigger={
+                                                        <button className="p-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-500 dark:text-gray-400 transition-colors">
+                                                            <EllipsisVerticalIcon className="h-5 w-5" />
+                                                        </button>
+                                                    }
                                                 >
-                                                    <PencilSquareIcon className="h-5 w-5 text-blue-600 dark:text-blue-400" />
-                                                </Link>
-                                                <button
-                                                    onClick={() => {
-                                                        setWidgetToDelete(widget);
-                                                        setShowDeleteModal(true);
-                                                    }}
-                                                    title="Smazat"
-                                                    className="p-2 rounded-full hover:bg-red-100 dark:hover:bg-red-900 transition"
-                                                >
-                                                    <TrashIcon className="h-5 w-5 text-red-600 dark:text-red-400" />
-                                                </button>
+                                                    <DropdownItem
+                                                        icon={PencilSquareIcon}
+                                                        onClick={() => router.push(`/widgets/faq/${widget.id}`)}
+                                                    >
+                                                        Upravit
+                                                    </DropdownItem>
+                                                    <DropdownItem
+                                                        icon={CodeBracketIcon}
+                                                        onClick={() => setEmbedWidgetId(widget.id)}
+                                                    >
+                                                        Publikovat
+                                                    </DropdownItem>
+                                                    <div className="my-1 border-t border-gray-100 dark:border-gray-700" />
+                                                    <DropdownItem
+                                                        icon={TrashIcon}
+                                                        danger={true}
+                                                        onClick={() => {
+                                                            setWidgetToDelete(widget);
+                                                            setShowDeleteModal(true);
+                                                        }}
+                                                    >
+                                                        Odstranit
+                                                    </DropdownItem>
+                                                </Dropdown>
                                             </td>
                                         </tr>
                                     ))
@@ -208,6 +219,14 @@ export default function FaqWidgetsPage() {
                     </div>
                 </div>
             </div>
+
+            {/* Embed Generator Modal */}
+            <WidgetEmbedGenerator
+                open={!!embedWidgetId}
+                onClose={() => setEmbedWidgetId(null)}
+                widgetId={embedWidgetId}
+                widgetType="FAQ"
+            />
 
             {/* Create Modal */}
             {showCreateModal && (

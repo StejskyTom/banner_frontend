@@ -1,7 +1,9 @@
+'use client';
+
 import { useState, useEffect } from 'react';
 import { CodeBracketIcon, ClipboardDocumentIcon, CheckIcon, XMarkIcon } from '@heroicons/react/24/outline';
 
-export function WidgetEmbedGenerator({ widgetId, widgetType }) {
+export function WidgetEmbedGenerator({ widgetId, widgetType, open, onClose }) {
     const [isPopupOpen, setIsPopupOpen] = useState(false);
     const [isAnimating, setIsAnimating] = useState(false);
     const [copied, setCopied] = useState(false);
@@ -32,17 +34,45 @@ export function WidgetEmbedGenerator({ widgetId, widgetType }) {
         }
     };
 
-    // Funkce pro otevření s animací
+    // Určení módu: controlled (řízený rodičem) vs uncontrolled (vlastní stav)
+    const isControlled = typeof open !== 'undefined';
+    const showPopup = isControlled ? open : isPopupOpen;
+
+    // Funkce pro otevření s animací (jen pro uncontrolled)
     const openPopup = () => {
-        setIsPopupOpen(true);
-        setTimeout(() => setIsAnimating(true), 10); // Malé zpoždění pro trigger animace
+        if (!isControlled) {
+            setIsPopupOpen(true);
+            setTimeout(() => setIsAnimating(true), 10);
+        }
     };
 
     // Funkce pro zavření s animací
     const closePopup = () => {
         setIsAnimating(false);
-        setTimeout(() => setIsPopupOpen(false), 200); // Počkáme na dokončení animace
+        setTimeout(() => {
+            if (isControlled) {
+                onClose && onClose();
+            } else {
+                setIsPopupOpen(false);
+            }
+        }, 200);
     };
+
+    // Synchronizace animace při změně externího propu 'open'
+    useEffect(() => {
+        if (isControlled) {
+            if (open) {
+                // Otevření
+                setTimeout(() => setIsAnimating(true), 10);
+            } else {
+                // Zavření - animaci řešíme v closePopup nebo při změně na false? 
+                // Pokud se open změní na false "zvenku" bez volání closePopup, musíme jen zajistit, že animace doběhne?
+                // Pro jednoduchost v controlled mode předpokládáme, že pokud je open=true, má se zobrazit. 
+                // Animace odchodu je složitější při externím řízení, ale zkusíme to.
+                setIsAnimating(false);
+            }
+        }
+    }, [open, isControlled]);
 
     // Funkce pro zavření při kliku na overlay
     const handleOverlayClick = (e) => {
@@ -54,40 +84,40 @@ export function WidgetEmbedGenerator({ widgetId, widgetType }) {
     // ESC klávesa pro zavření
     useEffect(() => {
         const handleEsc = (e) => {
-            if (e.key === 'Escape' && isPopupOpen) {
+            if (e.key === 'Escape' && showPopup) {
                 closePopup();
             }
         };
 
         document.addEventListener('keydown', handleEsc);
         return () => document.removeEventListener('keydown', handleEsc);
-    }, [isPopupOpen]);
+    }, [showPopup]);
 
     return (
         <>
-            <button
-                onClick={openPopup}
-                className="text-blue-500 hover:text-blue-700 p-1 transition-colors duration-200"
-                title="Získat embed kód"
-            >
-                <CodeBracketIcon className="h-5 w-5" />
-            </button>
+            {!isControlled && (
+                <button
+                    onClick={openPopup}
+                    className="text-blue-500 hover:text-blue-700 p-1 transition-colors duration-200"
+                    title="Získat embed kód"
+                >
+                    <CodeBracketIcon className="h-5 w-5" />
+                </button>
+            )}
 
             {/* Popup Modal s animacemi */}
-            {isPopupOpen && (
+            {showPopup && (
                 <div
-                    className={`fixed inset-0 flex items-center justify-center z-50 text-left transition-all duration-200 ease-out ${
-                        isAnimating
-                            ? 'bg-gray-800/50 backdrop-blur-sm'
-                            : 'bg-gray-800/0'
-                    }`}
+                    className={`fixed inset-0 flex items-center justify-center z-50 text-left transition-all duration-200 ease-out ${isAnimating
+                        ? 'bg-gray-800/50 backdrop-blur-sm'
+                        : 'bg-gray-800/0'
+                        }`}
                     onClick={handleOverlayClick}
                 >
-                    <div className={`bg-white rounded-lg shadow-xl max-w-md w-full mx-4 transition-all duration-200 ease-out ${
-                        isAnimating
-                            ? 'scale-100 opacity-100 translate-y-0'
-                            : 'scale-95 opacity-0 translate-y-4'
-                    }`}>
+                    <div className={`bg-white rounded-lg shadow-xl max-w-md w-full mx-4 transition-all duration-200 ease-out ${isAnimating
+                        ? 'scale-100 opacity-100 translate-y-0'
+                        : 'scale-95 opacity-0 translate-y-4'
+                        }`}>
                         <div className="flex justify-between items-center p-6 border-b">
                             <h3 className="text-lg font-semibold">
                                 Embed kód pro {widgetType}
@@ -114,11 +144,10 @@ export function WidgetEmbedGenerator({ widgetId, widgetType }) {
                                 {/* Kopírovat ikonka v pravém horním rohu */}
                                 <button
                                     onClick={async (e) => await copyToClipboard(e)}
-                                    className={`absolute top-2 right-2 p-2 rounded transition-all duration-200 hover:scale-105 ${
-                                        copied
-                                            ? 'bg-green-500 text-white scale-110'
-                                            : 'bg-gray-700 text-gray-300 hover:bg-gray-600'
-                                    }`}
+                                    className={`absolute top-2 right-2 p-2 rounded transition-all duration-200 hover:scale-105 ${copied
+                                        ? 'bg-green-500 text-white scale-110'
+                                        : 'bg-gray-700 text-gray-300 hover:bg-gray-600'
+                                        }`}
                                     title={copied ? 'Zkopírováno!' : 'Kopírovat kód'}
                                 >
                                     {copied ? (
@@ -132,11 +161,10 @@ export function WidgetEmbedGenerator({ widgetId, widgetType }) {
                             <div className="flex gap-3">
                                 <button
                                     onClick={async () => await copyToClipboard()}
-                                    className={`flex-1 px-4 py-2 rounded font-medium transition-all duration-200 hover:scale-105 active:scale-95 ${
-                                        copied
-                                            ? 'bg-green-500 text-white scale-105'
-                                            : 'bg-blue-500 text-white hover:bg-blue-600'
-                                    }`}
+                                    className={`flex-1 px-4 py-2 rounded font-medium transition-all duration-200 hover:scale-105 active:scale-95 ${copied
+                                        ? 'bg-green-500 text-white scale-105'
+                                        : 'bg-blue-500 text-white hover:bg-blue-600'
+                                        }`}
                                 >
                                     {copied ? (
                                         <>
