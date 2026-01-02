@@ -11,12 +11,13 @@ const providers = [
     },
     async authorize(credentials) {
       try {
-        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/login_check`, {
+        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/auth/login`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
             username: credentials.email,
-            password: credentials.password
+            password: credentials.password,
+            rememberMe: credentials.rememberMe === 'true' // Credentials values are strings
           })
         });
 
@@ -90,7 +91,8 @@ const handler = NextAuth({
     }
   },
   session: {
-    strategy: "jwt"
+    strategy: "jwt",
+    maxAge: 30 * 24 * 60 * 60, // 30 days
   },
   pages: {
     signIn: "/prihlaseni" // vlastní login stránka

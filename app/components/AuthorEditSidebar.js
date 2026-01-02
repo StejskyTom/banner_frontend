@@ -9,48 +9,64 @@ import {
 import AuthorImageUpload from './AuthorImageUpload';
 import RangeSlider from './RangeSlider';
 
-function DebouncedInput({ value, onChange, delay = 50, Component = 'input', ...props }) {
-    const [localValue, setLocalValue] = useState(value);
-    const timeoutRef = useRef(null);
 
-    useEffect(() => {
-        setLocalValue(value);
-    }, [value]);
 
-    const handleChange = (e) => {
-        const newVal = e.target.value;
-        setLocalValue(newVal);
+const getContrastYIQ = (hexcolor) => {
+    if (!hexcolor) return '#000000';
 
-        if (timeoutRef.current) clearTimeout(timeoutRef.current);
-        timeoutRef.current = setTimeout(() => {
-            // Create a synthetic event-like object to satisfy parent handlers
-            onChange({ target: { value: newVal } });
-        }, delay);
-    };
+    // Remove hash
+    let hex = hexcolor.toString().replace('#', '');
 
-    return <Component {...props} value={localValue} onChange={handleChange} />;
-}
+    // Handle 3-char shorthand
+    if (hex.length === 3) {
+        hex = hex.split('').map(c => c + c).join('');
+    }
 
-function DebouncedTextarea({ value, onChange, delay = 50, ...props }) {
-    const [localValue, setLocalValue] = useState(value);
-    const timeoutRef = useRef(null);
+    // Attempt to handle non-hex colors or incomplete hex by defaulting to black
+    // (browser defaults invalid background to white usually)
+    if (hex.length !== 6) return '#000000';
 
-    useEffect(() => {
-        setLocalValue(value);
-    }, [value]);
+    const r = parseInt(hex.substr(0, 2), 16);
+    const g = parseInt(hex.substr(2, 2), 16);
+    const b = parseInt(hex.substr(4, 2), 16);
 
-    const handleChange = (e) => {
-        const newVal = e.target.value;
-        setLocalValue(newVal);
+    if (isNaN(r) || isNaN(g) || isNaN(b)) return '#000000';
 
-        if (timeoutRef.current) clearTimeout(timeoutRef.current);
-        timeoutRef.current = setTimeout(() => {
-            onChange({ target: { value: newVal } });
-        }, delay);
-    };
+    const yiq = ((r * 299) + (g * 587) + (b * 114)) / 1000;
+    return (yiq >= 128) ? '#000000' : '#ffffff';
+};
 
-    return <textarea {...props} value={localValue} onChange={handleChange} />;
-}
+const ColorInput = ({ label, value, onChange }) => {
+    const textColor = getContrastYIQ(value);
+
+    return (
+        <div>
+            <label className="text-xs font-medium text-gray-400 mb-2 block">{label}</label>
+            <div className="relative group">
+                <div className="relative flex items-center h-10 w-full rounded-md border border-gray-600 shadow-sm overflow-hidden ring-1 ring-white/5 transition-all focus-within:ring-2 focus-within:ring-indigo-500">
+                    <input
+                        type="text"
+                        value={value || ''}
+                        onChange={(e) => onChange(e.target.value)}
+                        className="w-full h-full text-left text-sm font-bold uppercase font-mono border-none focus:outline-none pl-3 pr-10"
+                        style={{ backgroundColor: value || '#ffffff', color: textColor }}
+                    />
+
+                    {/* Color Picker Trigger (Right Side) */}
+                    <div className="absolute right-0 top-0 bottom-0 w-10 flex items-center justify-center cursor-pointer border-l border-black/10 hover:bg-black/20 bg-black/5">
+                        <SwatchIcon className="h-5 w-5 opacity-70" style={{ color: textColor }} />
+                        <input
+                            type="color"
+                            value={value || '#000000'}
+                            onChange={(e) => onChange(e.target.value)}
+                            className="absolute inset-0 opacity-0 cursor-pointer"
+                        />
+                    </div>
+                </div>
+            </div>
+        </div>
+    );
+};
 
 export default function AuthorEditSidebar({ widget, setWidget, activeTab }) {
     const handleUpdate = (field, value) => {
@@ -68,7 +84,7 @@ export default function AuthorEditSidebar({ widget, setWidget, activeTab }) {
                     {/* Widget Name */}
                     <div className="space-y-2">
                         <label className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 text-gray-400">Název widgetu</label>
-                        <DebouncedInput
+                        <input
                             value={widget.name || ''}
                             onChange={(e) => handleUpdate('name', e.target.value)}
                             placeholder="Např. Můj profil"
@@ -88,7 +104,7 @@ export default function AuthorEditSidebar({ widget, setWidget, activeTab }) {
                             />
                             <div className="mt-2">
                                 <label className="text-xs text-gray-500">Nebo URL</label>
-                                <DebouncedInput
+                                <input
                                     value={widget.authorPhotoUrl || ''}
                                     onChange={(e) => handleUpdate('authorPhotoUrl', e.target.value)}
                                     placeholder="https://..."
@@ -102,7 +118,7 @@ export default function AuthorEditSidebar({ widget, setWidget, activeTab }) {
                             <label className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 text-gray-400">Jméno a příjmení</label>
                             <div className="relative">
                                 <UserIcon className="absolute left-3 top-2.5 h-4 w-4 text-gray-500" />
-                                <DebouncedInput
+                                <input
                                     value={widget.authorName || ''}
                                     onChange={(e) => handleUpdate('authorName', e.target.value)}
                                     className="flex h-10 w-full rounded-md border border-gray-700 bg-gray-800 px-3 py-2 text-sm placeholder:text-gray-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 pl-9 text-white"
@@ -114,7 +130,7 @@ export default function AuthorEditSidebar({ widget, setWidget, activeTab }) {
                         {/* Title */}
                         <div className="space-y-2">
                             <label className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 text-gray-400">Titul / Pozice</label>
-                            <DebouncedInput
+                            <input
                                 value={widget.authorTitle || ''}
                                 onChange={(e) => handleUpdate('authorTitle', e.target.value)}
                                 placeholder="CEO & Founder"
@@ -125,7 +141,7 @@ export default function AuthorEditSidebar({ widget, setWidget, activeTab }) {
                         {/* Bio */}
                         <div className="space-y-2">
                             <label className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 text-gray-400">Bio</label>
-                            <DebouncedTextarea
+                            <textarea
                                 value={widget.authorBio || ''}
                                 onChange={(e) => handleUpdate('authorBio', e.target.value)}
                                 rows={5}
@@ -184,28 +200,13 @@ export default function AuthorEditSidebar({ widget, setWidget, activeTab }) {
                         </div>
                     </div>
 
-                    {/* Background Color */}
-                    <div className="space-y-3">
-                        <label className="text-xs font-medium text-gray-400 mb-2 block">Barva pozadí</label>
-                        <div className="flex items-center gap-3">
-                            <DebouncedInput
-                                type="color"
-                                value={widget.backgroundColor || '#ffffff'}
-                                onChange={(e) => handleUpdate('backgroundColor', e.target.value)}
-                                className="h-8 w-12 bg-transparent border border-gray-700 rounded cursor-pointer"
-                            />
-                            <span className="text-xs text-gray-500 uppercase">{widget.backgroundColor || '#ffffff'}</span>
-                        </div>
-                    </div>
-
                     {/* Border Radius */}
                     <div className="space-y-4">
                         <div className="flex justify-between">
                             <label className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 text-gray-400">Zaoblení rohů</label>
                             <span className="text-xs text-gray-500">{widget.borderRadius || 0}px</span>
                         </div>
-                        <DebouncedInput
-                            Component={RangeSlider}
+                        <RangeSlider
                             value={widget.borderRadius || 0}
                             onChange={(e) => handleUpdate('borderRadius', parseInt(e.target.value))}
                             min={0}
@@ -216,45 +217,30 @@ export default function AuthorEditSidebar({ widget, setWidget, activeTab }) {
 
                     <hr className="border-gray-800" />
 
-                    <div className="space-y-4">
-                        <div>
-                            <label className="text-xs font-medium text-gray-400 mb-2 block">Barva jména</label>
-                            <div className="flex items-center gap-3">
-                                <DebouncedInput
-                                    type="color"
-                                    value={widget.nameColor || '#111827'}
-                                    onChange={(e) => handleUpdate('nameColor', e.target.value)}
-                                    className="h-8 w-12 bg-transparent border border-gray-700 rounded cursor-pointer"
-                                />
-                                <span className="text-xs text-gray-500 uppercase">{widget.nameColor || '#111827'}</span>
-                            </div>
-                        </div>
+                    <div className="grid grid-cols-2 gap-3">
+                        <ColorInput
+                            label="Barva pozadí"
+                            value={widget.backgroundColor || '#ffffff'}
+                            onChange={(val) => handleUpdate('backgroundColor', val)}
+                        />
 
-                        <div>
-                            <label className="text-xs font-medium text-gray-400 mb-2 block">Barva titulu/pozice</label>
-                            <div className="flex items-center gap-3">
-                                <DebouncedInput
-                                    type="color"
-                                    value={widget.titleColor || '#4f46e5'}
-                                    onChange={(e) => handleUpdate('titleColor', e.target.value)}
-                                    className="h-8 w-12 bg-transparent border border-gray-700 rounded cursor-pointer"
-                                />
-                                <span className="text-xs text-gray-500 uppercase">{widget.titleColor || '#4f46e5'}</span>
-                            </div>
-                        </div>
+                        <ColorInput
+                            label="Barva jména"
+                            value={widget.nameColor || '#111827'}
+                            onChange={(val) => handleUpdate('nameColor', val)}
+                        />
 
-                        <div>
-                            <label className="text-xs font-medium text-gray-400 mb-2 block">Barva bia</label>
-                            <div className="flex items-center gap-3">
-                                <DebouncedInput
-                                    type="color"
-                                    value={widget.bioColor || '#4b5563'}
-                                    onChange={(e) => handleUpdate('bioColor', e.target.value)}
-                                    className="h-8 w-12 bg-transparent border border-gray-700 rounded cursor-pointer"
-                                />
-                                <span className="text-xs text-gray-500 uppercase">{widget.bioColor || '#4b5563'}</span>
-                            </div>
-                        </div>
+                        <ColorInput
+                            label="Barva titulu"
+                            value={widget.titleColor || '#4f46e5'}
+                            onChange={(val) => handleUpdate('titleColor', val)}
+                        />
+
+                        <ColorInput
+                            label="Barva bia"
+                            value={widget.bioColor || '#4b5563'}
+                            onChange={(val) => handleUpdate('bioColor', val)}
+                        />
                     </div>
                 </div>
             </div>

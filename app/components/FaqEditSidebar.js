@@ -7,10 +7,67 @@ import {
 } from '@dnd-kit/core';
 import { arrayMove, SortableContext, verticalListSortingStrategy, useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
-import { TrashIcon, Bars3Icon, ChevronDownIcon, ChevronUpIcon } from '@heroicons/react/24/outline';
+import { TrashIcon, Bars3Icon, ChevronDownIcon, ChevronUpIcon, SwatchIcon } from '@heroicons/react/24/outline';
 import { PlusIcon } from '@heroicons/react/24/solid';
 
+const getContrastYIQ = (hexcolor) => {
+    if (!hexcolor) return '#000000';
+
+    // Remove hash
+    let hex = hexcolor.toString().replace('#', '');
+
+    // Handle 3-char shorthand
+    if (hex.length === 3) {
+        hex = hex.split('').map(c => c + c).join('');
+    }
+
+    // Attempt to handle non-hex colors or incomplete hex by defaulting to black
+    if (hex.length !== 6) return '#000000';
+
+    const r = parseInt(hex.substr(0, 2), 16);
+    const g = parseInt(hex.substr(2, 2), 16);
+    const b = parseInt(hex.substr(4, 2), 16);
+
+    if (isNaN(r) || isNaN(g) || isNaN(b)) return '#000000';
+
+    const yiq = ((r * 299) + (g * 587) + (b * 114)) / 1000;
+    return (yiq >= 128) ? '#000000' : '#ffffff';
+};
+
+const ColorInput = ({ label, value, onChange }) => {
+    const textColor = getContrastYIQ(value);
+
+    return (
+        <div>
+            <label className="text-xs font-medium text-gray-400 mb-2 block">{label}</label>
+            <div className="relative group">
+                <div className="relative flex items-center h-10 w-full rounded-md border border-gray-600 shadow-sm overflow-hidden ring-1 ring-white/5 transition-all focus-within:ring-2 focus-within:ring-indigo-500">
+                    <input
+                        type="text"
+                        value={value || ''}
+                        onChange={(e) => onChange(e.target.value)}
+                        className="w-full h-full text-left text-sm font-bold uppercase font-mono border-none focus:outline-none pl-3 pr-10"
+                        style={{ backgroundColor: value || '#ffffff', color: textColor }}
+                    />
+
+                    {/* Color Picker Trigger (Right Side) */}
+                    <div className="absolute right-0 top-0 bottom-0 w-10 flex items-center justify-center cursor-pointer border-l border-black/10 hover:bg-black/20 bg-black/5">
+                        <SwatchIcon className="h-5 w-5 opacity-70" style={{ color: textColor }} />
+                        <input
+                            type="color"
+                            value={value || '#000000'}
+                            onChange={(e) => onChange(e.target.value)}
+                            className="absolute inset-0 opacity-0 cursor-pointer"
+                        />
+                    </div>
+                </div>
+            </div>
+        </div>
+    );
+};
+
 function SortableQuestionItem({ id, question, onUpdate, onRemove }) {
+
     const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id });
     const style = { transform: CSS.Transform.toString(transform), transition, opacity: isDragging ? 0.5 : 1 };
     const [isOpen, setIsOpen] = useState(false);
@@ -181,58 +238,30 @@ export default function FaqEditSidebar({ widget, setWidget, activeTab }) {
 
                         <hr className="border-gray-800" />
 
-                        <div className="space-y-4">
-                            <div>
-                                <label className="text-xs font-medium text-gray-400 mb-2 block">Barva otázky</label>
-                                <div className="flex items-center gap-3">
-                                    <input
-                                        type="color"
-                                        value={widget.questionColor || '#111827'}
-                                        onChange={(e) => setWidget({ ...widget, questionColor: e.target.value })}
-                                        className="h-8 w-12 bg-transparent border border-gray-700 rounded cursor-pointer"
-                                    />
-                                    <span className="text-xs text-gray-500 uppercase">{widget.questionColor || '#111827'}</span>
-                                </div>
-                            </div>
+                        <div className="grid grid-cols-2 gap-3">
+                            <ColorInput
+                                label="Barva otázky"
+                                value={widget.questionColor || '#111827'}
+                                onChange={(val) => setWidget({ ...widget, questionColor: val })}
+                            />
 
-                            <div>
-                                <label className="text-xs font-medium text-gray-400 mb-2 block">Barva odpovědi</label>
-                                <div className="flex items-center gap-3">
-                                    <input
-                                        type="color"
-                                        value={widget.answerColor || '#6B7280'}
-                                        onChange={(e) => setWidget({ ...widget, answerColor: e.target.value })}
-                                        className="h-8 w-12 bg-transparent border border-gray-700 rounded cursor-pointer"
-                                    />
-                                    <span className="text-xs text-gray-500 uppercase">{widget.answerColor || '#6B7280'}</span>
-                                </div>
-                            </div>
+                            <ColorInput
+                                label="Barva odpovědi"
+                                value={widget.answerColor || '#6B7280'}
+                                onChange={(val) => setWidget({ ...widget, answerColor: val })}
+                            />
 
-                            <div>
-                                <label className="text-xs font-medium text-gray-400 mb-2 block">Barva při najetí (Hover)</label>
-                                <div className="flex items-center gap-3">
-                                    <input
-                                        type="color"
-                                        value={widget.hoverColor || '#4F46E5'}
-                                        onChange={(e) => setWidget({ ...widget, hoverColor: e.target.value })}
-                                        className="h-8 w-12 bg-transparent border border-gray-700 rounded cursor-pointer"
-                                    />
-                                    <span className="text-xs text-gray-500 uppercase">{widget.hoverColor || '#4F46E5'}</span>
-                                </div>
-                            </div>
+                            <ColorInput
+                                label="Barva při najetí"
+                                value={widget.hoverColor || '#4F46E5'}
+                                onChange={(val) => setWidget({ ...widget, hoverColor: val })}
+                            />
 
-                            <div>
-                                <label className="text-xs font-medium text-gray-400 mb-2 block">Barva pozadí (volitelné)</label>
-                                <div className="flex items-center gap-3">
-                                    <input
-                                        type="color"
-                                        value={widget.backgroundColor || '#ffffff'}
-                                        onChange={(e) => setWidget({ ...widget, backgroundColor: e.target.value })}
-                                        className="h-8 w-12 bg-transparent border border-gray-700 rounded cursor-pointer"
-                                    />
-                                    <span className="text-xs text-gray-500 uppercase">{widget.backgroundColor || '#ffffff'}</span>
-                                </div>
-                            </div>
+                            <ColorInput
+                                label="Barva pozadí"
+                                value={widget.backgroundColor || '#ffffff'}
+                                onChange={(val) => setWidget({ ...widget, backgroundColor: val })}
+                            />
                         </div>
                     </div>
                 )}

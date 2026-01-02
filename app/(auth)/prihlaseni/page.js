@@ -10,6 +10,7 @@ export default function LoginPage() {
   const { data: session, status } = useSession();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [rememberMe, setRememberMe] = useState(false);
   const [loading, setLoading] = useState(false);
   const router = useRouter();
   const showNotification = useToast();
@@ -28,6 +29,7 @@ export default function LoginPage() {
       const res = await signIn("credentials", {
         email,
         password,
+        rememberMe,
         redirect: false
       });
 
@@ -99,6 +101,45 @@ export default function LoginPage() {
                 className="block w-full rounded-md bg-white/5 border border-white/10 px-3 py-1.5 text-base text-white outline-none placeholder:text-gray-500 focus:border-visualy-accent-4 focus:ring-1 focus:ring-visualy-accent-4 sm:text-sm/6 transition-colors"
               />
             </div>
+          </div>
+
+          <div className="flex items-center group">
+            <div className="relative flex items-center">
+              <input
+                id="remember-me"
+                name="remember-me"
+                type="checkbox"
+                checked={rememberMe}
+                onChange={(e) => setRememberMe(e.target.checked)}
+                className="peer sr-only"
+              />
+              <div
+                onClick={() => setRememberMe(!rememberMe)}
+                className={`
+                  h-5 w-5 rounded border flex items-center justify-center transition-all duration-200 cursor-pointer
+                  ${rememberMe
+                    ? 'bg-visualy-accent-4 border-visualy-accent-4 text-white shadow-[0_0_10px_rgba(34,197,94,0.3)]'
+                    : 'bg-white/5 border-white/10 group-hover:border-white/30'
+                  }
+                `}
+              >
+                <svg
+                  className={`h-3.5 w-3.5 transition-transform duration-200 ${rememberMe ? 'scale-100' : 'scale-0'}`}
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                  strokeWidth={3}
+                >
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M4.5 12.75l6 6 9.135-9.135" />
+                </svg>
+              </div>
+            </div>
+            <label
+              htmlFor="remember-me"
+              className="ml-2 block text-sm text-gray-300 cursor-pointer select-none group-hover:text-white transition-colors"
+            >
+              Zapamatovat si mě
+            </label>
           </div>
 
           <div>
