@@ -1,7 +1,65 @@
 import { BoldIcon, ItalicIcon } from '@heroicons/react/24/solid';
+import { SwatchIcon } from '@heroicons/react/24/outline';
+
+const getContrastYIQ = (hexcolor) => {
+    if (!hexcolor) return '#000000';
+
+    // Remove hash
+    let hex = hexcolor.toString().replace('#', '');
+
+    // Handle 3-char shorthand
+    if (hex.length === 3) {
+        hex = hex.split('').map(c => c + c).join('');
+    }
+
+    // Attempt to handle non-hex colors or incomplete hex by defaulting to black
+    if (hex.length !== 6) return '#000000';
+
+    const r = parseInt(hex.substr(0, 2), 16);
+    const g = parseInt(hex.substr(2, 2), 16);
+    const b = parseInt(hex.substr(4, 2), 16);
+
+    if (isNaN(r) || isNaN(g) || isNaN(b)) return '#000000';
+
+    const yiq = ((r * 299) + (g * 587) + (b * 114)) / 1000;
+    return (yiq >= 128) ? '#000000' : '#ffffff';
+};
+
+const ColorInput = ({ label, value, onChange }) => {
+    const textColor = getContrastYIQ(value);
+
+    return (
+        <div>
+            {label && <label className="text-xs font-medium text-gray-400 mb-2 block">{label}</label>}
+            <div className="relative group">
+                <div className="relative flex items-center h-10 w-full rounded-md border border-gray-600 shadow-sm overflow-hidden ring-1 ring-white/5 transition-all focus-within:ring-2 focus-within:ring-green-500">
+                    <input
+                        type="text"
+                        value={value || ''}
+                        onChange={(e) => onChange(e.target.value)}
+                        className="w-full h-full text-left text-sm font-bold uppercase font-mono border-none focus:outline-none pl-3 pr-10"
+                        style={{ backgroundColor: value || '#ffffff', color: textColor }}
+                    />
+
+                    {/* Color Picker Trigger (Right Side) */}
+                    <div className="absolute right-0 top-0 bottom-0 w-10 flex items-center justify-center cursor-pointer border-l border-black/10 hover:bg-black/20 bg-black/5">
+                        <SwatchIcon className="h-5 w-5 opacity-70" style={{ color: textColor }} />
+                        <input
+                            type="color"
+                            value={value || '#000000'}
+                            onChange={(e) => onChange(e.target.value)}
+                            className="absolute inset-0 opacity-0 cursor-pointer"
+                        />
+                    </div>
+                </div>
+            </div>
+        </div>
+    );
+};
 
 export default function RichTextToolbar({ activeFormats = {} }) {
     const applyFontSize = (size) => {
+
         const selection = window.getSelection();
         if (!selection || selection.rangeCount === 0) return;
 
@@ -113,89 +171,94 @@ export default function RichTextToolbar({ activeFormats = {} }) {
         editor.dispatchEvent(event);
     };
 
+    const Button = ({ active, onClick, children, title }) => (
+        <button
+            onMouseDown={(e) => e.preventDefault()}
+            onClick={onClick}
+            className={`p-2 rounded-md transition-all font-medium text-sm border flex items-center justify-center h-8 min-w-[32px]
+                ${active
+                    ? 'bg-green-500/20 text-green-400 border-green-500/50'
+                    : 'bg-gray-800 border-gray-700 text-gray-400 hover:text-white hover:bg-gray-700 hover:border-gray-600'
+                }`}
+            title={title}
+        >
+            {children}
+        </button>
+    );
+
     return (
-        <div className="mb-4 space-y-3">
+        <div className="mb-6 space-y-4">
             <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Styl textu</label>
-                <div className="flex flex-wrap gap-2">
-                    <button
-                        onMouseDown={(e) => e.preventDefault()}
+                <label className="text-xs font-medium text-gray-400 mb-2 block">Formátování</label>
+                <div className="flex flex-wrap gap-2 mb-3">
+                    <Button
                         onClick={() => document.execCommand('formatBlock', false, 'p')}
-                        className={`p-2 rounded border ${activeFormats.tag === 'p' || !activeFormats.tag ? 'bg-indigo-100 border-indigo-500 text-indigo-700' : 'bg-white border-gray-300 text-gray-700 hover:bg-gray-50'}`}
+                        active={activeFormats.tag === 'p' || !activeFormats.tag}
                         title="Normal Text"
                     >
-                        <span className="text-sm font-bold">T</span>
-                    </button>
-                    <button
-                        onMouseDown={(e) => e.preventDefault()}
+                        T
+                    </Button>
+                    <Button
                         onClick={() => document.execCommand('formatBlock', false, 'h1')}
-                        className={`p-2 rounded border ${activeFormats.tag === 'h1' ? 'bg-indigo-100 border-indigo-500 text-indigo-700' : 'bg-white border-gray-300 text-gray-700 hover:bg-gray-50'}`}
+                        active={activeFormats.tag === 'h1'}
                         title="Heading 1"
                     >
-                        <span className="text-sm font-bold">H1</span>
-                    </button>
-                    <button
-                        onMouseDown={(e) => e.preventDefault()}
+                        H1
+                    </Button>
+                    <Button
                         onClick={() => document.execCommand('formatBlock', false, 'h2')}
-                        className={`p-2 rounded border ${activeFormats.tag === 'h2' ? 'bg-indigo-100 border-indigo-500 text-indigo-700' : 'bg-white border-gray-300 text-gray-700 hover:bg-gray-50'}`}
+                        active={activeFormats.tag === 'h2'}
                         title="Heading 2"
                     >
-                        <span className="text-sm font-bold">H2</span>
-                    </button>
-                    <button
-                        onMouseDown={(e) => e.preventDefault()}
+                        H2
+                    </Button>
+                    <Button
                         onClick={() => document.execCommand('formatBlock', false, 'h3')}
-                        className={`p-2 rounded border ${activeFormats.tag === 'h3' ? 'bg-indigo-100 border-indigo-500 text-indigo-700' : 'bg-white border-gray-300 text-gray-700 hover:bg-gray-50'}`}
+                        active={activeFormats.tag === 'h3'}
                         title="Heading 3"
                     >
-                        <span className="text-sm font-bold">H3</span>
-                    </button>
-                </div>
-            </div>
-
-            <div className="flex flex-wrap gap-4">
-                <div className="flex gap-2">
-                    <button
-                        onMouseDown={(e) => e.preventDefault()}
+                        H3
+                    </Button>
+                    <div className="w-px h-8 bg-gray-700 mx-1" />
+                    <Button
                         onClick={() => document.execCommand('bold')}
-                        className={`p-2 rounded border ${activeFormats.bold ? 'bg-indigo-100 border-indigo-500 text-indigo-700' : 'bg-white border-gray-300 text-gray-700 hover:bg-gray-50'}`}
+                        active={activeFormats.bold}
                         title="Bold"
                     >
                         <BoldIcon className="h-4 w-4" />
-                    </button>
-                    <button
-                        onMouseDown={(e) => e.preventDefault()}
+                    </Button>
+                    <Button
                         onClick={() => document.execCommand('italic')}
-                        className={`p-2 rounded border ${activeFormats.italic ? 'bg-indigo-100 border-indigo-500 text-indigo-700' : 'bg-white border-gray-300 text-gray-700 hover:bg-gray-50'}`}
+                        active={activeFormats.italic}
                         title="Italic"
                     >
                         <ItalicIcon className="h-4 w-4" />
-                    </button>
+                    </Button>
                 </div>
-                <div className="flex flex-col gap-2">
-                    <div className="flex items-center gap-2">
-                        <input
-                            type="color"
-                            className="h-9 w-9 p-1 rounded border border-gray-300 cursor-pointer"
-                            onChange={(e) => document.execCommand('foreColor', false, e.target.value)}
+
+                <div className="grid grid-cols-2 gap-2">
+                    <div className="relative">
+                        <ColorInput
                             value={activeFormats.color || '#000000'}
-                            title="Barva textu"
+                            onChange={(val) => document.execCommand('foreColor', false, val)}
                         />
-                        <select
-                            className="p-2 rounded border border-gray-300 text-sm"
-                            onChange={(e) => applyFontSize(e.target.value)}
-                            value={activeFormats.fontSize || ''}
-                        >
-                            <option value="" disabled>Velikost</option>
-                            <option value="14px">Malé (14px)</option>
-                            <option value="16px">Normální (16px)</option>
-                            <option value="18px">Střední (18px)</option>
-                            <option value="20px">Velké (20px)</option>
-                            <option value="24px">Extra velké (24px)</option>
-                        </select>
                     </div>
+
                     <select
-                        className="p-2 rounded border border-gray-300 text-sm w-full"
+                        className="h-9 w-full bg-gray-800 border border-gray-700 text-white text-xs px-2 rounded-lg focus:outline-none focus:ring-1 focus:ring-green-500 rounded-lg"
+                        onChange={(e) => applyFontSize(e.target.value)}
+                        value={activeFormats.fontSize || ''}
+                    >
+                        <option value="" disabled>Velikost</option>
+                        <option value="14px">14px</option>
+                        <option value="16px">16px</option>
+                        <option value="18px">18px</option>
+                        <option value="20px">20px</option>
+                        <option value="24px">24px</option>
+                    </select>
+
+                    <select
+                        className="h-9 w-full bg-gray-800 border border-gray-700 text-white text-xs px-2 rounded-lg focus:outline-none focus:ring-1 focus:ring-green-500 col-span-2"
                         onChange={(e) => applyFontFamily(e.target.value)}
                         value={activeFormats.fontFamily || ''}
                     >

@@ -5,6 +5,64 @@ import { authorizedFetch } from '../../../lib/api';
 import { RangeControl, Input, TextArea, Select } from './Helpers';
 import ImageUpload from './ImageUpload';
 import RichTextToolbar from './RichTextToolbar';
+import Toggle from '../Toggle';
+import { SwatchIcon } from '@heroicons/react/24/outline';
+
+const getContrastYIQ = (hexcolor) => {
+    if (!hexcolor) return '#000000';
+
+    // Remove hash
+    let hex = hexcolor.toString().replace('#', '');
+
+    // Handle 3-char shorthand
+    if (hex.length === 3) {
+        hex = hex.split('').map(c => c + c).join('');
+    }
+
+    // Attempt to handle non-hex colors or incomplete hex by defaulting to black
+    if (hex.length !== 6) return '#000000';
+
+    const r = parseInt(hex.substr(0, 2), 16);
+    const g = parseInt(hex.substr(2, 2), 16);
+    const b = parseInt(hex.substr(4, 2), 16);
+
+    if (isNaN(r) || isNaN(g) || isNaN(b)) return '#000000';
+
+    const yiq = ((r * 299) + (g * 587) + (b * 114)) / 1000;
+    return (yiq >= 128) ? '#000000' : '#ffffff';
+};
+
+const ColorInput = ({ label, value, onChange }) => {
+    const textColor = getContrastYIQ(value);
+
+    return (
+        <div>
+            <label className="text-xs font-medium text-gray-400 mb-2 block">{label}</label>
+            <div className="relative group">
+                <div className="relative flex items-center h-10 w-full rounded-md border border-gray-600 shadow-sm overflow-hidden ring-1 ring-white/5 transition-all focus-within:ring-2 focus-within:ring-indigo-500">
+                    <input
+                        type="text"
+                        value={value || ''}
+                        onChange={(e) => onChange(e.target.value)}
+                        className="w-full h-full text-left text-sm font-bold uppercase font-mono border-none focus:outline-none pl-3 pr-10"
+                        style={{ backgroundColor: value || '#ffffff', color: textColor }}
+                    />
+
+                    {/* Color Picker Trigger (Right Side) */}
+                    <div className="absolute right-0 top-0 bottom-0 w-10 flex items-center justify-center cursor-pointer border-l border-black/10 hover:bg-black/20 bg-black/5">
+                        <SwatchIcon className="h-5 w-5 opacity-70" style={{ color: textColor }} />
+                        <input
+                            type="color"
+                            value={value || '#000000'}
+                            onChange={(e) => onChange(e.target.value)}
+                            className="absolute inset-0 opacity-0 cursor-pointer"
+                        />
+                    </div>
+                </div>
+            </div>
+        </div>
+    );
+};
 
 export function TextProperties({ block, onChange, activeFormats = {} }) {
     return (
@@ -115,7 +173,7 @@ export function TableProperties({ block, onChange }) {
                         max="20"
                         value={block.rows || 3}
                         onChange={(e) => updateDimensions(parseInt(e.target.value) || 1, block.cols || 3)}
-                        className="w-full p-2 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg"
+                        className="w-full p-2 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg text-gray-900 dark:text-white"
                     />
                 </div>
                 <div className="flex-1">
@@ -126,7 +184,7 @@ export function TableProperties({ block, onChange }) {
                         max="10"
                         value={block.cols || 3}
                         onChange={(e) => updateDimensions(block.rows || 3, parseInt(e.target.value) || 1)}
-                        className="w-full p-2 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg"
+                        className="w-full p-2 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg text-gray-900 dark:text-white"
                     />
                 </div>
             </div>
@@ -142,17 +200,12 @@ export function TableProperties({ block, onChange }) {
                 ]}
             />
 
-            <div className="mb-4 flex items-center">
-                <input
-                    type="checkbox"
-                    id="table-outer-border"
+            <div className="mb-4">
+                <Toggle
                     checked={block.outerBorder !== false}
-                    onChange={(e) => onChange({ ...block, outerBorder: e.target.checked })}
-                    className="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded"
+                    onChange={(val) => onChange({ ...block, outerBorder: val })}
+                    label="Vnější ohraničení"
                 />
-                <label htmlFor="table-outer-border" className="ml-2 block text-sm text-gray-900 dark:text-gray-300">
-                    Vnější ohraničení
-                </label>
             </div>
 
             <RangeControl
@@ -184,25 +237,17 @@ export function TableProperties({ block, onChange }) {
                 unit="px"
             />
 
-            <div className="flex gap-4 mb-4">
-                <div className="flex-1">
-                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Barva záhlaví</label>
-                    <input
-                        type="color"
-                        value={block.headerBgColor || '#f3f4f6'}
-                        onChange={(e) => onChange({ ...block, headerBgColor: e.target.value })}
-                        className="h-10 w-full p-1 rounded border border-gray-300 dark:border-gray-600 cursor-pointer"
-                    />
-                </div>
-                <div className="flex-1">
-                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Barva textu</label>
-                    <input
-                        type="color"
-                        value={block.headerTextColor || '#111827'}
-                        onChange={(e) => onChange({ ...block, headerTextColor: e.target.value })}
-                        className="h-10 w-full p-1 rounded border border-gray-300 dark:border-gray-600 cursor-pointer"
-                    />
-                </div>
+            <div className="grid grid-cols-2 gap-3 mb-4">
+                <ColorInput
+                    label="Barva záhlaví"
+                    value={block.headerBgColor || '#f3f4f6'}
+                    onChange={(val) => onChange({ ...block, headerBgColor: val })}
+                />
+                <ColorInput
+                    label="Barva textu"
+                    value={block.headerTextColor || '#111827'}
+                    onChange={(val) => onChange({ ...block, headerTextColor: val })}
+                />
             </div>
         </>
     );
@@ -217,18 +262,18 @@ export function BannerProperties({ block, onChange }) {
                 onChange={(val) => onChange({ ...block, content: val })}
                 placeholder="NADPIS SEKCE"
             />
-            <Input
-                label="Barva pozadí"
-                value={block.bgColor || '#f3f4f6'}
-                onChange={(val) => onChange({ ...block, bgColor: val })}
-                placeholder="#f3f4f6"
-            />
-            <Input
-                label="Barva textu"
-                value={block.textColor || '#111827'}
-                onChange={(val) => onChange({ ...block, textColor: val })}
-                placeholder="#111827"
-            />
+            <div className="grid grid-cols-2 gap-3">
+                <ColorInput
+                    label="Barva pozadí"
+                    value={block.bgColor || '#f3f4f6'}
+                    onChange={(val) => onChange({ ...block, bgColor: val })}
+                />
+                <ColorInput
+                    label="Barva textu"
+                    value={block.textColor || '#111827'}
+                    onChange={(val) => onChange({ ...block, textColor: val })}
+                />
+            </div>
         </>
     );
 }
@@ -302,7 +347,7 @@ export function ProductProperties({ block, onChange, widgetId }) {
                             value={searchTerm}
                             onChange={(e) => handleSearch(e.target.value)}
                             placeholder="Hledat podle názvu..."
-                            className="w-full p-2 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg text-sm"
+                            className="w-full p-2 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg text-sm text-gray-900 dark:text-white"
                         />
                         {isSearching && (
                             <div className="absolute right-3 top-9">
@@ -373,23 +418,12 @@ export function ProductProperties({ block, onChange, widgetId }) {
                 onChange={(val) => onChange({ ...block, btnText: val })}
                 placeholder="Koupit"
             />
-            <div className="mb-4">
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Barva tlačítka</label>
-                <div className="flex gap-2">
-                    <input
-                        type="color"
-                        value={block.btnColor || '#4f46e5'}
-                        onChange={(e) => onChange({ ...block, btnColor: e.target.value })}
-                        className="h-9 w-14 p-1 rounded border border-gray-300 dark:border-gray-600 cursor-pointer"
-                    />
-                    <input
-                        type="text"
-                        value={block.btnColor || '#4f46e5'}
-                        onChange={(e) => onChange({ ...block, btnColor: e.target.value })}
-                        className="flex-1 p-2 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg text-sm"
-                        placeholder="#4f46e5"
-                    />
-                </div>
+            <div className="grid grid-cols-2 gap-3 mb-4">
+                <ColorInput
+                    label="Barva tlačítka"
+                    value={block.btnColor || '#4f46e5'}
+                    onChange={(val) => onChange({ ...block, btnColor: val })}
+                />
             </div>
         </>
     );
