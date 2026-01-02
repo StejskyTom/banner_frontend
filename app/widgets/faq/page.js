@@ -158,37 +158,46 @@ export default function FaqWidgetsPage() {
                                                 {new Date(widget.createdAt).toLocaleDateString('cs-CZ')}
                                             </td>
                                             <td className="px-6 py-4 text-right">
-                                                <Dropdown
-                                                    trigger={
-                                                        <button className="p-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-500 dark:text-gray-400 transition-colors">
-                                                            <EllipsisVerticalIcon className="h-5 w-5" />
-                                                        </button>
-                                                    }
-                                                >
-                                                    <DropdownItem
-                                                        icon={PencilSquareIcon}
-                                                        onClick={() => router.push(`/widgets/faq/${widget.id}`)}
+                                                <div className="flex items-center justify-end gap-1">
+                                                    <Link
+                                                        href={`/widgets/faq/${widget.id}`}
+                                                        className="inline-flex items-center gap-1 px-3 py-1.5 text-xs font-medium text-indigo-600 bg-indigo-50 hover:bg-indigo-100 dark:text-indigo-400 dark:bg-indigo-900/30 dark:hover:bg-indigo-900/50 rounded-lg transition-colors"
                                                     >
+                                                        <PencilSquareIcon className="h-3.5 w-3.5" />
                                                         Upravit
-                                                    </DropdownItem>
-                                                    <DropdownItem
-                                                        icon={CodeBracketIcon}
-                                                        onClick={() => setEmbedWidgetId(widget.id)}
+                                                    </Link>
+                                                    <Dropdown
+                                                        trigger={
+                                                            <button className="p-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-500 dark:text-gray-400 transition-colors">
+                                                                <EllipsisVerticalIcon className="h-5 w-5" />
+                                                            </button>
+                                                        }
                                                     >
-                                                        Publikovat
-                                                    </DropdownItem>
-                                                    <div className="my-1 border-t border-gray-100 dark:border-gray-700" />
-                                                    <DropdownItem
-                                                        icon={TrashIcon}
-                                                        danger={true}
-                                                        onClick={() => {
-                                                            setWidgetToDelete(widget);
-                                                            setShowDeleteModal(true);
-                                                        }}
-                                                    >
-                                                        Odstranit
-                                                    </DropdownItem>
-                                                </Dropdown>
+                                                        <DropdownItem
+                                                            icon={PencilSquareIcon}
+                                                            onClick={() => router.push(`/widgets/faq/${widget.id}`)}
+                                                        >
+                                                            Upravit
+                                                        </DropdownItem>
+                                                        <DropdownItem
+                                                            icon={CodeBracketIcon}
+                                                            onClick={() => setEmbedWidgetId(widget.id)}
+                                                        >
+                                                            Publikovat
+                                                        </DropdownItem>
+                                                        <div className="my-1 border-t border-gray-100 dark:border-gray-700" />
+                                                        <DropdownItem
+                                                            icon={TrashIcon}
+                                                            danger={true}
+                                                            onClick={() => {
+                                                                setWidgetToDelete(widget);
+                                                                setShowDeleteModal(true);
+                                                            }}
+                                                        >
+                                                            Odstranit
+                                                        </DropdownItem>
+                                                    </Dropdown>
+                                                </div>
                                             </td>
                                         </tr>
                                     ))
