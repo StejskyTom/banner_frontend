@@ -10,7 +10,7 @@ export default function SidebarWrapper({ children }) {
 
     useEffect(() => {
         const parts = pathname ? pathname.split('/').filter(Boolean) : [];
-        if (parts.length > 2) {
+        if (parts.length > 2 && !parts.includes('settings')) {
             setIsDesktopCollapsed(true);
         } else {
             setIsDesktopCollapsed(false);

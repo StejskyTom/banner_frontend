@@ -86,11 +86,7 @@ export default function MainSidebar({ isDesktopCollapsed, onDesktopToggle }) {
                 </svg>
             ),
         },
-        {
-            label: 'Nastavení',
-            href: '/widgets/settings',
-            icon: <Settings className="w-5 h-5 text-visualy-accent-4" />,
-        },
+
     ];
 
     return (
@@ -139,7 +135,6 @@ export default function MainSidebar({ isDesktopCollapsed, onDesktopToggle }) {
                             alt="Visualy"
                             className="h-8 w-auto object-contain"
                         />
-                        <span className="text-lg font-semibold">Visualy</span>
                     </div>
 
                     {/* Navigation */}
@@ -171,7 +166,21 @@ export default function MainSidebar({ isDesktopCollapsed, onDesktopToggle }) {
                     </nav>
 
                     {/* Footer */}
-                    <div className="px-2 py-4 border-t border-gray-800">
+                    <div className="px-2 py-4 border-t border-gray-800 space-y-1">
+                        <Link
+                            href="/widgets/settings"
+                            onClick={() => setIsMobileMenuOpen(false)}
+                            className={
+                                `flex w-full items-center gap-3 px-3 py-2 rounded-lg transition-colors duration-200 hover:bg-gray-800 hover:text-white ` +
+                                (pathname.startsWith('/widgets/settings')
+                                    ? 'bg-gray-800 text-white font-medium'
+                                    : 'text-gray-300')
+                            }
+                        >
+                            <Settings className="w-5 h-5 text-visualy-accent-4" />
+                            Nastavení
+                        </Link>
+
                         <button
                             onClick={() => signOut({ callbackUrl: '/prihlaseni' })}
                             aria-label="Odhlásit se z aplikace"
