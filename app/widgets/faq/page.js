@@ -252,7 +252,7 @@ export default function FaqWidgetsPage() {
                                     value={newWidgetName}
                                     onChange={(e) => setNewWidgetName(e.target.value)}
                                     placeholder="Např. Hlavní FAQ, Produktové dotazy..."
-                                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-visualy-accent-4 focus:border-visualy-accent-4 bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
                                     autoFocus
                                 />
                             </div>
@@ -267,7 +267,7 @@ export default function FaqWidgetsPage() {
                                 <button
                                     type="submit"
                                     disabled={!newWidgetName.trim() || creating}
-                                    className="px-4 py-2 rounded-lg bg-indigo-600 text-white hover:bg-indigo-700 transition disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
+                                    className="px-4 py-2 rounded-lg bg-visualy-accent-4 text-white hover:bg-visualy-accent-4/90 transition disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
                                 >
                                     {creating ? 'Vytvářím...' : 'Vytvořit'}
                                 </button>

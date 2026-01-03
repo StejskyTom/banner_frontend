@@ -291,7 +291,7 @@ function HeurekaFeedsContent() {
                     value={newFeedUrl}
                     onChange={(e) => setNewFeedUrl(e.target.value)}
                     placeholder="https://www.example.com/feed.xml"
-                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-visualy-accent-4 focus:border-visualy-accent-4 bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
                   />
                 </div>
                 <div>
@@ -303,7 +303,7 @@ function HeurekaFeedsContent() {
                     value={newFeedName}
                     onChange={(e) => setNewFeedName(e.target.value)}
                     placeholder="Např. Hlavní e-shop"
-                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-visualy-accent-4 focus:border-visualy-accent-4 bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
                   />
                 </div>
               </div>
@@ -320,7 +320,7 @@ function HeurekaFeedsContent() {
                 <button
                   type="submit"
                   disabled={creating}
-                  className="px-4 py-2 rounded-lg bg-indigo-600 text-white hover:bg-indigo-700 transition flex items-center gap-2 disabled:opacity-70 disabled:cursor-not-allowed"
+                  className="px-4 py-2 rounded-lg bg-visualy-accent-4 text-white hover:bg-visualy-accent-4/90 transition flex items-center gap-2 disabled:opacity-70 disabled:cursor-not-allowed"
                 >
                   {creating && (
                     <svg className="animate-spin h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
