@@ -212,7 +212,7 @@ export default function AuthorWidgetsPage() {
                                                 </p>
                                                 <button
                                                     onClick={() => setShowCreateModal(true)}
-                                                    className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-indigo-600 text-white font-medium hover:bg-indigo-700 transition cursor-pointer"
+                                                    className="inline-flex items-center gap-2 px-4 py-2 bg-visualy-accent-4 text-white rounded-lg hover:bg-visualy-accent-4/90 transition-all duration-300 shadow-lg shadow-visualy-accent-4/20 cursor-pointer font-medium"
                                                 >
                                                     <PlusIcon className="h-5 w-5" />
                                                     Vytvořit první profil
