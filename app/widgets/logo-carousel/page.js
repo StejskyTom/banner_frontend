@@ -108,12 +108,12 @@ export default function CarouselListPage() {
         <div className="max-w-7xl mx-auto">
 
           <div className="overflow-visible rounded-xl shadow-lg bg-white dark:bg-gray-900">
-            <table className="w-full text-sm text-left">
+            <table className="w-full text-sm text-left [&_tbody_tr:last-child_td:first-child]:rounded-bl-xl [&_tbody_tr:last-child_td:last-child]:rounded-br-xl">
               <thead className="text-xs uppercase bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-300">
                 <tr>
-                  <th scope="col" className="px-6 py-4 font-semibold">Název</th>
+                  <th scope="col" className="px-6 py-4 font-semibold rounded-tl-xl">Název</th>
                   <th scope="col" className="px-6 py-4 font-semibold">Počet log</th>
-                  <th scope="col" className="px-6 py-4 text-right font-semibold">Akce</th>
+                  <th scope="col" className="px-6 py-4 text-right font-semibold rounded-tr-xl">Akce</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-100 dark:divide-gray-800">
@@ -154,7 +154,7 @@ export default function CarouselListPage() {
                         <div className="flex items-center justify-end gap-1">
                           <Link
                             href={`/widgets/logo-carousel/${carousel.id}`}
-                            className="inline-flex items-center gap-1 px-3 py-1.5 text-xs font-medium text-indigo-600 bg-indigo-50 hover:bg-indigo-100 dark:text-indigo-400 dark:bg-indigo-900/30 dark:hover:bg-indigo-900/50 rounded-lg transition-colors"
+                            className="inline-flex items-center gap-1 px-3 py-1.5 text-xs font-medium text-white bg-visualy-accent-4 hover:bg-visualy-accent-4/90 shadow-sm shadow-visualy-accent-4/20 rounded-lg transition-all"
                           >
                             <PencilSquareIcon className="h-3.5 w-3.5" />
                             Upravit
