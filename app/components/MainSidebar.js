@@ -3,10 +3,12 @@
 import { useState } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { signOut } from 'next-auth/react';
-import { Menu, LogOut, ChevronLeft, ChevronRight, LayoutDashboard, CreditCard, Settings } from 'lucide-react';
+import { useSession, signOut } from 'next-auth/react';
+import { Menu, LogOut, ChevronLeft, ChevronRight, LayoutDashboard, CreditCard, Settings, ChevronUp } from 'lucide-react';
+import { Dropdown, DropdownItem } from './Dropdown';
 
 export default function MainSidebar({ isDesktopCollapsed, onDesktopToggle }) {
+    const { data: session } = useSession();
     const pathname = usePathname();
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
@@ -166,32 +168,63 @@ export default function MainSidebar({ isDesktopCollapsed, onDesktopToggle }) {
                     </nav>
 
                     {/* Footer */}
-                    <div className="px-2 py-4 border-t border-gray-800 space-y-1">
-                        <Link
-                            href="/widgets/settings"
-                            onClick={() => setIsMobileMenuOpen(false)}
-                            className={
-                                `flex w-full items-center gap-3 px-3 py-2 rounded-lg transition-colors duration-200 hover:bg-gray-800 hover:text-white ` +
-                                (pathname.startsWith('/widgets/settings')
-                                    ? 'bg-gray-800 text-white font-medium'
-                                    : 'text-gray-300')
-                            }
-                        >
-                            <Settings className="w-5 h-5 text-visualy-accent-4" />
-                            Nastavení
-                        </Link>
-
-                        <button
-                            onClick={() => signOut({ callbackUrl: '/prihlaseni' })}
-                            aria-label="Odhlásit se z aplikace"
-                            className="flex w-full items-center gap-3 px-3 py-2 rounded-lg text-gray-300 hover:bg-gray-800 hover:text-white transition-colors duration-200"
-                        >
-                            <LogOut className="w-5 h-5 text-visualy-accent-4 group-hover:text-white" aria-hidden="true" />
-                            Odhlásit se
-                        </button>
+                    <div className="p-3 border-t border-gray-800">
+                        {session?.user && (
+                            <Dropdown
+                                align="left"
+                                direction="up"
+                                matchTriggerWidth={!isDesktopCollapsed}
+                                trigger={
+                                    <div className={`flex items-center gap-3 px-3 py-3 rounded-lg bg-transparent hover:bg-gray-800 transition-colors cursor-pointer group ${isDesktopCollapsed ? 'justify-center' : ''}`}>
+                                        {session.user.image ? (
+                                            <img
+                                                src={session.user.image}
+                                                alt={session.user.name || 'User'}
+                                                className="w-8 h-8 rounded-full border border-gray-600 shrink-0 group-hover:border-gray-500"
+                                            />
+                                        ) : (
+                                            <div className="w-8 h-8 rounded-full bg-gray-700 flex items-center justify-center shrink-0 group-hover:bg-gray-600">
+                                                <span className="text-xs font-medium text-gray-300 group-hover:text-white">
+                                                    {(session.user.email || 'U').charAt(0).toUpperCase()}
+                                                </span>
+                                            </div>
+                                        )}
+                                        {!isDesktopCollapsed && (
+                                            <>
+                                                <div className="flex-1 overflow-hidden text-left">
+                                                    <p className="text-sm font-medium text-white truncate group-hover:text-white">
+                                                        {session.user.email}
+                                                    </p>
+                                                </div>
+                                                <ChevronUp className="w-4 h-4 text-gray-500 group-hover:text-gray-300" />
+                                            </>
+                                        )}
+                                    </div>
+                                }
+                            >
+                                <div className="px-4 py-3 text-sm text-gray-900 dark:text-white border-b border-gray-100 dark:border-gray-700 mb-1">
+                                    <div className="font-medium truncate">{session.user.name || 'Uživatel'}</div>
+                                    <div className="font-normal truncate text-xs text-gray-500 dark:text-gray-400">{session.user.email}</div>
+                                </div>
+                                <DropdownItem
+                                    className="dark:text-white dark:hover:bg-gray-700"
+                                    onClick={() => window.location.href = '/widgets/settings'}
+                                    icon={Settings}
+                                >
+                                    Nastavení
+                                </DropdownItem>
+                                <DropdownItem
+                                    danger={true}
+                                    onClick={() => signOut({ callbackUrl: '/prihlaseni' })}
+                                    icon={LogOut}
+                                >
+                                    Odhlásit se
+                                </DropdownItem>
+                            </Dropdown>
+                        )}
                     </div>
                 </div>
-            </aside>
+            </aside >
         </>
     );
 }

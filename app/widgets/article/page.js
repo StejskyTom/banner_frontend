@@ -90,13 +90,15 @@ export default function ArticleWidgetsPage() {
                 <h1 className="text-lg font-semibold text-white">
                     Články
                 </h1>
-                <button
-                    onClick={createWidget}
-                    className="flex items-center gap-2 px-4 py-2 bg-visualy-accent-4 text-white rounded-lg hover:bg-visualy-accent-4/90 transition-all duration-300 shadow-lg shadow-visualy-accent-4/20 cursor-pointer text-sm font-medium"
-                >
-                    <PlusIcon className="h-4 w-4" />
-                    Nový článek
-                </button>
+                <div className="flex items-center gap-4">
+                    <button
+                        onClick={createWidget}
+                        className="flex items-center gap-2 px-4 py-2 bg-visualy-accent-4 text-white rounded-lg hover:bg-visualy-accent-4/90 transition-all duration-300 shadow-lg shadow-visualy-accent-4/20 cursor-pointer text-sm font-medium"
+                    >
+                        <PlusIcon className="h-4 w-4" />
+                        Nový článek
+                    </button>
+                </div>
             </div>
 
             {/* Main Content */}

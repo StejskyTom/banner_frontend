@@ -29,6 +29,8 @@ const providers = [
 
         return {
           id: credentials.email,
+          email: credentials.email,
+          name: credentials.email.split('@')[0], // Fallback name
           accessToken: data.token,
         };
       } catch (err) {

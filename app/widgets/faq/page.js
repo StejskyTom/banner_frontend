@@ -90,6 +90,8 @@ export default function FaqWidgetsPage() {
         }
     };
 
+    const createWidget = () => setShowCreateModal(true);
+
     return (
         <div className="flex flex-col h-screen bg-gray-50 dark:bg-gray-900">
             {/* Top Bar */}
@@ -97,13 +99,15 @@ export default function FaqWidgetsPage() {
                 <h1 className="text-lg font-semibold text-white">
                     FAQ Widgety
                 </h1>
-                <button
-                    onClick={() => setShowCreateModal(true)}
-                    className="flex items-center gap-2 px-4 py-2 bg-visualy-accent-4 text-white rounded-lg hover:bg-visualy-accent-4/90 transition-all duration-300 shadow-lg shadow-visualy-accent-4/20 cursor-pointer text-sm font-medium"
-                >
-                    <PlusIcon className="h-4 w-4" />
-                    Nové FAQ
-                </button>
+                <div className="flex items-center gap-4">
+                    <button
+                        onClick={createWidget}
+                        className="flex items-center gap-2 px-4 py-2 bg-visualy-accent-4 text-white rounded-lg hover:bg-visualy-accent-4/90 transition-all duration-300 shadow-lg shadow-visualy-accent-4/20 cursor-pointer text-sm font-medium"
+                    >
+                        <PlusIcon className="h-4 w-4" />
+                        Nové FAQ
+                    </button>
+                </div>
             </div>
 
             {/* Main Content */}
