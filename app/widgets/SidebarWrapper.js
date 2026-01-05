@@ -23,6 +23,12 @@ export default function SidebarWrapper({ children }) {
         checkSubscription();
     }, [pathname]);
 
+    useEffect(() => {
+        const handleUpdate = () => checkSubscription();
+        window.addEventListener('subscription_updated', handleUpdate);
+        return () => window.removeEventListener('subscription_updated', handleUpdate);
+    }, []);
+
     const checkSubscription = async () => {
         try {
             const res = await authorizedFetch('/subscription');

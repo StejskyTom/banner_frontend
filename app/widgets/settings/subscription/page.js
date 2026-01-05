@@ -68,8 +68,14 @@ export default function SubscriptionPage() {
 
             const data = await res.json();
 
-            if (res.ok && data.gatewayUrl) {
-                window.location.href = data.gatewayUrl;
+            if (res.ok) {
+                if (data.gatewayUrl) {
+                    window.location.href = data.gatewayUrl;
+                } else {
+                    showNotification('Předplatné bylo úspěšně aktivováno', 'success');
+                    fetchStatus();
+                    window.dispatchEvent(new Event('subscription_updated'));
+                }
             } else {
                 showNotification(data.error || 'Chyba při vytváření předplatného', 'error');
             }
