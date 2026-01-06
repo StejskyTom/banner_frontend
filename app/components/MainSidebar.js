@@ -131,11 +131,11 @@ export default function MainSidebar({ isDesktopCollapsed, onDesktopToggle }) {
             >
                 <div className="flex flex-col h-full">
                     {/* Header */}
-                    <div className="flex items-center gap-3 px-4 py-4 border-b border-gray-800">
+                    <div className="flex items-center gap-3 px-4 py-3 border-b border-gray-800">
                         <img
                             src="/visualy_logo.png"
                             alt="Visualy"
-                            className="h-8 w-auto object-contain"
+                            className="h-10 w-auto object-contain"
                         />
                     </div>
 

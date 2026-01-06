@@ -144,10 +144,15 @@ export default function CarouselListPage() {
                   carousels.map((carousel, idx) => (
                     <tr
                       key={carousel.id}
-                      className="bg-white dark:bg-gray-900 hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors"
+                      className={idx % 2 === 0 ? 'bg-white dark:bg-gray-900' : 'bg-gray-50 dark:bg-gray-800'}
                     >
-                      <td className="px-6 py-4 font-medium text-gray-900 dark:text-white">
-                        {carousel.title}
+                      <td className="px-6 py-4">
+                        <div className="flex items-center gap-3">
+                          <div className="p-2 bg-visualy-accent-4/10 rounded-lg text-visualy-accent-4">
+                            <PhotoIcon className="h-5 w-5" />
+                          </div>
+                          <span className="font-medium text-gray-900 dark:text-white">{carousel.title}</span>
+                        </div>
                       </td>
                       <td className="px-6 py-4 text-gray-700 dark:text-gray-300">
                         {carousel.attachments?.length ?? 0}

@@ -188,7 +188,14 @@ function HeurekaFeedsContent() {
                 ) : feeds.length > 0 ? (
                   feeds.map((feed, idx) => (
                     <tr key={feed.id} className={idx % 2 === 0 ? 'bg-white dark:bg-gray-900' : 'bg-gray-50 dark:bg-gray-800'}>
-                      <td className="px-6 py-4 font-medium text-gray-900 dark:text-white">{feed.name}</td>
+                      <td className="px-6 py-4">
+                        <div className="flex items-center gap-3">
+                          <div className="p-2 bg-visualy-accent-4/10 rounded-lg text-visualy-accent-4">
+                            <ShoppingBagIcon className="h-5 w-5" />
+                          </div>
+                          <span className="font-medium text-gray-900 dark:text-white">{feed.name}</span>
+                        </div>
+                      </td>
                       <td className="px-6 py-4 text-gray-700 dark:text-gray-300">{feed.productCount ?? 0}</td>
                       <td className="px-6 py-4 text-gray-700 dark:text-gray-300">
                         {feed.lastSyncedAt ? new Date(feed.lastSyncedAt).toLocaleString() : 'Nikdy'}

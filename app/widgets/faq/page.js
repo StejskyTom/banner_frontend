@@ -149,7 +149,7 @@ export default function FaqWidgetsPage() {
                                         <tr key={widget.id} className={idx % 2 === 0 ? 'bg-white dark:bg-gray-900' : 'bg-gray-50 dark:bg-gray-800'}>
                                             <td className="px-6 py-4 font-medium text-gray-900 dark:text-white">
                                                 <div className="flex items-center gap-3">
-                                                    <div className="p-2 bg-indigo-100 dark:bg-indigo-900/30 rounded-lg text-indigo-600 dark:text-indigo-400">
+                                                    <div className="p-2 bg-visualy-accent-4/10 rounded-lg text-visualy-accent-4">
                                                         <QuestionMarkCircleIcon className="h-5 w-5" />
                                                     </div>
                                                     {widget.name}
