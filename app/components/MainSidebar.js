@@ -175,16 +175,16 @@ export default function MainSidebar({ isDesktopCollapsed, onDesktopToggle }) {
                                 direction="up"
                                 matchTriggerWidth={!isDesktopCollapsed}
                                 trigger={
-                                    <div className={`flex items-center gap-3 px-3 py-3 rounded-lg bg-transparent hover:bg-gray-800 transition-colors cursor-pointer group ${isDesktopCollapsed ? 'justify-center' : ''}`}>
+                                    <div className={`flex items-center gap-3 px-3 py-3 rounded-lg border border-visualy-accent-4 bg-gradient-to-r from-visualy-accent-4/10 to-transparent hover:from-visualy-accent-4/20 transition-all cursor-pointer group ${isDesktopCollapsed ? 'justify-center' : ''}`}>
                                         {session.user.image ? (
                                             <img
                                                 src={session.user.image}
                                                 alt={session.user.name || 'User'}
-                                                className="w-8 h-8 rounded-full border border-gray-600 shrink-0 group-hover:border-gray-500"
+                                                className="w-8 h-8 rounded-full border-2 border-visualy-accent-4 shrink-0"
                                             />
                                         ) : (
-                                            <div className="w-8 h-8 rounded-full bg-gray-700 flex items-center justify-center shrink-0 group-hover:bg-gray-600">
-                                                <span className="text-xs font-medium text-gray-300 group-hover:text-white">
+                                            <div className="w-8 h-8 rounded-full bg-gray-900 flex items-center justify-center shrink-0 border-2 border-visualy-accent-4">
+                                                <span className="text-xs font-medium text-visualy-accent-4 group-hover:text-white">
                                                     {(session.user.email || 'U').charAt(0).toUpperCase()}
                                                 </span>
                                             </div>
@@ -192,19 +192,18 @@ export default function MainSidebar({ isDesktopCollapsed, onDesktopToggle }) {
                                         {!isDesktopCollapsed && (
                                             <>
                                                 <div className="flex-1 overflow-hidden text-left">
-                                                    <p className="text-sm font-medium text-white truncate group-hover:text-white">
+                                                    <p className="text-sm font-medium text-white truncate">
                                                         {session.user.email}
                                                     </p>
                                                 </div>
-                                                <ChevronUp className="w-4 h-4 text-gray-500 group-hover:text-gray-300" />
+                                                <ChevronUp className="w-4 h-4 text-visualy-accent-4" />
                                             </>
                                         )}
                                     </div>
                                 }
                             >
                                 <div className="px-4 py-3 text-sm text-gray-900 dark:text-white border-b border-gray-100 dark:border-gray-700 mb-1">
-                                    <div className="font-medium truncate">{session.user.name || 'Uživatel'}</div>
-                                    <div className="font-normal truncate text-xs text-gray-500 dark:text-gray-400">{session.user.email}</div>
+                                    <div className="font-medium truncate text-gray-900 dark:text-white">{session.user.email}</div>
                                 </div>
                                 <DropdownItem
                                     className="dark:text-white dark:hover:bg-gray-700"
