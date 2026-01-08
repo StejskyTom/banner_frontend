@@ -24,14 +24,14 @@ function FaqItem({ question, settings }) {
                     onMouseEnter={() => setIsHovered(true)}
                     onMouseLeave={() => setIsHovered(false)}
                 >
-                    <span>{question.question || 'Nová otázka'}</span>
-                    <span className="transition-transform duration-200 group-open:rotate-180">
+                    <h3 style={{ margin: 0, fontSize: 'inherit', fontWeight: 'inherit' }}>{question.question || 'Nová otázka'}</h3>
+                    <span className="transition-transform duration-200 group-open:rotate-180 flex-shrink-0 ml-4">
                         <svg fill="none" height="24" shapeRendering="geometricPrecision" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" viewBox="0 0 24 24" width="24"><path d="M6 9l6 6 6-6"></path></svg>
                     </span>
                 </summary>
-                <div className="mt-2 pb-2 text-sm leading-relaxed" style={answerStyle}>
+                <p className="mt-2 pb-2 text-sm leading-relaxed m-0" style={answerStyle}>
                     {question.answer || 'Zde bude odpověď...'}
-                </div>
+                </p>
             </details>
         </div>
     );
@@ -45,6 +45,11 @@ export default function FaqPreview({ widget }) {
 
     return (
         <div className="w-full max-w-3xl mx-auto p-6 rounded-xl" style={containerStyle}>
+            {widget.name && (
+                <h2 className="text-2xl font-bold mb-6" style={{ color: widget.questionColor || '#111827' }}>
+                    {widget.name}
+                </h2>
+            )}
             <div className="space-y-2">
                 {(widget.questions || []).map((q) => (
                     <FaqItem key={q.id} question={q} settings={widget} />
