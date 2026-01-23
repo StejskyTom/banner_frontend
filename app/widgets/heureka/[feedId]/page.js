@@ -1,7 +1,7 @@
 'use client';
 
 import { useParams } from 'next/navigation';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { authorizedFetch } from '../../../../lib/api';
 import { useToast } from "../../../components/ToastProvider";
 import {
@@ -35,6 +35,7 @@ export default function HeurekaFeedDetailPage() {
   const [sortBy, setSortBy] = useState('name_asc');
   const [saving, setSaving] = useState(false);
   const [activeTab, setActiveTab] = useState('content');
+  const lastRequestIdRef = useRef(0);
 
   // Settings
   const [showEmbedModal, setShowEmbedModal] = useState(false);
@@ -92,6 +93,7 @@ export default function HeurekaFeedDetailPage() {
   };
 
   const fetchProducts = async () => {
+    const requestId = ++lastRequestIdRef.current;
     try {
       setLoading(true);
       const params = new URLSearchParams();
@@ -103,6 +105,9 @@ export default function HeurekaFeedDetailPage() {
       params.append('sort', sortBy);
 
       const res = await authorizedFetch(`/heureka/feeds/${feedId}/products?${params}`);
+      
+      if (requestId !== lastRequestIdRef.current) return;
+
       if (res?.ok) {
         const data = await res.json();
         setProducts(data.products);
@@ -110,6 +115,9 @@ export default function HeurekaFeedDetailPage() {
 
         if (selectedProductDetails.length === 0) {
           const selectedRes = await authorizedFetch(`/heureka/feeds/${feedId}/products/selected`);
+          
+          if (requestId !== lastRequestIdRef.current) return;
+
           if (selectedRes?.ok) {
             const selectedData = await selectedRes.json();
             setSelectedProducts(new Set(selectedData.map(p => p.id)));
@@ -118,9 +126,12 @@ export default function HeurekaFeedDetailPage() {
         }
       }
     } catch (error) {
+      if (requestId !== lastRequestIdRef.current) return;
       showNotification('Chyba při načítání produktů', 'error');
     } finally {
-      setLoading(false);
+      if (requestId === lastRequestIdRef.current) {
+        setLoading(false);
+      }
     }
   };
 
