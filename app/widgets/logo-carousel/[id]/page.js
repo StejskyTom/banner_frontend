@@ -67,7 +67,8 @@ export default function CarouselEditPage() {
           imageSize: data.imageSize,
           speed: data.speed,
           pauseOnHover: data.pauseOnHover,
-          gap: data.gap
+          gap: data.gap,
+          settings: data.settings
         })
       });
 
@@ -169,19 +170,20 @@ export default function CarouselEditPage() {
         </div>
 
         {/* Secondary Panel (EditSidebar) */}
-        <EditSidebar carousel={carousel} setCarousel={setCarousel} activeTab={activeTab} />
+        <EditSidebar
+          carousel={carousel}
+          setCarousel={setCarousel}
+          activeTab={activeTab}
+        />
 
         {/* Preview Area */}
         <div className="flex-1 p-8 overflow-y-auto flex flex-col items-center bg-gray-50 dark:bg-gray-900/50">
           <div className="w-full max-w-5xl">
             <CarouselPreview
-              title={carousel.title}
-              attachments={carousel.attachments}
-              imageSize={carousel.imageSize ?? 64}
-              speed={carousel.speed ?? 20}
-              font={carousel.font ?? 'Arial'}
-              pauseOnHover={carousel.pauseOnHover ?? false}
-              gap={carousel.gap ?? 32}
+              carousel={carousel}
+              settings={carousel.settings || {}}
+              onUpdate={(updates) => setCarousel({ ...carousel, ...updates })}
+              isEditing={true}
             />
           </div>
         </div>

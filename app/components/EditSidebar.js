@@ -11,15 +11,116 @@ import {
 } from '@dnd-kit/core';
 import { arrayMove, SortableContext, rectSortingStrategy, useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
-import { TrashIcon } from '@heroicons/react/24/outline';
 import RangeSlider from './RangeSlider';
 import Toggle from './Toggle';
+import { Select, TextArea } from './article/Helpers';
+import { Dropdown } from './Dropdown';
+import ColorInput from './ColorInput';
+import { ChevronDownIcon } from '@heroicons/react/24/solid';
+import { TrashIcon, BoldIcon, ItalicIcon } from '@heroicons/react/24/outline'; // Outline icons for buttons
 
 function SectionTitle({ icon, title }) {
   return (
     <div className="flex items-center gap-2 mt-4 mb-2">
       {icon}
       <h3 className="text-sm font-semibold text-gray-700">{title}</h3>
+    </div>
+  );
+}
+
+// Helper component for style controls
+function StyleControls({ prefix, settings, onChange }) {
+  const handleChange = (key, value) => {
+    onChange({ ...settings, [`${prefix}${key}`]: value });
+  };
+
+  const tag = settings[`${prefix}Tag`] || 'h2';
+  const align = settings[`${prefix}Align`] || 'center';
+  const color = settings[`${prefix}Color`] || '#000000';
+  const size = settings[`${prefix}Size`] || '24px';
+  const font = settings[`${prefix}Font`] || 'sans-serif';
+  const isBold = settings[`${prefix}Bold`] || false;
+  const isItalic = settings[`${prefix}Italic`] || false;
+
+  const ToolButton = ({ active, onClick, children, title }) => (
+    <button
+      type="button"
+      onMouseDown={(e) => e.preventDefault()}
+      onClick={onClick}
+      className={`p-2 rounded-md transition-all font-medium text-sm border flex items-center justify-center h-8 min-w-[32px] flex-1
+            ${active
+          ? 'bg-green-500/20 text-green-400 border-green-500/50'
+          : 'bg-gray-800 border-gray-700 text-gray-400 hover:text-white hover:bg-gray-700 hover:border-gray-600'
+        }`}
+      title={title}
+    >
+      {children}
+    </button>
+  );
+
+  return (
+    <div className="space-y-3">
+      {/* Buttons Row */}
+      <div className="flex flex-wrap gap-1 items-center mb-3">
+        <ToolButton onClick={() => handleChange('Tag', 'p')} active={tag === 'p'} title="Normal Text">T</ToolButton>
+        <ToolButton onClick={() => handleChange('Tag', 'h1')} active={tag === 'h1'} title="H1">H1</ToolButton>
+        <ToolButton onClick={() => handleChange('Tag', 'h2')} active={tag === 'h2'} title="H2">H2</ToolButton>
+        <ToolButton onClick={() => handleChange('Tag', 'h3')} active={tag === 'h3'} title="H3">H3</ToolButton>
+
+        <div className="w-px h-8 bg-gray-700 mx-1" />
+
+        <ToolButton onClick={() => handleChange('Bold', !isBold)} active={isBold} title="Tučně">
+          <BoldIcon className="w-4 h-4" />
+        </ToolButton>
+        <ToolButton onClick={() => handleChange('Italic', !isItalic)} active={isItalic} title="Kurzíva">
+          <ItalicIcon className="w-4 h-4" />
+        </ToolButton>
+      </div>
+
+      {/* Grid for Inputs */}
+      <div className="grid grid-cols-2 gap-2">
+        <div className="relative">
+          <ColorInput
+            value={color}
+            onChange={(val) => handleChange('Color', val)}
+          />
+        </div>
+        <select
+          className="h-9 w-full bg-gray-800 border border-gray-700 text-white text-sm px-2 rounded-lg focus:outline-none focus:ring-1 focus:ring-green-500"
+          onChange={(e) => handleChange('Size', e.target.value)}
+          value={size}
+        >
+          <option value="12px">12px</option>
+          <option value="14px">14px</option>
+          <option value="16px">16px</option>
+          <option value="18px">18px</option>
+          <option value="20px">20px</option>
+          <option value="24px">24px</option>
+          <option value="32px">32px</option>
+          <option value="48px">48px</option>
+        </select>
+
+        <select
+          className="h-9 w-full bg-gray-800 border border-gray-700 text-white text-sm px-2 rounded-lg focus:outline-none focus:ring-1 focus:ring-green-500"
+          onChange={(e) => handleChange('Font', e.target.value)}
+          value={font}
+        >
+          <option value="sans-serif">Sans Serif</option>
+          <option value="system-ui">System UI</option>
+          <option value="Arial, sans-serif">Arial</option>
+          <option value="Georgia, serif">Georgia</option>
+          <option value="Courier New, monospace">Courier</option>
+        </select>
+        <select
+          className="h-9 w-full bg-gray-800 border border-gray-700 text-white text-sm px-2 rounded-lg focus:outline-none focus:ring-1 focus:ring-green-500"
+          onChange={(e) => handleChange('Align', e.target.value)}
+          value={align}
+        >
+          <option value="left">Vlevo</option>
+          <option value="center">Na střed</option>
+          <option value="right">Vpravo</option>
+        </select>
+      </div>
     </div>
   );
 }
@@ -64,8 +165,32 @@ function SortableLogoItem({ id, logo, url, onRemove, onUrlChange, imageSize }) {
   );
 }
 
+
+function CollapsibleSection({ title, children, defaultOpen = false }) {
+  const [isOpen, setIsOpen] = useState(defaultOpen);
+
+  return (
+    <div className="group">
+      <div
+        onClick={() => setIsOpen(!isOpen)}
+        className="flex items-center justify-between cursor-pointer list-none text-xs font-bold text-gray-500 uppercase px-1 py-2 select-none leading-none tracking-wider"
+      >
+        <span className="translate-y-[1px]">{title}</span>
+        <ChevronDownIcon className={`w-4 h-4 transition-transform duration-300 ${isOpen ? 'rotate-180' : ''}`} />
+      </div>
+
+      <div className={`grid transition-[grid-template-rows] duration-300 ease-in-out ${isOpen ? 'grid-rows-[1fr] opacity-100' : 'grid-rows-[0fr] opacity-0'}`}>
+        <div className="overflow-hidden px-1 pb-1">
+          <div className="space-y-4 mt-3">
+            {children}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 export default function EditSidebar({ carousel, setCarousel, activeTab }) {
-  const [title, setTitle] = useState(carousel.title);
   const showNotification = useToast();
 
   const sensors = useSensors(
@@ -112,40 +237,45 @@ export default function EditSidebar({ carousel, setCarousel, activeTab }) {
     });
   };
 
+  const updateSettings = (newSettings) => {
+    setCarousel({ ...carousel, settings: newSettings });
+  };
+
   if (!activeTab) return null;
 
   return (
     <aside className="dark w-80 bg-gray-900 border-r border-gray-800 text-white h-full flex flex-col transition-all duration-300">
 
       {/* Obsah */}
-      <div className="flex-1 overflow-y-auto p-4 custom-scrollbar">
+      <div className="flex-1 overflow-y-auto px-4 pb-4 pt-6 custom-scrollbar">
         {activeTab === 'content' && (
           <>
             <div className="mb-6 space-y-4">
+              {/* Title Section */}
               <div>
                 <label className="text-xs font-medium text-gray-400 mb-1.5 block">Nadpis carouselu</label>
-                <input
-                  value={title}
-                  onChange={(e) => {
-                    setTitle(e.target.value);
-                    setCarousel({ ...carousel, title: e.target.value });
-                  }}
-                  className="w-full bg-gray-800 border border-gray-700 text-white text-sm px-3 py-2 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-visualy-accent-4 placeholder-gray-500"
-                />
+                <div>
+                  <input
+                    value={carousel.title || ''}
+                    onChange={(e) => setCarousel({ ...carousel, title: e.target.value })}
+                    className="w-full bg-gray-800 border border-gray-700 text-white text-sm px-3 py-2 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-visualy-accent-4 placeholder-gray-500"
+                    placeholder="Vložte nadpis"
+                  />
+
+                </div>
               </div>
 
+              {/* Subtitle Section - text only for content tab */}
               <div>
-                <label className="text-xs font-medium text-gray-400 mb-1.5 block">Font</label>
-                <select
-                  value={carousel.font || "sans-serif"}
-                  onChange={(e) => setCarousel({ ...carousel, font: e.target.value })}
-                  className="w-full bg-gray-800 border border-gray-700 text-white text-sm px-3 py-2 rounded focus:outline-none focus:ring-1 focus:ring-indigo-500"
-                >
-                  <option value="sans-serif">Sans Serif</option>
-                  <option value="serif">Serif</option>
-                  <option value="monospace">Monospace</option>
-                  <option value="cursive">Cursive</option>
-                </select>
+                <label className="text-xs font-medium text-gray-400 mb-1.5 block">Podnadpis</label>
+                <div>
+                  <TextArea
+                    value={carousel.settings?.subtitleText || ''}
+                    onChange={(val) => updateSettings({ ...carousel.settings, subtitleText: val })}
+                    placeholder="Doplňkový text pod nadpisem..."
+                    rows={2}
+                  />
+                </div>
               </div>
             </div>
 
@@ -182,6 +312,28 @@ export default function EditSidebar({ carousel, setCarousel, activeTab }) {
 
         {activeTab === 'settings' && (
           <div className="space-y-6">
+
+            {/* Title Styles */}
+            <CollapsibleSection title="Vzhled nadpisu" defaultOpen={true}>
+              <StyleControls
+                prefix="title"
+                settings={carousel.settings || {}}
+                onChange={updateSettings}
+              />
+            </CollapsibleSection>
+
+            <hr className="border-gray-800" />
+
+            {/* Subtitle Styles */}
+            <CollapsibleSection title="Vzhled podnadpisu" defaultOpen={false}>
+              <StyleControls
+                prefix="subtitle"
+                settings={carousel.settings || {}}
+                onChange={updateSettings}
+              />
+            </CollapsibleSection>
+
+            <hr className="border-gray-800" />
             <div>
               <label className="text-xs font-medium text-gray-400 mb-3 block">
                 Velikost obrázků ({carousel.imageSize || 64}px)
