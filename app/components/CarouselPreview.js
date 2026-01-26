@@ -192,13 +192,30 @@ export default function CarouselPreview({
                         } : {})
                     }}
                 >
-                    {attachmentsToRender.map((logo, index) => (
-                        <li key={`${logo.id}-${index}`} className="flex-shrink-0">
-                            {logo.link ? (
-                                <a href={logo.link} target="_blank" rel="noopener noreferrer" className="block hover:opacity-100 transition-opacity opacity-85">
+                    {attachmentsToRender.map((logo, index) => {
+                        const altText = settings?.attachmentAlts?.[logo.id] || logo.alt || '';
+                        return (
+                            <li key={`${logo.id}-${index}`} className="flex-shrink-0">
+                                {logo.link ? (
+                                    <a href={logo.link} target="_blank" rel="noopener noreferrer" className="block hover:opacity-100 transition-opacity opacity-85">
+                                        <img
+                                            src={logo.url}
+                                            alt={altText}
+                                            style={{
+                                                height: `${carousel.imageSize ?? 64}px`,
+                                                maxWidth: '120px',
+                                                objectFit: 'contain',
+                                                borderRadius: `${imgRadius}px`,
+                                                boxShadow: shadowStyle
+                                            }}
+                                            draggable="false"
+                                        />
+                                    </a>
+                                ) : (
                                     <img
                                         src={logo.url}
-                                        alt={logo.alt || ''}
+                                        alt={altText}
+                                        className="block hover:opacity-100 transition-opacity opacity-85"
                                         style={{
                                             height: `${carousel.imageSize ?? 64}px`,
                                             maxWidth: '120px',
@@ -208,24 +225,10 @@ export default function CarouselPreview({
                                         }}
                                         draggable="false"
                                     />
-                                </a>
-                            ) : (
-                                <img
-                                    src={logo.url}
-                                    alt={logo.alt || ''}
-                                    className="block hover:opacity-100 transition-opacity opacity-85"
-                                    style={{
-                                        height: `${carousel.imageSize ?? 64}px`,
-                                        maxWidth: '120px',
-                                        objectFit: 'contain',
-                                        borderRadius: `${imgRadius}px`,
-                                        boxShadow: shadowStyle
-                                    }}
-                                    draggable="false"
-                                />
-                            )}
-                        </li>
-                    ))}
+                                )}
+                            </li>
+                        );
+                    })}
                 </ul>
             </div>
 

@@ -1,15 +1,15 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import { Upload } from "lucide-react";
 import UploadAttachment from "../../app/components/UploadAttachment";
 import { useToast } from "../../app/components/ToastProvider";
 import { authorizedFetch } from "../../lib/api";
 import {
   DndContext, closestCenter, PointerSensor, useSensor, useSensors,
-  MouseSensor, TouchSensor, KeyboardSensor
+  MouseSensor, TouchSensor, KeyboardSensor, DragOverlay
 } from '@dnd-kit/core';
-import { arrayMove, SortableContext, rectSortingStrategy, useSortable } from '@dnd-kit/sortable';
+import { arrayMove, SortableContext, verticalListSortingStrategy, useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
 import RangeSlider from './RangeSlider';
 import Toggle from './Toggle';
@@ -138,42 +138,111 @@ function StyleControls({ prefix, settings, onChange, defaultMargin = 0 }) {
   );
 }
 
-function SortableLogoItem({ id, logo, url, onRemove, onUrlChange, imageSize }) {
-  const { attributes, listeners, setNodeRef, transform, transition } = useSortable({ id });
-  const style = { transform: CSS.Transform.toString(transform), transition };
+function LogoItemEditor({ id, item, alt, onRemove, onLinkChange, onAltChange, onReplace }) {
+  const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id });
+  const style = { transform: CSS.Transform.toString(transform), transition, zIndex: isDragging ? 50 : 'auto', position: 'relative' };
+  const [isOpen, setIsOpen] = useState(false);
+  const fileInputRef = useRef(null);
+
+  const handleFileChange = (e) => {
+    if (e.target.files?.[0]) onReplace(id, e.target.files[0]);
+  };
 
   return (
-    <div className="flex flex-col gap-1">
-      <div
-        ref={setNodeRef}
-        style={style}
-        {...attributes}
-        {...listeners}
-        className="relative bg-gray-800 p-2 rounded flex items-center justify-center cursor-move shadow-sm border border-gray-700 group"
-      >
-        <img
-          src={logo}
-          alt=""
-          className="object-contain"
-          style={{ height: `${imageSize}px`, maxWidth: `${imageSize + 40}px` }}
-        />
+    <div ref={setNodeRef} style={style} className={`bg-gray-800 rounded border transition-colors ${isOpen ? 'border-green-500/50 ring-1 ring-green-500/20' : 'border-gray-700 hover:border-gray-600'}`}>
+      {/* Header */}
+      <div className="flex items-center p-2 gap-3 group">
         <button
-          data-no-dnd="true"
-          onClick={onRemove}
-          className="absolute top-1 right-1 text-gray-500 hover:text-red-500 opacity-0 group-hover:opacity-100 transition-opacity"
-          title="Smazat logo"
+          {...attributes}
+          {...listeners}
+          className="cursor-grab text-gray-500 hover:text-gray-300 p-1 rounded hover:bg-gray-700 transition-colors"
         >
-          <TrashIcon className="w-4 h-4" />
+          <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 8h16M4 16h16" />
+          </svg>
+        </button>
+
+        <div className="w-10 h-10 rounded bg-gray-900 border border-gray-700 flex-shrink-0 p-1 flex items-center justify-center">
+          <img src={item.url} className="max-w-full max-h-full object-contain" alt="" />
+        </div>
+
+        <div
+          className="flex-1 min-w-0 cursor-pointer"
+          onClick={() => setIsOpen(!isOpen)}
+        >
+          <div className="text-xs font-medium text-white truncate">
+            {alt || <span className="text-gray-500 italic">Bez popisku</span>}
+          </div>
+          <div className="text-[10px] text-gray-500 truncate">
+            {item.link || 'Bez odkazu'}
+          </div>
+        </div>
+
+        <button
+          onClick={() => setIsOpen(!isOpen)}
+          className="p-1 text-gray-400 hover:text-white transition-colors"
+        >
+          <ChevronDownIcon className={`w-4 h-4 transition-transform ${isOpen ? 'rotate-180' : ''}`} />
         </button>
       </div>
-      <input
-        type="url"
-        placeholder="https://..."
-        value={url || ''}
-        onChange={(e) => onUrlChange(e.target.value)}
-        onClick={(e) => e.stopPropagation()}
-        className="w-full text-xs px-2 py-1 bg-gray-800 border border-gray-700 text-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-visualy-accent-4 placeholder-gray-600"
-      />
+
+      {/* Body */}
+      {isOpen && (
+        <div className="px-3 pb-3 pt-0 space-y-3">
+          <hr className="border-gray-700 mb-3" />
+
+          <div className="flex gap-4">
+            <div className="flex-1 space-y-3">
+              <div>
+                <label className="text-[10px] text-gray-400 uppercase font-bold tracking-wider mb-1 block">Odkaz (URL)</label>
+                <input
+                  type="url"
+                  value={item.link || ''}
+                  onChange={(e) => onLinkChange(e.target.value)}
+                  placeholder="https://"
+                  className="w-full text-xs px-2 py-1.5 bg-gray-900 border border-gray-700 text-gray-200 rounded focus:outline-none focus:ring-1 focus:ring-green-500 placeholder-gray-600"
+                />
+              </div>
+              <div>
+                <label className="text-[10px] text-gray-400 uppercase font-bold tracking-wider mb-1 block">Alt Popisek</label>
+                <input
+                  type="text"
+                  value={alt || ''}
+                  onChange={(e) => onAltChange(e.target.value)}
+                  placeholder="Popis obrázku..."
+                  className="w-full text-xs px-2 py-1.5 bg-gray-900 border border-gray-700 text-gray-200 rounded focus:outline-none focus:ring-1 focus:ring-green-500 placeholder-gray-600"
+                />
+              </div>
+            </div>
+          </div>
+
+          <div className="flex items-center justify-between pt-2 border-t border-gray-700/50">
+            <div className="flex items-center gap-2">
+              <button
+                onClick={() => fileInputRef.current?.click()}
+                className="text-xs bg-gray-700 hover:bg-gray-600 text-gray-200 px-3 py-1.5 rounded transition-colors flex items-center gap-1.5"
+              >
+                <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" /></svg>
+                Nahrát
+              </button>
+              <input
+                type="file"
+                ref={fileInputRef}
+                onChange={handleFileChange}
+                hidden
+                accept="image/png,image/jpeg,image/webp,image/svg+xml"
+              />
+            </div>
+
+            <button
+              onClick={onRemove}
+              className="text-xs text-red-400 hover:text-red-300 hover:bg-red-900/20 px-2 py-1.5 rounded transition-colors flex items-center gap-1"
+            >
+              <TrashIcon className="w-3 h-3" /> Odstranit
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
@@ -213,13 +282,80 @@ export default function EditSidebar({ carousel, setCarousel, activeTab }) {
     useSensor(PointerSensor, { activationConstraint: { distance: 0.01 } })
   );
 
+  const handleAltChange = (attachmentId, newAlt) => {
+    const currentAlts = carousel.settings?.attachmentAlts || {};
+    updateSettings({
+      ...carousel.settings,
+      attachmentAlts: { ...currentAlts, [attachmentId]: newAlt }
+    });
+  };
+
+  const handleReplaceImage = async (attachmentId, file) => {
+    const formData = new FormData();
+    formData.append('file', file);
+
+    try {
+      const res = await authorizedFetch(`/widgets/${carousel.id}/attachments`, {
+        method: 'POST',
+        body: formData
+      });
+
+      if (res.ok) {
+        const newAttachment = await res.json();
+        const index = carousel.attachments.findIndex(a => a.id === attachmentId);
+        if (index === -1) return;
+
+        const oldItem = carousel.attachments[index];
+        const oldAlt = carousel.settings?.attachmentAlts?.[attachmentId];
+
+        // Create updated item preserving metadata
+        const updatedItem = { ...newAttachment, link: oldItem.link };
+
+        const newAttachments = [...carousel.attachments];
+        newAttachments[index] = updatedItem;
+
+        const newSettings = { ...(carousel.settings || {}) };
+        const newAlts = { ...(newSettings.attachmentAlts || {}) };
+
+        if (oldAlt) {
+          newAlts[newAttachment.id] = oldAlt;
+        }
+        // Clean up old alt
+        delete newAlts[attachmentId];
+        newSettings.attachmentAlts = newAlts;
+
+        setCarousel({ ...carousel, attachments: newAttachments, settings: newSettings });
+
+        // Cleanup old file
+        await authorizedFetch(`/attachments/${attachmentId}`, { method: 'DELETE' });
+
+        showNotification("Obrázek nahrazen", "success");
+      } else {
+        const err = await res.json();
+        showNotification(err.error || "Chyba nahrávání", "error");
+      }
+    } catch (e) {
+      console.error(e);
+      showNotification("Chyba spojení", "error");
+    }
+  };
+
   const handleRemoveAttachment = async (attachmentId) => {
     try {
       const res = await authorizedFetch(`/attachments/${attachmentId}`, { method: 'DELETE' });
       if (res.ok) {
+        // Clean up alt
+        const newSettings = { ...(carousel.settings || {}) };
+        if (newSettings.attachmentAlts) {
+          const newAlts = { ...newSettings.attachmentAlts };
+          delete newAlts[attachmentId];
+          newSettings.attachmentAlts = newAlts;
+        }
+
         setCarousel({
           ...carousel,
           attachments: carousel.attachments.filter((a) => a.id !== attachmentId),
+          settings: newSettings
         });
         showNotification("Logo bylo odstraněno", "success");
       } else {
@@ -239,8 +375,15 @@ export default function EditSidebar({ carousel, setCarousel, activeTab }) {
     });
   };
 
+  const [activeId, setActiveId] = useState(null);
+
+  const handleDragStart = (event) => {
+    setActiveId(event.active.id);
+  };
+
   const handleDragEnd = (event) => {
     const { active, over } = event;
+    setActiveId(null);
     if (!over || active.id === over.id) return;
     const oldIndex = carousel.attachments.findIndex((a) => a.id === active.id);
     const newIndex = carousel.attachments.findIndex((a) => a.id === over.id);
@@ -260,7 +403,7 @@ export default function EditSidebar({ carousel, setCarousel, activeTab }) {
     <aside className="dark w-80 bg-gray-900 border-r border-gray-800 text-white h-full flex flex-col transition-all duration-300">
 
       {/* Obsah */}
-      <div className="flex-1 overflow-y-auto px-4 pb-4 pt-6 custom-scrollbar">
+      <div className="flex-1 overflow-y-auto px-4 pb-4 pt-6 [&::-webkit-scrollbar]:hidden [-ms-overflow-style:'none'] [scrollbar-width:none]">
         {activeTab === 'content' && (
           <>
             <div className="mb-6 space-y-4">
@@ -292,27 +435,58 @@ export default function EditSidebar({ carousel, setCarousel, activeTab }) {
               </div>
             </div>
 
+
+            <div className="mb-4">
+              <UploadAttachment widgetId={carousel.id} carousel={carousel} setCarousel={setCarousel} mode="url" />
+            </div>
+
             <hr className="border-gray-800 mb-6" />
 
-            <UploadAttachment widgetId={carousel.id} carousel={carousel} setCarousel={setCarousel} />
-
             {carousel.attachments?.length > 0 ? (
-              <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
-                <SortableContext items={carousel.attachments.map((a) => a.id)} strategy={rectSortingStrategy}>
-                  <div className="grid grid-cols-2 gap-3 mt-3">
-                    {carousel.attachments.map((a) => (
-                      <SortableLogoItem
-                        key={a.id}
-                        id={a.id}
-                        logo={a.url}
-                        url={a.link}
-                        imageSize={64}
-                        onRemove={() => handleRemoveAttachment(a.id)}
-                        onUrlChange={(newUrl) => handleUrlChange(a.id, newUrl)}
+              <DndContext
+                sensors={sensors}
+                collisionDetection={closestCenter}
+                onDragStart={handleDragStart}
+                onDragEnd={handleDragEnd}
+              >
+                <SortableContext items={carousel.attachments.map((a) => a.id)} strategy={verticalListSortingStrategy}>
+                  <div className="space-y-2">
+                    {carousel.attachments.map((item) => (
+                      <LogoItemEditor
+                        key={item.id}
+                        id={item.id}
+                        item={item}
+                        alt={carousel.settings?.attachmentAlts?.[item.id] || ''}
+                        onRemove={() => handleRemoveAttachment(item.id)}
+                        onLinkChange={(newUrl) => handleUrlChange(item.id, newUrl)}
+                        onAltChange={(newAlt) => handleAltChange(item.id, newAlt)}
+                        onReplace={handleReplaceImage}
                       />
                     ))}
                   </div>
                 </SortableContext>
+                <DragOverlay>
+                  {activeId ? (
+                    <div className="opacity-90 rotate-2 cursor-grabbing scale-105">
+                      {(() => {
+                        const item = carousel.attachments.find(a => a.id === activeId);
+                        if (!item) return null;
+                        return (
+                          <LogoItemEditor
+                            id={item.id}
+                            item={item}
+                            alt={carousel.settings?.attachmentAlts?.[item.id] || ''}
+                            // Inert handlers for overlay
+                            onRemove={() => { }}
+                            onLinkChange={() => { }}
+                            onAltChange={() => { }}
+                            onReplace={() => { }}
+                          />
+                        );
+                      })()}
+                    </div>
+                  ) : null}
+                </DragOverlay>
               </DndContext>
             ) : (
               <div className="text-center py-8 text-gray-500 text-sm">
@@ -320,6 +494,10 @@ export default function EditSidebar({ carousel, setCarousel, activeTab }) {
                 Nahrajte první obrázek.
               </div>
             )}
+
+            <div className="mt-2 opacity-75 hover:opacity-100 transition-opacity">
+              <UploadAttachment widgetId={carousel.id} carousel={carousel} setCarousel={setCarousel} mode="dropzone" />
+            </div>
           </>
         )}
 
@@ -327,7 +505,7 @@ export default function EditSidebar({ carousel, setCarousel, activeTab }) {
           <div className="space-y-6">
 
             {/* Title Styles */}
-            <CollapsibleSection title="Vzhled nadpisu" defaultOpen={true}>
+            <CollapsibleSection title="Vzhled nadpisu" defaultOpen={false}>
               <StyleControls
                 prefix="title"
                 settings={carousel.settings || {}}
@@ -526,7 +704,7 @@ export default function EditSidebar({ carousel, setCarousel, activeTab }) {
             <hr className="border-gray-800" />
 
             {/* Slider/Grid Settings */}
-            <CollapsibleSection title="Nastavení slideru" defaultOpen={true}>
+            <CollapsibleSection title="Nastavení slideru" defaultOpen={false}>
               <div className="space-y-4">
                 <Toggle
                   checked={carousel.settings?.enableAnimation !== false}
