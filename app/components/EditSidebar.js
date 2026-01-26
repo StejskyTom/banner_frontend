@@ -488,12 +488,7 @@ export default function EditSidebar({ carousel, setCarousel, activeTab }) {
                   ) : null}
                 </DragOverlay>
               </DndContext>
-            ) : (
-              <div className="text-center py-8 text-gray-500 text-sm">
-                Zatím žádná loga. <br />
-                Nahrajte první obrázek.
-              </div>
-            )}
+            ) : ('')}
 
             <div className="mt-2 opacity-75 hover:opacity-100 transition-opacity">
               <UploadAttachment widgetId={carousel.id} carousel={carousel} setCarousel={setCarousel} mode="dropzone" />
