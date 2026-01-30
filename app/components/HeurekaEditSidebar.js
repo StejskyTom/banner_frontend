@@ -9,8 +9,23 @@ import {
     ChevronLeftIcon,
     ChevronRightIcon
 } from '@heroicons/react/24/solid';
-import { SwatchIcon } from '@heroicons/react/24/outline';
+import { SwatchIcon, BoldIcon, ItalicIcon } from '@heroicons/react/24/outline';
 import RangeSlider from './RangeSlider';
+import Toggle from './Toggle';
+const ToolButton = ({ active, children, onClick, title }) => (
+    <button
+        type="button"
+        onClick={onClick}
+        className={`p-2 rounded-md transition-all font-medium text-sm border flex items-center justify-center h-8 min-w-[32px] flex-1
+            ${active
+                ? 'bg-green-500/20 text-green-400 border-green-500/50'
+                : 'bg-gray-800 border-gray-700 text-gray-400 hover:text-white hover:bg-gray-700 hover:border-gray-600'
+            }`}
+        title={title}
+    >
+        {children}
+    </button>
+);
 
 const getContrastYIQ = (hexcolor) => {
     if (!hexcolor) return '#000000';
@@ -41,9 +56,9 @@ const ColorInput = ({ label, value, onChange }) => {
 
     return (
         <div>
-            <label className="text-xs font-medium text-gray-400 mb-2 block">{label}</label>
+            {label && <label className="text-xs font-medium text-gray-400 mb-2 block">{label}</label>}
             <div className="relative group">
-                <div className="relative flex items-center h-10 w-full rounded-md border border-gray-600 shadow-sm overflow-hidden ring-1 ring-white/5 transition-all focus-within:ring-2 focus-within:ring-indigo-500">
+                <div className="relative flex items-center h-10 w-full rounded-md border border-gray-600 shadow-sm overflow-hidden ring-1 ring-white/5 transition-all focus-within:ring-1 focus-within:ring-green-500">
                     <input
                         type="text"
                         value={value || ''}
@@ -63,6 +78,102 @@ const ColorInput = ({ label, value, onChange }) => {
                         />
                     </div>
                 </div>
+            </div>
+        </div>
+    );
+};
+
+const CollapsibleSection = ({ title, children, defaultOpen = false }) => {
+    const [isOpen, setIsOpen] = useState(defaultOpen);
+
+    return (
+        <div className="group">
+            <div
+                onClick={() => setIsOpen(!isOpen)}
+                className="flex items-center justify-between cursor-pointer list-none text-xs font-bold text-gray-300 uppercase px-1 py-4 select-none leading-none tracking-wider hover:text-white transition-colors"
+            >
+                <span className="translate-y-[1px]">{title}</span>
+                <ChevronDownIcon className={`w-4 h-4 transition-transform duration-300 ${isOpen ? 'rotate-180' : ''}`} />
+            </div>
+
+            <div className={`grid transition-[grid-template-rows] duration-300 ease-in-out ${isOpen ? 'grid-rows-[1fr] opacity-100' : 'grid-rows-[0fr] opacity-0'}`}>
+                <div className="overflow-hidden px-1 pb-1">
+                    <div className="space-y-6">
+                        {children}
+                    </div>
+                </div>
+            </div>
+        </div>
+    );
+};
+
+const TypographyControls = ({
+    color, setColor,
+    size, setSize,
+    font, setFont,
+    bold, setBold,
+    italic, setItalic
+}) => {
+    const ToolButton = ({ active, onClick, children, title }) => (
+        <button
+            type="button"
+            onMouseDown={(e) => e.preventDefault()}
+            onClick={onClick}
+            className={`p-2 rounded-md transition-all font-medium text-sm border flex items-center justify-center h-8 min-w-[32px] flex-1
+            ${active
+                    ? 'bg-visualy-accent-4/20 text-visualy-accent-4 border-visualy-accent-4/50'
+                    : 'bg-gray-800 border-gray-700 text-gray-400 hover:text-white hover:bg-gray-700 hover:border-gray-600'
+                }`}
+            title={title}
+        >
+            {children}
+        </button>
+    );
+
+    return (
+        <div className="space-y-3">
+            <div className="flex flex-wrap gap-1 items-center mb-3">
+                <ToolButton onClick={() => setBold(!bold)} active={bold} title="Tučně">
+                    <BoldIcon className="w-4 h-4" />
+                </ToolButton>
+                <ToolButton onClick={() => setItalic(!italic)} active={italic} title="Kurzíva">
+                    <ItalicIcon className="w-4 h-4" />
+                </ToolButton>
+            </div>
+
+            <div className="grid grid-cols-2 gap-2 mb-3">
+                <div className="relative">
+                    <ColorInput
+                        value={color}
+                        onChange={setColor}
+                    />
+                </div>
+                <select
+                    className="h-10 w-full bg-gray-800 border border-gray-700 text-white text-sm px-2 rounded-lg focus:outline-none focus:ring-1 focus:ring-visualy-accent-4"
+                    onChange={(e) => setSize(e.target.value)}
+                    value={size}
+                >
+                    <option value="12px">12px</option>
+                    <option value="13px">13px</option>
+                    <option value="14px">14px</option>
+                    <option value="15px">15px</option>
+                    <option value="16px">16px</option>
+                    <option value="18px">18px</option>
+                    <option value="20px">20px</option>
+                    <option value="24px">24px</option>
+                </select>
+
+                <select
+                    className="h-10 w-full bg-gray-800 border border-gray-700 text-white text-sm px-2 rounded-lg focus:outline-none focus:ring-1 focus:ring-visualy-accent-4 col-span-2"
+                    onChange={(e) => setFont(e.target.value)}
+                    value={font}
+                >
+                    <option value="sans-serif">Sans Serif</option>
+                    <option value="system-ui">System UI</option>
+                    <option value="Arial, sans-serif">Arial</option>
+                    <option value="Georgia, serif">Georgia</option>
+                    <option value="Courier New, monospace">Courier</option>
+                </select>
             </div>
         </div>
     );
@@ -89,10 +200,74 @@ export default function HeurekaEditSidebar({
     setGridColumns,
     mobileGridColumns,
     setMobileGridColumns,
+    widgetTitle,
+    setWidgetTitle,
+    widgetTitleTag,
+    setWidgetTitleTag,
+    widgetTitleBold,
+    setWidgetTitleBold,
+    widgetTitleItalic,
+    setWidgetTitleItalic,
+    widgetTitleColor,
+    setWidgetTitleColor,
+    widgetTitleSize,
+    setWidgetTitleSize,
+    widgetTitleFont,
+    setWidgetTitleFont,
+    widgetTitleAlign,
+    setWidgetTitleAlign,
+    widgetTitleMarginBottom,
+    setWidgetTitleMarginBottom,
     buttonColor,
     setButtonColor,
     buttonText,
-    setButtonText
+    setButtonText,
+    cardBorderRadius,
+    setCardBorderRadius,
+    cardBackgroundColor,
+    setCardBackgroundColor,
+    productNameColor,
+    setProductNameColor,
+    productNameSize,
+    setProductNameSize,
+    productNameFont,
+    setProductNameFont,
+    productNameBold,
+    setProductNameBold,
+    productNameItalic,
+    setProductNameItalic,
+    productNameFull,
+    setProductNameFull,
+    priceColor,
+    setPriceColor,
+    priceSize,
+    setPriceSize,
+    priceFont,
+    setPriceFont,
+    priceBold,
+    setPriceBold,
+    priceItalic,
+    setPriceItalic,
+    priceFormat,
+    setPriceFormat,
+    buttonTextColor,
+    setButtonTextColor,
+    buttonFontSize,
+    setButtonFontSize,
+    buttonFont,
+    setButtonFont,
+    buttonBold,
+    setButtonBold,
+    buttonItalic,
+    setButtonItalic,
+    cardShadowEnabled,
+    setCardShadowEnabled,
+    cardShadowColor,
+    setCardShadowColor,
+    cardShadowBlur,
+    setCardShadowBlur,
+    cardShadowOpacity,
+    setCardShadowOpacity
 }) {
     if (!activeTab) return null;
 
@@ -101,7 +276,21 @@ export default function HeurekaEditSidebar({
             {activeTab === 'content' && (
                 <div className="flex flex-col h-full">
                     <div className="p-4 border-b border-gray-800">
-                        <h2 className="text-lg font-semibold text-white mb-4">Výběr produktů</h2>
+                        {/* Widget Title */}
+                        <div className="mb-6">
+                            <label className="text-xs font-bold text-gray-300 uppercase tracking-wider block mb-3">Nadpis widgetu</label>
+                            <input
+                                type="text"
+                                value={widgetTitle}
+                                onChange={(e) => setWidgetTitle(e.target.value)}
+                                placeholder="Např. Doporučujeme"
+                                className="w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:ring-1 focus:ring-green-500"
+                            />
+                        </div>
+
+                        <div className="h-px bg-gray-800 mb-6" />
+
+                        <h2 className="text-xs font-bold text-gray-300 uppercase tracking-wider mb-4">Výběr produktů</h2>
 
                         {/* Search */}
                         <div className="relative mb-3">
@@ -111,7 +300,7 @@ export default function HeurekaEditSidebar({
                                 value={searchTerm}
                                 onChange={handleSearch}
                                 onKeyDown={(e) => e.key === 'Enter' && applyFilters()}
-                                className="w-full pl-10 pr-4 py-2 bg-gray-800 border border-gray-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-visualy-accent-4/20 focus:border-visualy-accent-4 transition-all text-white placeholder-gray-500"
+                                className="w-full pl-10 pr-4 py-2 bg-gray-800 border border-gray-700 rounded-lg focus:outline-none focus:ring-1 focus:ring-green-500 transition-all text-white placeholder-gray-500"
                             />
                             <MagnifyingGlassIcon className="h-5 w-5 text-gray-500 absolute left-3 top-2.5" />
                         </div>
@@ -124,7 +313,7 @@ export default function HeurekaEditSidebar({
                                     setSelectedCategory(e.target.value);
                                     setPage(1);
                                 }}
-                                className="w-full p-2 bg-gray-800 border border-gray-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-visualy-accent-4/20 focus:border-visualy-accent-4 transition-all text-sm text-white"
+                                className="w-full p-2 bg-gray-800 border border-gray-700 rounded-lg focus:outline-none focus:ring-1 focus:ring-green-500 transition-all text-sm text-white"
                             >
                                 <option value="all">Všechny kategorie</option>
                                 {categories.map((cat, index) => (
@@ -213,15 +402,89 @@ export default function HeurekaEditSidebar({
             )}
 
             {activeTab === 'settings' && (
-                <div className="flex flex-col h-full overflow-y-auto">
-                    <div className="p-6 space-y-8">
-                        <div>
-                            <h2 className="text-lg font-semibold text-white mb-1">Nastavení vzhledu</h2>
-                            <p className="text-sm text-gray-400 mb-6">Upravte zobrazení produktů</p>
+                <div className="flex-1 overflow-y-auto px-4 pb-4 pt-6 [&::-webkit-scrollbar]:hidden [-ms-overflow-style:'none'] [scrollbar-width:none]">
+                    <div className="space-y-6">
+                        <CollapsibleSection title="Nastavení nadpisu" defaultOpen={false}>
+                            <div className="space-y-4">
+                                {/* Tag & Formatting Buttons */}
+                                <div className="flex flex-wrap gap-1 items-center mb-3">
+                                    <ToolButton onClick={() => setWidgetTitleTag('p')} active={widgetTitleTag === 'p'} title="Normal Text">T</ToolButton>
+                                    <ToolButton onClick={() => setWidgetTitleTag('h1')} active={widgetTitleTag === 'h1'} title="H1">H1</ToolButton>
+                                    <ToolButton onClick={() => setWidgetTitleTag('h2')} active={widgetTitleTag === 'h2'} title="H2">H2</ToolButton>
+                                    <ToolButton onClick={() => setWidgetTitleTag('h3')} active={widgetTitleTag === 'h3'} title="H3">H3</ToolButton>
 
-                            {/* Layout Selection */}
-                            <div className="space-y-4 mb-8">
-                                <label className="text-sm font-medium text-gray-300 block">Rozložení</label>
+                                    <div className="w-px h-8 bg-gray-700 mx-1" />
+
+                                    <ToolButton onClick={() => setWidgetTitleBold(!widgetTitleBold)} active={widgetTitleBold} title="Tučně">
+                                        <BoldIcon className="w-4 h-4" />
+                                    </ToolButton>
+                                    <ToolButton onClick={() => setWidgetTitleItalic(!widgetTitleItalic)} active={widgetTitleItalic} title="Kurzíva">
+                                        <ItalicIcon className="w-4 h-4" />
+                                    </ToolButton>
+                                </div>
+
+                                <div className="grid grid-cols-2 gap-2 mb-3">
+                                    <div className="relative">
+                                        <ColorInput
+                                            value={widgetTitleColor}
+                                            onChange={setWidgetTitleColor}
+                                        />
+                                    </div>
+                                    <select
+                                        className="h-9 w-full bg-gray-800 border border-gray-700 text-white text-sm px-2 rounded-lg focus:outline-none focus:ring-1 focus:ring-green-500"
+                                        onChange={(e) => setWidgetTitleSize(e.target.value)}
+                                        value={widgetTitleSize}
+                                    >
+                                        <option value="16px">16px</option>
+                                        <option value="18px">18px</option>
+                                        <option value="20px">20px</option>
+                                        <option value="24px">24px</option>
+                                        <option value="32px">32px</option>
+                                        <option value="48px">48px</option>
+                                    </select>
+
+                                    <select
+                                        className="h-9 w-full bg-gray-800 border border-gray-700 text-white text-sm px-2 rounded-lg focus:outline-none focus:ring-1 focus:ring-green-500"
+                                        onChange={(e) => setWidgetTitleFont(e.target.value)}
+                                        value={widgetTitleFont}
+                                    >
+                                        <option value="inherit">Výchozí</option>
+                                        <option value="sans-serif">Sans Serif</option>
+                                        <option value="system-ui">System UI</option>
+                                        <option value="Arial, sans-serif">Arial</option>
+                                        <option value="Georgia, serif">Georgia</option>
+                                        <option value="Courier New, monospace">Courier</option>
+                                    </select>
+                                    <select
+                                        className="h-9 w-full bg-gray-800 border border-gray-700 text-white text-sm px-2 rounded-lg focus:outline-none focus:ring-1 focus:ring-green-500"
+                                        onChange={(e) => setWidgetTitleAlign(e.target.value)}
+                                        value={widgetTitleAlign}
+                                    >
+                                        <option value="left">Vlevo</option>
+                                        <option value="center">Na střed</option>
+                                        <option value="right">Vpravo</option>
+                                    </select>
+                                </div>
+
+                                <div>
+                                    <div className="flex justify-between items-center mb-2">
+                                        <label className="text-xs font-medium text-gray-400">Spodní odsazení ({widgetTitleMarginBottom}px)</label>
+                                    </div>
+                                    <RangeSlider
+                                        min={0}
+                                        max={100}
+                                        step={4}
+                                        value={widgetTitleMarginBottom}
+                                        onChange={(e) => setWidgetTitleMarginBottom(parseInt(e.target.value))}
+                                    />
+                                </div>
+                            </div>
+                        </CollapsibleSection>
+
+                        <hr className="border-gray-800" />
+
+                        <CollapsibleSection title="Nastavení vzhledu" defaultOpen={true}>
+                            <div className="space-y-4">
                                 <div className="grid grid-cols-2 gap-3">
                                     <button
                                         onClick={() => setLayout('carousel')}
@@ -247,7 +510,7 @@ export default function HeurekaEditSidebar({
                             </div>
 
                             {/* Grid Columns */}
-                            <div className="space-y-6">
+                            <div className="space-y-6 pt-4 border-t border-gray-800">
                                 <div>
                                     <div className="flex justify-between items-center mb-2">
                                         <label className="text-sm font-medium text-gray-300">Sloupce (Desktop)</label>
@@ -277,10 +540,69 @@ export default function HeurekaEditSidebar({
                                 </div>
                             </div>
 
-                            <div className="h-px bg-gray-800 my-8" />
 
-                            {/* Button Settings */}
-                            <h3 className="text-base font-medium text-white mb-4">Tlačítko</h3>
+                        </CollapsibleSection>
+
+                        <hr className="border-gray-800" />
+
+                        <CollapsibleSection title="Název produktu" defaultOpen={false}>
+                            <TypographyControls
+                                color={productNameColor}
+                                setColor={setProductNameColor}
+                                size={productNameSize}
+                                setSize={setProductNameSize}
+                                font={productNameFont}
+                                setFont={setProductNameFont}
+                                bold={productNameBold}
+                                setBold={setProductNameBold}
+                                italic={productNameItalic}
+                                setItalic={setProductNameItalic}
+                            />
+
+                            <div className="pt-2 border-t border-gray-800">
+                                <Toggle
+                                    checked={productNameFull}
+                                    onChange={setProductNameFull}
+                                    label="Zobrazit celý název"
+                                />
+                            </div>
+                        </CollapsibleSection>
+
+                        <hr className="border-gray-800" />
+
+                        <CollapsibleSection title="Cena produktu" defaultOpen={false}>
+                            <div className="space-y-4">
+                                <TypographyControls
+                                    color={priceColor}
+                                    setColor={setPriceColor}
+                                    size={priceSize}
+                                    setSize={setPriceSize}
+                                    font={priceFont}
+                                    setFont={setPriceFont}
+                                    bold={priceBold}
+                                    setBold={setPriceBold}
+                                    italic={priceItalic}
+                                    setItalic={setPriceItalic}
+                                />
+
+                                <div className="pt-2 border-t border-gray-800">
+                                    <label className="text-xs font-medium text-gray-400 mb-2 block">Formát ceny</label>
+                                    <select
+                                        className="w-full p-2 bg-gray-800 border border-gray-700 rounded-lg focus:outline-none focus:ring-1 focus:ring-green-500 transition-all text-sm text-white"
+                                        value={priceFormat}
+                                        onChange={(e) => setPriceFormat(e.target.value)}
+                                    >
+                                        <option value="comma">123,45</option>
+                                        <option value="dot">123.45</option>
+                                        <option value="no_decimals">123 (bez haléřů)</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </CollapsibleSection>
+
+                        <hr className="border-gray-800" />
+
+                        <CollapsibleSection title="Nastavení tlačítka" defaultOpen={false}>
                             <div className="space-y-4">
                                 <div>
                                     <label className="text-sm font-medium text-gray-300 block mb-2">Text tlačítka</label>
@@ -288,21 +610,112 @@ export default function HeurekaEditSidebar({
                                         type="text"
                                         value={buttonText}
                                         onChange={(e) => setButtonText(e.target.value)}
-                                        className="w-full p-2.5 bg-gray-800 border border-gray-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-visualy-accent-4/20 focus:border-visualy-accent-4 transition-all text-white"
+                                        className="w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:ring-1 focus:ring-blue-500"
                                     />
                                 </div>
-                                <div className="grid grid-cols-2 gap-3">
+
+                                <TypographyControls
+                                    color={buttonTextColor}
+                                    setColor={setButtonTextColor}
+                                    size={buttonFontSize}
+                                    setSize={setButtonFontSize}
+                                    font={buttonFont}
+                                    setFont={setButtonFont}
+                                    bold={buttonBold}
+                                    setBold={setButtonBold}
+                                    italic={buttonItalic}
+                                    setItalic={setButtonItalic}
+                                />
+
+                                <div className="pt-2 border-t border-gray-800">
                                     <ColorInput
-                                        label="Barva tlačítka"
+                                        label="Pozadí tlačítka"
                                         value={buttonColor}
                                         onChange={setButtonColor}
                                     />
                                 </div>
                             </div>
-                        </div>
-                    </div>
-                </div>
-            )}
-        </div>
+                        </CollapsibleSection>
+
+                        <hr className="border-gray-800" />
+
+                        <CollapsibleSection title="Nastavení karty produktu" defaultOpen={false}>
+                            <div className="space-y-6">
+                                {/* Card Style Settings */}
+                                <div className="space-y-4">
+                                    <div>
+                                        <ColorInput
+                                            label="Barva pozadí karty"
+                                            value={cardBackgroundColor}
+                                            onChange={setCardBackgroundColor}
+                                        />
+                                    </div>
+                                    <div>
+                                        <div className="flex justify-between items-center mb-2">
+                                            <label className="text-sm font-medium text-gray-300">Zaoblení rohů ({cardBorderRadius}px)</label>
+                                        </div>
+                                        <RangeSlider
+                                            min={0}
+                                            max={32}
+                                            step={2}
+                                            value={cardBorderRadius}
+                                            onChange={(e) => setCardBorderRadius(parseInt(e.target.value))}
+                                        />
+                                    </div>
+                                </div>
+
+                                <hr className="border-gray-800" />
+
+                                {/* Shadow Settings */}
+                                <div className="space-y-4">
+                                    <Toggle
+                                        checked={cardShadowEnabled}
+                                        onChange={setCardShadowEnabled}
+                                        label="Stín pod kartou"
+                                    />
+
+                                    {cardShadowEnabled && (
+                                        <>
+                                            <ColorInput
+                                                label="Barva stínu"
+                                                value={cardShadowColor}
+                                                onChange={setCardShadowColor}
+                                            />
+
+                                            <div>
+                                                <div className="flex justify-between items-center mb-2">
+                                                    <label className="text-sm font-medium text-gray-300">Rozmazání stínu ({cardShadowBlur}px)</label>
+                                                </div>
+                                                <RangeSlider
+                                                    min={0}
+                                                    max={50}
+                                                    step={1}
+                                                    value={cardShadowBlur}
+                                                    onChange={(e) => setCardShadowBlur(parseInt(e.target.value))}
+                                                />
+                                            </div>
+
+                                            <div>
+                                                <div className="flex justify-between items-center mb-2">
+                                                    <label className="text-sm font-medium text-gray-300">Průhlednost stínu ({100 - cardShadowOpacity}%)</label>
+                                                </div>
+                                                <RangeSlider
+                                                    min={0}
+                                                    max={100}
+                                                    step={5}
+                                                    value={100 - cardShadowOpacity}
+                                                    onChange={(e) => setCardShadowOpacity(100 - parseInt(e.target.value))}
+                                                />
+                                            </div>
+                                        </>
+                                    )}
+                                </div>
+                            </div>
+                        </CollapsibleSection>
+                    </div >
+                </div >
+            )
+            }
+        </div >
     );
 }

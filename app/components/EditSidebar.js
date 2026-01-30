@@ -255,7 +255,7 @@ function CollapsibleSection({ title, children, defaultOpen = false }) {
     <div className="group">
       <div
         onClick={() => setIsOpen(!isOpen)}
-        className="flex items-center justify-between cursor-pointer list-none text-xs font-bold text-gray-500 uppercase px-1 py-2 select-none leading-none tracking-wider"
+        className="flex items-center justify-between cursor-pointer list-none text-xs font-bold text-gray-300 hover:text-white uppercase px-1 py-2 select-none leading-none tracking-wider"
       >
         <span className="translate-y-[1px]">{title}</span>
         <ChevronDownIcon className={`w-4 h-4 transition-transform duration-300 ${isOpen ? 'rotate-180' : ''}`} />
