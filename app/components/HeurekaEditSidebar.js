@@ -15,6 +15,7 @@ import Toggle from './Toggle';
 const ToolButton = ({ active, children, onClick, title }) => (
     <button
         type="button"
+        onMouseDown={(e) => e.preventDefault()}
         onClick={onClick}
         className={`p-2 rounded-md transition-all font-medium text-sm border flex items-center justify-center h-8 min-w-[32px] flex-1
             ${active
@@ -90,7 +91,7 @@ const CollapsibleSection = ({ title, children, defaultOpen = false }) => {
         <div className="group">
             <div
                 onClick={() => setIsOpen(!isOpen)}
-                className="flex items-center justify-between cursor-pointer list-none text-xs font-bold text-gray-300 uppercase px-1 py-4 select-none leading-none tracking-wider hover:text-white transition-colors"
+                className="flex items-center justify-between cursor-pointer list-none text-xs font-bold text-gray-300 hover:text-white uppercase px-1 py-2 select-none leading-none tracking-wider"
             >
                 <span className="translate-y-[1px]">{title}</span>
                 <ChevronDownIcon className={`w-4 h-4 transition-transform duration-300 ${isOpen ? 'rotate-180' : ''}`} />
@@ -98,7 +99,7 @@ const CollapsibleSection = ({ title, children, defaultOpen = false }) => {
 
             <div className={`grid transition-[grid-template-rows] duration-300 ease-in-out ${isOpen ? 'grid-rows-[1fr] opacity-100' : 'grid-rows-[0fr] opacity-0'}`}>
                 <div className="overflow-hidden px-1 pb-1">
-                    <div className="space-y-6">
+                    <div className="space-y-4 mt-3">
                         {children}
                     </div>
                 </div>
@@ -114,21 +115,7 @@ const TypographyControls = ({
     bold, setBold,
     italic, setItalic
 }) => {
-    const ToolButton = ({ active, onClick, children, title }) => (
-        <button
-            type="button"
-            onMouseDown={(e) => e.preventDefault()}
-            onClick={onClick}
-            className={`p-2 rounded-md transition-all font-medium text-sm border flex items-center justify-center h-8 min-w-[32px] flex-1
-            ${active
-                    ? 'bg-visualy-accent-4/20 text-visualy-accent-4 border-visualy-accent-4/50'
-                    : 'bg-gray-800 border-gray-700 text-gray-400 hover:text-white hover:bg-gray-700 hover:border-gray-600'
-                }`}
-            title={title}
-        >
-            {children}
-        </button>
-    );
+
 
     return (
         <div className="space-y-3">
@@ -272,7 +259,7 @@ export default function HeurekaEditSidebar({
     if (!activeTab) return null;
 
     return (
-        <div className="w-96 bg-gray-900 border-r border-gray-800 flex flex-col h-full shrink-0 z-10 shadow-xl overflow-hidden text-gray-300">
+        <div className="w-80 bg-gray-900 border-r border-gray-800 flex flex-col h-full shrink-0 z-10 shadow-xl overflow-hidden text-gray-300">
             {activeTab === 'content' && (
                 <div className="flex flex-col h-full">
                     <div className="p-4 border-b border-gray-800">
@@ -483,7 +470,7 @@ export default function HeurekaEditSidebar({
 
                         <hr className="border-gray-800" />
 
-                        <CollapsibleSection title="Nastavení vzhledu" defaultOpen={true}>
+                        <CollapsibleSection title="Nastavení vzhledu" defaultOpen={false}>
                             <div className="space-y-4">
                                 <div className="grid grid-cols-2 gap-3">
                                     <button
@@ -610,7 +597,7 @@ export default function HeurekaEditSidebar({
                                         type="text"
                                         value={buttonText}
                                         onChange={(e) => setButtonText(e.target.value)}
-                                        className="w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:ring-1 focus:ring-blue-500"
+                                        className="w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:ring-1 focus:ring-green-500"
                                     />
                                 </div>
 

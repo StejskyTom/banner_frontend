@@ -1,5 +1,5 @@
 'use client';
-import { SwatchIcon, XMarkIcon } from '@heroicons/react/24/outline';
+import { SwatchIcon } from '@heroicons/react/24/outline';
 
 const getContrastYIQ = (hexcolor) => {
     if (!hexcolor) return '#000000';
@@ -32,34 +32,18 @@ const ColorInput = ({ label, value, onChange }) => {
         <div>
             {label && <label className="text-xs font-medium text-gray-400 mb-2 block">{label}</label>}
             <div className="relative group">
-                <div className="relative flex items-center h-10 w-full rounded-md border border-gray-600 shadow-sm overflow-hidden ring-1 ring-white/5 transition-all focus-within:ring-2 focus-within:ring-indigo-500">
+                <div className="relative flex items-center h-10 w-full rounded-md border border-gray-600 shadow-sm overflow-hidden ring-1 ring-white/5 transition-all focus-within:ring-1 focus-within:ring-green-500">
                     <input
                         type="text"
                         value={value || ''}
                         onChange={(e) => onChange(e.target.value)}
-                        placeholder="Transparent"
-                        className="w-full h-full text-left text-sm font-bold uppercase font-mono border-none focus:outline-none pl-3 pr-20"
-                        style={{
-                            backgroundColor: value || '#1f2937',
-                            color: value ? textColor : '#9ca3af'
-                        }}
+                        className="w-full h-full text-left text-sm font-bold uppercase font-mono border-none focus:outline-none pl-3 pr-10"
+                        style={{ backgroundColor: value || '#ffffff', color: textColor }}
                     />
 
-                    {/* Clear Button */}
-                    {value && (
-                        <button
-                            onClick={() => onChange('')}
-                            className="absolute right-10 top-0 bottom-0 w-8 flex items-center justify-center cursor-pointer hover:bg-black/10 transition-colors z-10"
-                            style={{ color: textColor }}
-                            title="Vymazat barvu"
-                        >
-                            <XMarkIcon className="h-4 w-4" />
-                        </button>
-                    )}
-
                     {/* Color Picker Trigger (Right Side) */}
-                    <div className="absolute right-0 top-0 bottom-0 w-10 flex items-center justify-center cursor-pointer border-l border-black/10 hover:bg-black/20 bg-black/5 z-10">
-                        <SwatchIcon className="h-5 w-5 opacity-70" style={{ color: value ? textColor : '#9ca3af' }} />
+                    <div className="absolute right-0 top-0 bottom-0 w-10 flex items-center justify-center cursor-pointer border-l border-black/10 hover:bg-black/20 bg-black/5">
+                        <SwatchIcon className="h-5 w-5 opacity-70" style={{ color: textColor }} />
                         <input
                             type="color"
                             value={value || '#000000'}
