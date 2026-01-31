@@ -187,6 +187,23 @@ export default function HeurekaEditSidebar({
     setGridColumns,
     mobileGridColumns,
     setMobileGridColumns,
+
+    carouselArrows,
+    setCarouselArrows,
+    carouselArrowsBackground,
+    setCarouselArrowsBackground,
+    carouselArrowsColor,
+    setCarouselArrowsColor,
+    carouselArrowsBorderRadius,
+    setCarouselArrowsBorderRadius,
+    carouselDots,
+    setCarouselDots,
+    carouselDotsColor,
+    setCarouselDotsColor,
+    carouselDotsActiveColor,
+    setCarouselDotsActiveColor,
+    carouselDotsMarginTop,
+    setCarouselDotsMarginTop,
     widgetTitle,
     setWidgetTitle,
     widgetTitleTag,
@@ -539,7 +556,9 @@ export default function HeurekaEditSidebar({
                             <div className="space-y-6 pt-4 border-t border-gray-800">
                                 <div>
                                     <div className="flex justify-between items-center mb-2">
-                                        <label className="text-sm font-medium text-gray-300">Sloupce (Desktop)</label>
+                                        <label className="text-sm font-medium text-gray-300">
+                                            {layout === 'carousel' ? 'Počet položek (Desktop)' : 'Sloupce (Desktop)'}
+                                        </label>
                                         <span className="text-xs font-mono bg-gray-800 px-2 py-1 rounded text-gray-400 border border-gray-700">{gridColumns}</span>
                                     </div>
                                     <RangeSlider
@@ -553,7 +572,9 @@ export default function HeurekaEditSidebar({
 
                                 <div>
                                     <div className="flex justify-between items-center mb-2">
-                                        <label className="text-sm font-medium text-gray-300">Sloupce (Mobil)</label>
+                                        <label className="text-sm font-medium text-gray-300">
+                                            {layout === 'carousel' ? 'Počet položek (Mobil)' : 'Sloupce (Mobil)'}
+                                        </label>
                                         <span className="text-xs font-mono bg-gray-800 px-2 py-1 rounded text-gray-400 border border-gray-700">{mobileGridColumns}</span>
                                     </div>
                                     <RangeSlider
@@ -565,6 +586,91 @@ export default function HeurekaEditSidebar({
                                     />
                                 </div>
                             </div>
+
+                            {layout === 'carousel' && (
+                                <div className="space-y-4 pt-4 border-t border-gray-800">
+
+
+                                    <div className="flex items-center justify-between">
+                                        <label className="text-sm font-medium text-gray-300">Zobrazit šipky</label>
+                                        <label className="relative inline-flex items-center cursor-pointer">
+                                            <input
+                                                type="checkbox"
+                                                className="sr-only peer"
+                                                checked={carouselArrows}
+                                                onChange={(e) => setCarouselArrows(e.target.checked)}
+                                            />
+                                            <div className="w-11 h-6 bg-gray-700 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-visualy-accent-4"></div>
+                                        </label>
+                                    </div>
+
+                                    {carouselArrows && (
+                                        <div className="space-y-3 pt-2 mt-2 border-t border-gray-800 mb-4">
+                                            <ColorInput
+                                                label="Barva pozadí šipky"
+                                                value={carouselArrowsBackground}
+                                                onChange={setCarouselArrowsBackground}
+                                            />
+                                            <ColorInput
+                                                label="Barva ikony šipky"
+                                                value={carouselArrowsColor}
+                                                onChange={setCarouselArrowsColor}
+                                            />
+                                            <div>
+                                                <div className="flex justify-between items-center mb-2">
+                                                    <label className="text-xs font-medium text-gray-400">Zakulacení šipek ({carouselArrowsBorderRadius}%)</label>
+                                                </div>
+                                                <RangeSlider
+                                                    min={0}
+                                                    max={50}
+                                                    step={1}
+                                                    value={carouselArrowsBorderRadius}
+                                                    onChange={(e) => setCarouselArrowsBorderRadius(parseInt(e.target.value))}
+                                                />
+                                            </div>
+                                        </div>
+                                    )}
+
+                                    <div className="flex items-center justify-between">
+                                        <label className="text-sm font-medium text-gray-300">Zobrazit tečky</label>
+                                        <label className="relative inline-flex items-center cursor-pointer">
+                                            <input
+                                                type="checkbox"
+                                                className="sr-only peer"
+                                                checked={carouselDots}
+                                                onChange={(e) => setCarouselDots(e.target.checked)}
+                                            />
+                                            <div className="w-11 h-6 bg-gray-700 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-visualy-accent-4"></div>
+                                        </label>
+                                    </div>
+                                    {carouselDots && (
+                                        <div className="space-y-3 pt-2 mt-2 border-t border-gray-800">
+                                            <ColorInput
+                                                label="Barva teček (neaktivní)"
+                                                value={carouselDotsColor}
+                                                onChange={setCarouselDotsColor}
+                                            />
+                                            <ColorInput
+                                                label="Barva tečky (aktivní)"
+                                                value={carouselDotsActiveColor}
+                                                onChange={setCarouselDotsActiveColor}
+                                            />
+                                            <div>
+                                                <div className="flex justify-between items-center mb-2">
+                                                    <label className="text-xs font-medium text-gray-400">Horní odsazení teček ({carouselDotsMarginTop}px)</label>
+                                                </div>
+                                                <RangeSlider
+                                                    min={0}
+                                                    max={64}
+                                                    step={4}
+                                                    value={carouselDotsMarginTop}
+                                                    onChange={(e) => setCarouselDotsMarginTop(parseInt(e.target.value))}
+                                                />
+                                            </div>
+                                        </div>
+                                    )}
+                                </div>
+                            )}
 
 
                         </CollapsibleSection>

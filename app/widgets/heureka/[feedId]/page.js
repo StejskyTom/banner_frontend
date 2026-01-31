@@ -40,9 +40,17 @@ export default function HeurekaFeedDetailPage() {
   // Settings
   const [showEmbedModal, setShowEmbedModal] = useState(false);
   const [showPreviewModal, setShowPreviewModal] = useState(false);
-  const [layout, setLayout] = useState('carousel');
-  const [gridColumns, setGridColumns] = useState(3);
+  const [layout, setLayout] = useState('grid');
+  const [gridColumns, setGridColumns] = useState(4);
   const [mobileGridColumns, setMobileGridColumns] = useState(1);
+  const [carouselArrows, setCarouselArrows] = useState(true);
+  const [carouselArrowsBackground, setCarouselArrowsBackground] = useState('#ffffff');
+  const [carouselArrowsColor, setCarouselArrowsColor] = useState('#374151');
+  const [carouselArrowsBorderRadius, setCarouselArrowsBorderRadius] = useState(50);
+  const [carouselDots, setCarouselDots] = useState(true);
+  const [carouselDotsColor, setCarouselDotsColor] = useState('#d1d5db');
+  const [carouselDotsActiveColor, setCarouselDotsActiveColor] = useState('#2563eb');
+  const [carouselDotsMarginTop, setCarouselDotsMarginTop] = useState(16);
   const [widgetTitle, setWidgetTitle] = useState('');
   const [widgetTitleTag, setWidgetTitleTag] = useState('h2');
   const [widgetTitleBold, setWidgetTitleBold] = useState(true);
@@ -131,8 +139,18 @@ export default function HeurekaFeedDetailPage() {
     if (feed) {
       setLayout(feed.layout || 'carousel');
       if (feed.layoutOptions) {
-        setGridColumns(feed.layoutOptions.gridColumns || 3);
+        setLayout(feed.layoutOptions.layout || 'grid');
+        setGridColumns(feed.layoutOptions.gridColumns || 4);
         setMobileGridColumns(feed.layoutOptions.mobileGridColumns || 1);
+        setCarouselArrows(feed.layoutOptions.carouselArrows !== undefined ? feed.layoutOptions.carouselArrows : true);
+        setCarouselArrowsBackground(feed.layoutOptions.carouselArrowsBackground || '#ffffff');
+        setCarouselArrowsColor(feed.layoutOptions.carouselArrowsColor || '#374151');
+        setCarouselArrowsBorderRadius(feed.layoutOptions.carouselArrowsBorderRadius !== undefined ? feed.layoutOptions.carouselArrowsBorderRadius : 50);
+
+        setCarouselDots(feed.layoutOptions.carouselDots !== undefined ? feed.layoutOptions.carouselDots : true);
+        setCarouselDotsColor(feed.layoutOptions.carouselDotsColor || '#d1d5db');
+        setCarouselDotsActiveColor(feed.layoutOptions.carouselDotsActiveColor || feed.layoutOptions.buttonColor || '#2563eb');
+        setCarouselDotsMarginTop(feed.layoutOptions.carouselDotsMarginTop !== undefined ? feed.layoutOptions.carouselDotsMarginTop : 16);
         setWidgetTitle(feed.layoutOptions.widgetTitle || '');
         setWidgetTitleTag(feed.layoutOptions.widgetTitleTag || 'h2');
         setWidgetTitleBold(feed.layoutOptions.widgetTitleBold !== undefined ? feed.layoutOptions.widgetTitleBold : true);
@@ -327,8 +345,18 @@ export default function HeurekaFeedDetailPage() {
         body: JSON.stringify({
           layout: layout,
           layoutOptions: {
+            layout: layout,
+            gridColumns: parseInt(gridColumns),
             gridColumns: parseInt(gridColumns),
             mobileGridColumns: parseInt(mobileGridColumns),
+            carouselArrows,
+            carouselArrowsBackground,
+            carouselArrowsColor,
+            carouselArrowsBorderRadius: parseInt(carouselArrowsBorderRadius),
+            carouselDots,
+            carouselDotsColor,
+            carouselDotsActiveColor,
+            carouselDotsMarginTop: parseInt(carouselDotsMarginTop),
             widgetTitle: widgetTitle,
             widgetTitleTag: widgetTitleTag,
             widgetTitleBold: widgetTitleBold,
@@ -346,7 +374,6 @@ export default function HeurekaFeedDetailPage() {
             productNameSize: productNameSize,
             productNameFont: productNameFont,
             productNameBold: productNameBold,
-            productNameItalic: productNameItalic,
             productNameItalic: productNameItalic,
             productNameFull: productNameFull,
             productNameMarginTop: parseInt(productNameMarginTop),
@@ -522,6 +549,22 @@ export default function HeurekaFeedDetailPage() {
             setGridColumns={setGridColumns}
             mobileGridColumns={mobileGridColumns}
             setMobileGridColumns={setMobileGridColumns}
+            carouselArrows={carouselArrows}
+            setCarouselArrows={setCarouselArrows}
+            carouselArrowsBackground={carouselArrowsBackground}
+            setCarouselArrowsBackground={setCarouselArrowsBackground}
+            carouselArrowsColor={carouselArrowsColor}
+            setCarouselArrowsColor={setCarouselArrowsColor}
+            carouselArrowsBorderRadius={carouselArrowsBorderRadius}
+            setCarouselArrowsBorderRadius={setCarouselArrowsBorderRadius}
+            carouselDots={carouselDots}
+            setCarouselDots={setCarouselDots}
+            carouselDotsColor={carouselDotsColor}
+            setCarouselDotsColor={setCarouselDotsColor}
+            carouselDotsActiveColor={carouselDotsActiveColor}
+            setCarouselDotsActiveColor={setCarouselDotsActiveColor}
+            carouselDotsMarginTop={carouselDotsMarginTop}
+            setCarouselDotsMarginTop={setCarouselDotsMarginTop}
             widgetTitle={widgetTitle}
             setWidgetTitle={setWidgetTitle}
             widgetTitleTag={widgetTitleTag}
@@ -643,6 +686,14 @@ export default function HeurekaFeedDetailPage() {
               layout={layout}
               gridColumns={gridColumns}
               mobileGridColumns={mobileGridColumns}
+              carouselArrows={carouselArrows}
+              carouselArrowsBackground={carouselArrowsBackground}
+              carouselArrowsColor={carouselArrowsColor}
+              carouselArrowsBorderRadius={carouselArrowsBorderRadius}
+              carouselDots={carouselDots}
+              carouselDotsColor={carouselDotsColor}
+              carouselDotsActiveColor={carouselDotsActiveColor}
+              carouselDotsMarginTop={carouselDotsMarginTop}
               widgetTitle={widgetTitle}
               widgetTitleTag={widgetTitleTag}
               widgetTitleBold={widgetTitleBold}

@@ -1,9 +1,10 @@
 'use client';
 
+import { useRef, useState, useEffect } from 'react';
 import { SortableContext, rectSortingStrategy } from '@dnd-kit/sortable';
 import { useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
-import { XMarkIcon } from '@heroicons/react/24/solid';
+import { XMarkIcon, ChevronLeftIcon, ChevronRightIcon } from '@heroicons/react/24/solid';
 
 const hexToRgba = (hex, alpha) => {
     const r = parseInt(hex.slice(1, 3), 16);
@@ -271,9 +272,62 @@ export default function HeurekaPreview({
     widgetTitleSize,
     widgetTitleFont,
     widgetTitleAlign,
-    widgetTitleMarginBottom
+    widgetTitleMarginBottom,
+
+    carouselArrows,
+    carouselDots,
+    carouselDotsColor,
+    carouselDotsActiveColor,
+
+    carouselDotsMarginTop,
+    carouselArrowsBackground,
+    carouselArrowsColor,
+    carouselArrowsBorderRadius,
 }) {
     const Tag = widgetTitleTag || 'h2';
+    const scrollContainerRef = useRef(null);
+    const [activeDot, setActiveDot] = useState(0);
+
+    useEffect(() => {
+        const handleScroll = () => {
+            if (!scrollContainerRef.current || layout !== 'carousel') return;
+
+            const container = scrollContainerRef.current;
+            const item = container.firstElementChild;
+            const itemWidth = item ? (item.clientWidth + 24) : 0;
+
+            if (itemWidth > 0) {
+                const scrollLeft = container.scrollLeft;
+                const newActiveDot = Math.round(scrollLeft / itemWidth);
+                const maxDots = Math.max(0, selectedProductDetails.length - gridColumns);
+                setActiveDot(Math.min(newActiveDot, maxDots));
+            }
+        };
+
+        const container = scrollContainerRef.current;
+        if (container) {
+            container.addEventListener('scroll', handleScroll);
+            return () => container.removeEventListener('scroll', handleScroll);
+        }
+    }, [layout, selectedProductDetails.length, gridColumns]);
+
+    const scrollLeft = () => {
+        if (scrollContainerRef.current) {
+            const container = scrollContainerRef.current;
+            const item = container.firstElementChild;
+            const scrollAmount = item ? (item.clientWidth + 24) : 300; // 24px is gap-6
+            container.scrollBy({ left: -scrollAmount, behavior: 'smooth' });
+        }
+    };
+
+    const scrollRight = () => {
+        if (scrollContainerRef.current) {
+            const container = scrollContainerRef.current;
+            const item = container.firstElementChild;
+            const scrollAmount = item ? (item.clientWidth + 24) : 300;
+            container.scrollBy({ left: scrollAmount, behavior: 'smooth' });
+        }
+    };
 
     return (
         <div className="w-full max-w-5xl mx-auto">
@@ -301,73 +355,134 @@ export default function HeurekaPreview({
             ) : (
                 <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-8 min-h-[400px]">
                     <SortableContext items={selectedProductDetails.map(p => p.id)} strategy={rectSortingStrategy}>
-                        <div
-                            className={layout === 'carousel'
-                                ? "flex gap-6 overflow-x-auto pb-6 pt-2 snap-x"
-                                : "grid gap-6"
-                            }
-                            style={layout === 'grid' ? {
-                                gridTemplateColumns: `repeat(${gridColumns}, minmax(0, 1fr))`
-                            } : {}}
-                        >
-                            {selectedProductDetails.map((product) => (
+                        <div className="relative group">
+                            {layout === 'carousel' && carouselArrows && (
+                                <>
+                                    <button
+                                        onClick={scrollLeft}
+                                        className="absolute left-0 top-1/2 -translate-y-1/2 -translate-x-4 z-10 shadow-lg p-2 hover:brightness-95 opacity-0 group-hover:opacity-100 transition-all disabled:opacity-0 disabled:cursor-not-allowed hidden md:block"
+                                        aria-label="Scroll left"
+                                        style={{
+                                            backgroundColor: carouselArrowsBackground || '#ffffff',
+                                            color: carouselArrowsColor || '#374151',
+                                            borderRadius: `${carouselArrowsBorderRadius !== undefined ? carouselArrowsBorderRadius : 50}%`
+                                        }}
+                                    >
+                                        <ChevronLeftIcon className="w-5 h-5" />
+                                    </button>
+                                    <button
+                                        onClick={scrollRight}
+                                        className="absolute right-0 top-1/2 -translate-y-1/2 translate-x-4 z-10 shadow-lg p-2 hover:brightness-95 opacity-0 group-hover:opacity-100 transition-all disabled:opacity-0 disabled:cursor-not-allowed hidden md:block"
+                                        aria-label="Scroll right"
+                                        style={{
+                                            backgroundColor: carouselArrowsBackground || '#ffffff',
+                                            color: carouselArrowsColor || '#374151',
+                                            borderRadius: `${carouselArrowsBorderRadius !== undefined ? carouselArrowsBorderRadius : 50}%`
+                                        }}
+                                    >
+                                        <ChevronRightIcon className="w-5 h-5" />
+                                    </button>
+                                </>
+                            )}
+                            <div
+                                ref={scrollContainerRef}
+                                className={layout === 'carousel'
+                                    ? "flex gap-6 overflow-x-auto pb-6 pt-2 snap-x scrollbar-hide items-stretch"
+                                    : "grid gap-6"
+                                }
+                                style={layout === 'grid' ? {
+                                    gridTemplateColumns: `repeat(${gridColumns}, minmax(0, 1fr))`
+                                } : {}}
+                            >
+                                {selectedProductDetails.map((product) => (
+                                    <div
+                                        key={product.id}
+                                        className={layout === 'carousel' ? "snap-start shrink-0 flex flex-col" : ""}
+                                        style={layout === 'carousel' ? {
+                                            minWidth: `calc((100% - (${gridColumns} - 1) * 24px) / ${gridColumns})`,
+                                            maxWidth: `calc((100% - (${gridColumns} - 1) * 24px) / ${gridColumns})`
+                                        } : {}}
+                                    >
+                                        <SortableProductItem
+                                            product={product}
+                                            onRemove={onRemoveProduct}
+                                            buttonText={buttonText}
+                                            buttonColor={buttonColor}
+                                            cardBorderRadius={cardBorderRadius}
+                                            cardBackgroundColor={cardBackgroundColor}
+                                            productNameColor={productNameColor}
+                                            productNameSize={productNameSize}
+                                            productNameFont={productNameFont}
+                                            productNameBold={productNameBold}
+                                            productNameItalic={productNameItalic}
+                                            productNameFull={productNameFull}
+                                            priceColor={priceColor}
+                                            priceSize={priceSize}
+                                            priceFont={priceFont}
+                                            priceBold={priceBold}
+                                            priceItalic={priceItalic}
+                                            priceFormat={priceFormat}
+                                            buttonTextColor={buttonTextColor}
+                                            buttonFontSize={buttonFontSize}
+                                            buttonFont={buttonFont}
+                                            buttonBold={buttonBold}
+                                            buttonItalic={buttonItalic}
+                                            cardShadowEnabled={cardShadowEnabled}
+                                            cardShadowColor={cardShadowColor}
+                                            cardShadowBlur={cardShadowBlur}
+                                            cardShadowOpacity={cardShadowOpacity}
+                                            cardBorderEnabled={cardBorderEnabled}
+                                            cardBorderColor={cardBorderColor}
+                                            cardBorderWidth={cardBorderWidth}
+                                            productNameMarginTop={productNameMarginTop}
+                                            productNameMarginBottom={productNameMarginBottom}
+                                            priceMarginTop={priceMarginTop}
+                                            priceMarginBottom={priceMarginBottom}
+                                            buttonMarginTop={buttonMarginTop}
+                                            buttonMarginBottom={buttonMarginBottom}
+                                            buttonBorderRadius={buttonBorderRadius}
+                                            imageHeight={imageHeight}
+                                            imageObjectFit={imageObjectFit}
+                                            imagePadding={imagePadding}
+                                            imageMarginBottom={imageMarginBottom}
+                                            imageBorderRadius={imageBorderRadius}
+                                            cardPaddingX={cardPaddingX}
+                                            cardPaddingY={cardPaddingY}
+                                        />
+                                    </div>
+                                ))}
+                            </div>
+
+                            {layout === 'carousel' && carouselDots && (
                                 <div
-                                    key={product.id}
-                                    className={layout === 'carousel' ? "min-w-[220px] max-w-[220px] snap-center" : ""}
+                                    className="flex justify-center gap-2 items-center"
+                                    style={{ marginTop: `${carouselDotsMarginTop}px` }}
                                 >
-                                    <SortableProductItem
-                                        product={product}
-                                        onRemove={onRemoveProduct}
-                                        buttonText={buttonText}
-                                        buttonColor={buttonColor}
-                                        cardBorderRadius={cardBorderRadius}
-                                        cardBackgroundColor={cardBackgroundColor}
-                                        productNameColor={productNameColor}
-                                        productNameSize={productNameSize}
-                                        productNameFont={productNameFont}
-                                        productNameBold={productNameBold}
-                                        productNameItalic={productNameItalic}
-                                        productNameFull={productNameFull}
-                                        priceColor={priceColor}
-                                        priceSize={priceSize}
-                                        priceFont={priceFont}
-                                        priceBold={priceBold}
-                                        priceItalic={priceItalic}
-                                        priceFormat={priceFormat}
-                                        buttonTextColor={buttonTextColor}
-                                        buttonFontSize={buttonFontSize}
-                                        buttonFont={buttonFont}
-                                        buttonBold={buttonBold}
-                                        buttonItalic={buttonItalic}
-                                        cardShadowEnabled={cardShadowEnabled}
-                                        cardShadowColor={cardShadowColor}
-                                        cardShadowBlur={cardShadowBlur}
-                                        cardShadowOpacity={cardShadowOpacity}
-                                        cardBorderEnabled={cardBorderEnabled}
-                                        cardBorderColor={cardBorderColor}
-                                        cardBorderWidth={cardBorderWidth}
-                                        productNameMarginTop={productNameMarginTop}
-                                        productNameMarginBottom={productNameMarginBottom}
-                                        priceMarginTop={priceMarginTop}
-                                        priceMarginBottom={priceMarginBottom}
-                                        buttonMarginTop={buttonMarginTop}
-                                        buttonMarginBottom={buttonMarginBottom}
-                                        buttonBorderRadius={buttonBorderRadius}
-                                        imageHeight={imageHeight}
-
-                                        imageObjectFit={imageObjectFit}
-                                        imagePadding={imagePadding}
-                                        imageMarginBottom={imageMarginBottom}
-                                        imageBorderRadius={imageBorderRadius}
-                                        cardPaddingX={cardPaddingX}
-                                        cardPaddingY={cardPaddingY}
-
-
-
-
-                                    />
+                                    {Array.from({ length: Math.max(0, selectedProductDetails.length - gridColumns) + 1 }).map((_, i) => (
+                                        <button
+                                            key={i}
+                                            onClick={() => {
+                                                if (scrollContainerRef.current) {
+                                                    const container = scrollContainerRef.current;
+                                                    const item = container.firstElementChild;
+                                                    const itemWidth = item ? (item.clientWidth + 24) : 0;
+                                                    if (itemWidth > 0) {
+                                                        container.scrollTo({ left: i * itemWidth, behavior: 'smooth' });
+                                                    }
+                                                }
+                                            }}
+                                            className="rounded-full transition-all duration-200"
+                                            style={{
+                                                width: '8px',
+                                                height: '8px',
+                                                backgroundColor: i === activeDot ? carouselDotsActiveColor : carouselDotsColor,
+                                                transform: i === activeDot ? 'scale(1.2)' : 'scale(1)'
+                                            }}
+                                            aria-label={`Go to item ${i + 1}`}
+                                        />
+                                    ))}
                                 </div>
-                            ))}
+                            )}
                         </div>
                     </SortableContext>
                 </div>
