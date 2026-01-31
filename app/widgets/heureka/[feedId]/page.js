@@ -62,12 +62,27 @@ export default function HeurekaFeedDetailPage() {
   const [productNameBold, setProductNameBold] = useState(true);
   const [productNameItalic, setProductNameItalic] = useState(false);
   const [productNameFull, setProductNameFull] = useState(false);
+  const [productNameMarginTop, setProductNameMarginTop] = useState(0);
+  const [productNameMarginBottom, setProductNameMarginBottom] = useState(12);
+
+  // Image Settings
+  const [imageHeight, setImageHeight] = useState(192); // 48 * 4 = 192px
+  const [imageObjectFit, setImageObjectFit] = useState('contain'); // contain, cover, fill
+  const [imagePadding, setImagePadding] = useState(8); // p-2 = 8px
+  const [imageMarginBottom, setImageMarginBottom] = useState(16); // mb-4 = 16px
+  const [imageBorderRadius, setImageBorderRadius] = useState(6); // rounded-md = 6px
+
+  const [cardBorderEnabled, setCardBorderEnabled] = useState(false);
+  const [cardBorderColor, setCardBorderColor] = useState('#e5e7eb');
+  const [cardBorderWidth, setCardBorderWidth] = useState(1);
   const [priceColor, setPriceColor] = useState('#059669');
   const [priceSize, setPriceSize] = useState('22px');
   const [priceFont, setPriceFont] = useState('sans-serif');
   const [priceBold, setPriceBold] = useState(true);
   const [priceItalic, setPriceItalic] = useState(false);
   const [priceFormat, setPriceFormat] = useState('comma'); // 'comma', 'dot', 'no_decimals'
+  const [priceMarginTop, setPriceMarginTop] = useState(0);
+  const [priceMarginBottom, setPriceMarginBottom] = useState(16);
 
   // Button Typography
   const [buttonTextColor, setButtonTextColor] = useState('#ffffff');
@@ -75,12 +90,20 @@ export default function HeurekaFeedDetailPage() {
   const [buttonFont, setButtonFont] = useState('sans-serif');
   const [buttonBold, setButtonBold] = useState(true);
   const [buttonItalic, setButtonItalic] = useState(false);
+  const [buttonMarginTop, setButtonMarginTop] = useState(0);
+  const [buttonMarginBottom, setButtonMarginBottom] = useState(0);
+  const [buttonBorderRadius, setButtonBorderRadius] = useState(12);
+
 
   // Card Shadow
   const [cardShadowEnabled, setCardShadowEnabled] = useState(true);
   const [cardShadowColor, setCardShadowColor] = useState('#000000');
   const [cardShadowBlur, setCardShadowBlur] = useState(10);
   const [cardShadowOpacity, setCardShadowOpacity] = useState(10);
+
+  // Card Padding
+  const [cardPaddingX, setCardPaddingX] = useState(20);
+  const [cardPaddingY, setCardPaddingY] = useState(20);
 
   const showNotification = useToast();
 
@@ -124,24 +147,45 @@ export default function HeurekaFeedDetailPage() {
         setButtonText(feed.layoutOptions.buttonText || 'Koupit');
         setCardBorderRadius(feed.layoutOptions.cardBorderRadius !== undefined ? feed.layoutOptions.cardBorderRadius : 16);
         setCardBackgroundColor(feed.layoutOptions.cardBackgroundColor || '#ffffff');
+        setCardPaddingX(feed.layoutOptions.cardPaddingX !== undefined ? feed.layoutOptions.cardPaddingX : 20);
+        setCardPaddingY(feed.layoutOptions.cardPaddingY !== undefined ? feed.layoutOptions.cardPaddingY : 20);
         setProductNameColor(feed.layoutOptions.productNameColor || '#111827');
         setProductNameSize(feed.layoutOptions.productNameSize || '15px');
         setProductNameFont(feed.layoutOptions.productNameFont || 'sans-serif');
         setProductNameBold(feed.layoutOptions.productNameBold !== undefined ? feed.layoutOptions.productNameBold : true);
         setProductNameItalic(feed.layoutOptions.productNameItalic || false);
         setProductNameFull(feed.layoutOptions.productNameFull || false);
+        setProductNameMarginTop(feed.layoutOptions.productNameMarginTop !== undefined ? feed.layoutOptions.productNameMarginTop : 0);
+        setProductNameMarginBottom(feed.layoutOptions.productNameMarginBottom !== undefined ? feed.layoutOptions.productNameMarginBottom : 12);
+
+        setImageHeight(feed.layoutOptions.imageHeight !== undefined ? feed.layoutOptions.imageHeight : 192);
+        setImageObjectFit(feed.layoutOptions.imageObjectFit || 'contain');
+        setImagePadding(feed.layoutOptions.imagePadding !== undefined ? feed.layoutOptions.imagePadding : 8);
+        setImageMarginBottom(feed.layoutOptions.imageMarginBottom !== undefined ? feed.layoutOptions.imageMarginBottom : 16);
+        setImageBorderRadius(feed.layoutOptions.imageBorderRadius !== undefined ? feed.layoutOptions.imageBorderRadius : 6);
+
+        setCardBorderEnabled(feed.layoutOptions.cardBorderEnabled !== undefined ? feed.layoutOptions.cardBorderEnabled : false);
+        setCardBorderColor(feed.layoutOptions.cardBorderColor || '#e5e7eb');
+        setCardBorderWidth(feed.layoutOptions.cardBorderWidth !== undefined ? feed.layoutOptions.cardBorderWidth : 1);
+
         setPriceColor(feed.layoutOptions.priceColor || '#059669');
         setPriceSize(feed.layoutOptions.priceSize || '22px');
         setPriceFont(feed.layoutOptions.priceFont || 'sans-serif');
         setPriceBold(feed.layoutOptions.priceBold !== undefined ? feed.layoutOptions.priceBold : true);
         setPriceItalic(feed.layoutOptions.priceItalic || false);
         setPriceFormat(feed.layoutOptions.priceFormat || 'comma');
+        setPriceMarginTop(feed.layoutOptions.priceMarginTop !== undefined ? feed.layoutOptions.priceMarginTop : 0);
+        setPriceMarginBottom(feed.layoutOptions.priceMarginBottom !== undefined ? feed.layoutOptions.priceMarginBottom : 16);
 
         setButtonTextColor(feed.layoutOptions.buttonTextColor || '#ffffff');
         setButtonFontSize(feed.layoutOptions.buttonFontSize || '14px');
         setButtonFont(feed.layoutOptions.buttonFont || 'sans-serif');
         setButtonBold(feed.layoutOptions.buttonBold !== undefined ? feed.layoutOptions.buttonBold : true);
         setButtonItalic(feed.layoutOptions.buttonItalic || false);
+        setButtonMarginTop(feed.layoutOptions.buttonMarginTop !== undefined ? feed.layoutOptions.buttonMarginTop : 0);
+        setButtonMarginBottom(feed.layoutOptions.buttonMarginBottom !== undefined ? feed.layoutOptions.buttonMarginBottom : 0);
+        setButtonBorderRadius(feed.layoutOptions.buttonBorderRadius !== undefined ? feed.layoutOptions.buttonBorderRadius : 12);
+
 
         setCardShadowEnabled(feed.layoutOptions.cardShadowEnabled !== undefined ? feed.layoutOptions.cardShadowEnabled : true);
         setCardShadowColor(feed.layoutOptions.cardShadowColor || '#000000');
@@ -303,22 +347,40 @@ export default function HeurekaFeedDetailPage() {
             productNameFont: productNameFont,
             productNameBold: productNameBold,
             productNameItalic: productNameItalic,
+            productNameItalic: productNameItalic,
             productNameFull: productNameFull,
+            productNameMarginTop: parseInt(productNameMarginTop),
+            productNameMarginBottom: parseInt(productNameMarginBottom),
+            imageHeight: parseInt(imageHeight),
+            imageObjectFit: imageObjectFit,
+            imagePadding: parseInt(imagePadding),
+            imageMarginBottom: parseInt(imageMarginBottom),
+            imageBorderRadius: parseInt(imageBorderRadius),
             priceColor: priceColor,
             priceSize: priceSize,
             priceFont: priceFont,
             priceBold: priceBold,
             priceItalic: priceItalic,
             priceFormat: priceFormat,
+            priceMarginTop: parseInt(priceMarginTop),
+            priceMarginBottom: parseInt(priceMarginBottom),
             buttonTextColor: buttonTextColor,
             buttonFontSize: buttonFontSize,
             buttonFont: buttonFont,
             buttonBold: buttonBold,
             buttonItalic: buttonItalic,
+            buttonMarginTop: parseInt(buttonMarginTop),
+            buttonMarginBottom: parseInt(buttonMarginBottom),
+            buttonBorderRadius: parseInt(buttonBorderRadius),
             cardShadowEnabled: cardShadowEnabled,
             cardShadowColor: cardShadowColor,
             cardShadowBlur: cardShadowBlur,
-            cardShadowOpacity: cardShadowOpacity
+            cardShadowOpacity: cardShadowOpacity,
+            cardBorderEnabled: cardBorderEnabled,
+            cardBorderColor: cardBorderColor,
+            cardBorderWidth: parseInt(cardBorderWidth),
+            cardPaddingX: parseInt(cardPaddingX),
+            cardPaddingY: parseInt(cardPaddingY)
           },
           url: feed.url,
           name: feed.name
@@ -498,6 +560,20 @@ export default function HeurekaFeedDetailPage() {
             setProductNameItalic={setProductNameItalic}
             productNameFull={productNameFull}
             setProductNameFull={setProductNameFull}
+            productNameMarginTop={productNameMarginTop}
+            setProductNameMarginTop={setProductNameMarginTop}
+            productNameMarginBottom={productNameMarginBottom}
+            setProductNameMarginBottom={setProductNameMarginBottom}
+            imageHeight={imageHeight}
+            setImageHeight={setImageHeight}
+            imageObjectFit={imageObjectFit}
+            setImageObjectFit={setImageObjectFit}
+            imagePadding={imagePadding}
+            setImagePadding={setImagePadding}
+            imageMarginBottom={imageMarginBottom}
+            setImageMarginBottom={setImageMarginBottom}
+            imageBorderRadius={imageBorderRadius}
+            setImageBorderRadius={setImageBorderRadius}
             priceColor={priceColor}
             setPriceColor={setPriceColor}
             priceSize={priceSize}
@@ -510,6 +586,10 @@ export default function HeurekaFeedDetailPage() {
             setPriceItalic={setPriceItalic}
             priceFormat={priceFormat}
             setPriceFormat={setPriceFormat}
+            priceMarginTop={priceMarginTop}
+            setPriceMarginTop={setPriceMarginTop}
+            priceMarginBottom={priceMarginBottom}
+            setPriceMarginBottom={setPriceMarginBottom}
             buttonTextColor={buttonTextColor}
             setButtonTextColor={setButtonTextColor}
             buttonFontSize={buttonFontSize}
@@ -520,6 +600,12 @@ export default function HeurekaFeedDetailPage() {
             setButtonBold={setButtonBold}
             buttonItalic={buttonItalic}
             setButtonItalic={setButtonItalic}
+            buttonMarginTop={buttonMarginTop}
+            setButtonMarginTop={setButtonMarginTop}
+            buttonMarginBottom={buttonMarginBottom}
+            setButtonMarginBottom={setButtonMarginBottom}
+            buttonBorderRadius={buttonBorderRadius}
+            setButtonBorderRadius={setButtonBorderRadius}
             cardShadowEnabled={cardShadowEnabled}
             setCardShadowEnabled={setCardShadowEnabled}
             cardShadowColor={cardShadowColor}
@@ -536,7 +622,17 @@ export default function HeurekaFeedDetailPage() {
             feedId={feedId}
             fetchFeedDetails={fetchFeedDetails}
             fetchProducts={fetchProducts}
-            fetchCategories={fetchCategories}
+
+            cardBorderEnabled={cardBorderEnabled}
+            setCardBorderEnabled={setCardBorderEnabled}
+            cardBorderColor={cardBorderColor}
+            setCardBorderColor={setCardBorderColor}
+            cardBorderWidth={cardBorderWidth}
+            setCardBorderWidth={setCardBorderWidth}
+            cardPaddingX={cardPaddingX}
+            setCardPaddingX={setCardPaddingX}
+            cardPaddingY={cardPaddingY}
+            setCardPaddingY={setCardPaddingY}
           />
 
           {/* Preview Area */}
@@ -560,27 +656,45 @@ export default function HeurekaFeedDetailPage() {
               buttonColor={buttonColor}
               cardBorderRadius={cardBorderRadius}
               cardBackgroundColor={cardBackgroundColor}
+              cardPaddingX={cardPaddingX}
+              cardPaddingY={cardPaddingY}
               productNameColor={productNameColor}
               productNameSize={productNameSize}
               productNameFont={productNameFont}
               productNameBold={productNameBold}
               productNameItalic={productNameItalic}
               productNameFull={productNameFull}
+              productNameMarginTop={productNameMarginTop}
+              productNameMarginBottom={productNameMarginBottom}
+              imageHeight={imageHeight}
+              imageObjectFit={imageObjectFit}
+              imagePadding={imagePadding}
+              imageMarginBottom={imageMarginBottom}
+              imageBorderRadius={imageBorderRadius}
               priceColor={priceColor}
               priceSize={priceSize}
               priceFont={priceFont}
               priceBold={priceBold}
               priceItalic={priceItalic}
               priceFormat={priceFormat}
+              priceMarginTop={priceMarginTop}
+              priceMarginBottom={priceMarginBottom}
               buttonTextColor={buttonTextColor}
               buttonFontSize={buttonFontSize}
               buttonFont={buttonFont}
               buttonBold={buttonBold}
               buttonItalic={buttonItalic}
+              buttonMarginTop={buttonMarginTop}
+              buttonMarginBottom={buttonMarginBottom}
+              buttonBorderRadius={buttonBorderRadius}
               cardShadowEnabled={cardShadowEnabled}
               cardShadowColor={cardShadowColor}
               cardShadowBlur={cardShadowBlur}
+
               cardShadowOpacity={cardShadowOpacity}
+              cardBorderEnabled={cardBorderEnabled}
+              cardBorderColor={cardBorderColor}
+              cardBorderWidth={cardBorderWidth}
             />
           </div>
         </div>

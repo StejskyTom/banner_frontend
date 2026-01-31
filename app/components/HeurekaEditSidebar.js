@@ -254,7 +254,46 @@ export default function HeurekaEditSidebar({
     cardShadowBlur,
     setCardShadowBlur,
     cardShadowOpacity,
-    setCardShadowOpacity
+    setCardShadowOpacity,
+    cardBorderEnabled,
+    setCardBorderEnabled,
+    cardBorderColor,
+    setCardBorderColor,
+    cardBorderWidth,
+    setCardBorderWidth,
+    productNameMarginTop,
+    setProductNameMarginTop,
+    productNameMarginBottom,
+    setProductNameMarginBottom,
+    priceMarginTop,
+    setPriceMarginTop,
+    priceMarginBottom,
+    setPriceMarginBottom,
+    buttonMarginTop,
+    setButtonMarginTop,
+    buttonMarginBottom,
+    setButtonMarginBottom,
+    buttonBorderRadius,
+    setButtonBorderRadius,
+
+    imageHeight,
+    setImageHeight,
+    imageObjectFit,
+    setImageObjectFit,
+    imagePadding,
+    setImagePadding,
+    imageMarginBottom,
+    setImageMarginBottom,
+    imageBorderRadius,
+    setImageBorderRadius,
+    cardPaddingX,
+    setCardPaddingX,
+    cardPaddingY,
+    setCardPaddingY
+
+
+
+
 }) {
     if (!activeTab) return null;
 
@@ -532,6 +571,77 @@ export default function HeurekaEditSidebar({
 
                         <hr className="border-gray-800" />
 
+                        <CollapsibleSection title="Nastavení obrázku" defaultOpen={false}>
+                            <div className="space-y-4">
+                                <div>
+                                    <div className="flex justify-between items-center mb-2">
+                                        <label className="text-sm font-medium text-gray-300">Výška obrázku ({imageHeight}px)</label>
+                                    </div>
+                                    <RangeSlider
+                                        min={100}
+                                        max={400}
+                                        step={4}
+                                        value={imageHeight}
+                                        onChange={(e) => setImageHeight(parseInt(e.target.value))}
+                                    />
+                                </div>
+
+                                <div>
+                                    <label className="text-xs font-medium text-gray-400 mb-2 block">Přizpůsobení obrázku</label>
+                                    <select
+                                        className="w-full p-2 bg-gray-800 border border-gray-700 rounded-lg focus:outline-none focus:ring-1 focus:ring-green-500 transition-all text-sm text-white"
+                                        value={imageObjectFit}
+                                        onChange={(e) => setImageObjectFit(e.target.value)}
+                                    >
+                                        <option value="contain">Zobrazit celý (Contain)</option>
+                                        <option value="cover">Vyplnit (Cover)</option>
+                                        <option value="fill">Roztáhnout (Fill)</option>
+                                    </select>
+                                </div>
+
+                                <div className="pt-2 border-t border-gray-800">
+                                    <div className="flex justify-between items-center mb-2">
+                                        <label className="text-sm font-medium text-gray-300">Vnitřní odsazení ({imagePadding}px)</label>
+                                    </div>
+                                    <RangeSlider
+                                        min={0}
+                                        max={32}
+                                        step={1}
+                                        value={imagePadding}
+                                        onChange={(e) => setImagePadding(parseInt(e.target.value))}
+                                    />
+                                </div>
+
+                                <div>
+                                    <div className="flex justify-between items-center mb-2">
+                                        <label className="text-sm font-medium text-gray-300">Spodní odsazení ({imageMarginBottom}px)</label>
+                                    </div>
+                                    <RangeSlider
+                                        min={0}
+                                        max={64}
+                                        step={1}
+                                        value={imageMarginBottom}
+                                        onChange={(e) => setImageMarginBottom(parseInt(e.target.value))}
+                                    />
+                                </div>
+
+                                <div>
+                                    <div className="flex justify-between items-center mb-2">
+                                        <label className="text-sm font-medium text-gray-300">Zaoblení rohů ({imageBorderRadius}px)</label>
+                                    </div>
+                                    <RangeSlider
+                                        min={0}
+                                        max={32}
+                                        step={1}
+                                        value={imageBorderRadius}
+                                        onChange={(e) => setImageBorderRadius(parseInt(e.target.value))}
+                                    />
+                                </div>
+                            </div>
+                        </CollapsibleSection>
+
+                        <hr className="border-gray-800" />
+
                         <CollapsibleSection title="Název produktu" defaultOpen={false}>
                             <TypographyControls
                                 color={productNameColor}
@@ -552,6 +662,32 @@ export default function HeurekaEditSidebar({
                                     onChange={setProductNameFull}
                                     label="Zobrazit celý název"
                                 />
+                            </div>
+                            <div className="pt-2 border-t border-gray-800 space-y-4">
+                                <div>
+                                    <div className="flex justify-between items-center mb-2">
+                                        <label className="text-xs font-medium text-gray-400">Horní odsazení ({productNameMarginTop}px)</label>
+                                    </div>
+                                    <RangeSlider
+                                        min={0}
+                                        max={64}
+                                        step={1}
+                                        value={productNameMarginTop}
+                                        onChange={(e) => setProductNameMarginTop(parseInt(e.target.value))}
+                                    />
+                                </div>
+                                <div>
+                                    <div className="flex justify-between items-center mb-2">
+                                        <label className="text-xs font-medium text-gray-400">Spodní odsazení ({productNameMarginBottom}px)</label>
+                                    </div>
+                                    <RangeSlider
+                                        min={0}
+                                        max={64}
+                                        step={1}
+                                        value={productNameMarginBottom}
+                                        onChange={(e) => setProductNameMarginBottom(parseInt(e.target.value))}
+                                    />
+                                </div>
                             </div>
                         </CollapsibleSection>
 
@@ -583,6 +719,33 @@ export default function HeurekaEditSidebar({
                                         <option value="dot">123.45</option>
                                         <option value="no_decimals">123 (bez haléřů)</option>
                                     </select>
+                                </div>
+
+                                <div className="pt-2 border-t border-gray-800 space-y-4">
+                                    <div>
+                                        <div className="flex justify-between items-center mb-2">
+                                            <label className="text-xs font-medium text-gray-400">Horní odsazení ({priceMarginTop}px)</label>
+                                        </div>
+                                        <RangeSlider
+                                            min={0}
+                                            max={64}
+                                            step={1}
+                                            value={priceMarginTop}
+                                            onChange={(e) => setPriceMarginTop(parseInt(e.target.value))}
+                                        />
+                                    </div>
+                                    <div>
+                                        <div className="flex justify-between items-center mb-2">
+                                            <label className="text-xs font-medium text-gray-400">Spodní odsazení ({priceMarginBottom}px)</label>
+                                        </div>
+                                        <RangeSlider
+                                            min={0}
+                                            max={64}
+                                            step={1}
+                                            value={priceMarginBottom}
+                                            onChange={(e) => setPriceMarginBottom(parseInt(e.target.value))}
+                                        />
+                                    </div>
                                 </div>
                             </div>
                         </CollapsibleSection>
@@ -621,6 +784,45 @@ export default function HeurekaEditSidebar({
                                         onChange={setButtonColor}
                                     />
                                 </div>
+
+                                <div className="pt-2 border-t border-gray-800 space-y-4">
+                                    <div>
+                                        <div className="flex justify-between items-center mb-2">
+                                            <label className="text-xs font-medium text-gray-400">Horní odsazení ({buttonMarginTop}px)</label>
+                                        </div>
+                                        <RangeSlider
+                                            min={0}
+                                            max={64}
+                                            step={1}
+                                            value={buttonMarginTop}
+                                            onChange={(e) => setButtonMarginTop(parseInt(e.target.value))}
+                                        />
+                                    </div>
+                                    <div>
+                                        <div className="flex justify-between items-center mb-2">
+                                            <label className="text-xs font-medium text-gray-400">Spodní odsazení ({buttonMarginBottom}px)</label>
+                                        </div>
+                                        <RangeSlider
+                                            min={0}
+                                            max={64}
+                                            step={1}
+                                            value={buttonMarginBottom}
+                                            onChange={(e) => setButtonMarginBottom(parseInt(e.target.value))}
+                                        />
+                                    </div>
+                                    <div>
+                                        <div className="flex justify-between items-center mb-2">
+                                            <label className="text-xs font-medium text-gray-400">Zaoblení rohů ({buttonBorderRadius}px)</label>
+                                        </div>
+                                        <RangeSlider
+                                            min={0}
+                                            max={32}
+                                            step={1}
+                                            value={buttonBorderRadius}
+                                            onChange={(e) => setButtonBorderRadius(parseInt(e.target.value))}
+                                        />
+                                    </div>
+                                </div>
                             </div>
                         </CollapsibleSection>
 
@@ -630,11 +832,64 @@ export default function HeurekaEditSidebar({
                             <div className="space-y-6">
                                 {/* Card Style Settings */}
                                 <div className="space-y-4">
+                                    <Toggle
+                                        checked={cardBorderEnabled}
+                                        onChange={setCardBorderEnabled}
+                                        label="Zobrazit rámeček"
+                                    />
+                                    {cardBorderEnabled && (
+                                        <>
+                                            <ColorInput
+                                                label="Barva rámečku"
+                                                value={cardBorderColor}
+                                                onChange={setCardBorderColor}
+                                            />
+                                            <div>
+                                                <div className="flex justify-between items-center mb-2">
+                                                    <label className="text-sm font-medium text-gray-300">Šířka rámečku ({cardBorderWidth}px)</label>
+                                                </div>
+                                                <RangeSlider
+                                                    min={1}
+                                                    max={10}
+                                                    step={1}
+                                                    value={cardBorderWidth}
+                                                    onChange={(e) => setCardBorderWidth(parseInt(e.target.value))}
+                                                />
+                                            </div>
+                                            <div className="h-px bg-gray-800" />
+                                        </>
+                                    )}
+
                                     <div>
                                         <ColorInput
                                             label="Barva pozadí karty"
                                             value={cardBackgroundColor}
                                             onChange={setCardBackgroundColor}
+                                        />
+                                    </div>
+                                    <div>
+                                        <div className="flex justify-between items-center mb-2">
+                                            <label className="text-sm font-medium text-gray-300">Odsazení zleva/zprava ({cardPaddingX}px)</label>
+                                        </div>
+                                        <RangeSlider
+                                            min={0}
+                                            max={64}
+                                            step={2}
+                                            value={cardPaddingX}
+                                            onChange={(e) => setCardPaddingX(parseInt(e.target.value))}
+                                        />
+                                    </div>
+
+                                    <div>
+                                        <div className="flex justify-between items-center mb-2">
+                                            <label className="text-sm font-medium text-gray-300">Odsazení shora/zdola ({cardPaddingY}px)</label>
+                                        </div>
+                                        <RangeSlider
+                                            min={0}
+                                            max={64}
+                                            step={2}
+                                            value={cardPaddingY}
+                                            onChange={(e) => setCardPaddingY(parseInt(e.target.value))}
                                         />
                                     </div>
                                     <div>

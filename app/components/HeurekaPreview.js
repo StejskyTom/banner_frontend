@@ -62,7 +62,26 @@ function SortableProductItem({
     cardShadowEnabled,
     cardShadowColor,
     cardShadowBlur,
-    cardShadowOpacity
+    cardShadowOpacity,
+    cardBorderEnabled,
+    cardBorderColor,
+    cardBorderWidth,
+    cardPaddingX,
+    cardPaddingY,
+    imageHeight,
+    imageObjectFit,
+    imagePadding,
+    imageMarginBottom,
+    imageBorderRadius,
+
+    productNameMarginTop,
+    productNameMarginBottom,
+    priceMarginTop,
+    priceMarginBottom,
+    buttonMarginTop,
+    buttonMarginBottom,
+    buttonBorderRadius
+
 }) {
     const {
         attributes,
@@ -90,11 +109,14 @@ function SortableProductItem({
                 ...style,
                 borderRadius: `${cardBorderRadius}px`,
                 backgroundColor: cardBackgroundColor,
-                boxShadow: shadowStyle
+                boxShadow: shadowStyle,
+                boxShadow: shadowStyle,
+                border: cardBorderEnabled ? `${cardBorderWidth}px solid ${cardBorderColor}` : 'none',
+                padding: `${cardPaddingY}px ${cardPaddingX}px`
             }}
             {...attributes}
             {...listeners}
-            className={`group relative border border-gray-200/50 transition-all duration-300 p-5 flex flex-col h-full cursor-grab active:cursor-grabbing ${!cardShadowEnabled ? 'shadow-[0_4px_6px_-1px_rgba(0,0,0,0.1),0_2px_4px_-1px_rgba(0,0,0,0.06)] hover:shadow-[0_10px_15px_-3px_rgba(0,0,0,0.1),0_4px_6px_-2px_rgba(0,0,0,0.05)]' : ''}`}
+            className={`group relative transition-all duration-300 flex flex-col h-full cursor-grab active:cursor-grabbing ${!cardShadowEnabled ? 'hover:shadow-[0_10px_15px_-3px_rgba(0,0,0,0.1),0_4px_6px_-2px_rgba(0,0,0,0.05)]' : ''}`}
         >
             <button
                 onClick={(e) => {
@@ -108,12 +130,25 @@ function SortableProductItem({
                 <XMarkIcon className="h-4 w-4" />
             </button>
 
-            <div className="h-[180px] flex items-center justify-center mb-4">
+            <div
+                className="flex items-center justify-center relative overflow-hidden bg-white"
+                style={{
+                    height: `${imageHeight}px`,
+                    marginBottom: `${imageMarginBottom}px`,
+                    padding: `${imagePadding}px`,
+                    borderRadius: `${imageBorderRadius}px`
+                }}
+            >
                 {product.imgUrl ? (
                     <img
                         src={product.imgUrl}
                         alt={product.productName}
-                        className="max-w-full max-h-full object-contain pointer-events-none transition-transform duration-300 group-hover:scale-105"
+                        className="max-w-full max-h-full pointer-events-none transition-transform duration-300 group-hover:scale-105"
+                        style={{
+                            width: '100%',
+                            height: '100%',
+                            objectFit: imageObjectFit
+                        }}
                     />
                 ) : (
                     <div className="w-full h-full flex items-center justify-center text-gray-300 text-xs bg-gray-50 rounded-lg">
@@ -131,7 +166,9 @@ function SortableProductItem({
                         fontSize: productNameSize,
                         fontFamily: productNameFont,
                         fontWeight: productNameBold ? 'bold' : 'normal',
-                        fontStyle: productNameItalic ? 'italic' : 'normal'
+                        fontStyle: productNameItalic ? 'italic' : 'normal',
+                        marginTop: `${productNameMarginTop}px`,
+                        marginBottom: `${productNameMarginBottom}px`
                     }}
                 >
                     {product.productName}
@@ -145,7 +182,9 @@ function SortableProductItem({
                             fontSize: priceSize,
                             fontFamily: priceFont,
                             fontWeight: priceBold ? 'bold' : 'normal',
-                            fontStyle: priceItalic ? 'italic' : 'normal'
+                            fontStyle: priceItalic ? 'italic' : 'normal',
+                            marginTop: `${priceMarginTop}px`,
+                            marginBottom: `${priceMarginBottom}px`
                         }}
                     >
                         {formatPrice(product.priceVat, priceFormat)} Kč
@@ -159,7 +198,10 @@ function SortableProductItem({
                             fontSize: buttonFontSize,
                             fontFamily: buttonFont,
                             fontWeight: buttonBold ? 'bold' : 'normal',
-                            fontStyle: buttonItalic ? 'italic' : 'normal'
+                            fontStyle: buttonItalic ? 'italic' : 'normal',
+                            marginTop: `${buttonMarginTop}px`,
+                            marginBottom: `${buttonMarginBottom}px`,
+                            borderRadius: `${buttonBorderRadius}px`
                         }}
                     >
                         {buttonText}
@@ -200,6 +242,27 @@ export default function HeurekaPreview({
     cardShadowColor,
     cardShadowBlur,
     cardShadowOpacity,
+    cardBorderEnabled,
+    cardBorderColor,
+    cardBorderWidth,
+    cardPaddingX,
+    cardPaddingY,
+
+    productNameMarginTop,
+    productNameMarginBottom,
+    priceMarginTop,
+    priceMarginBottom,
+    buttonMarginTop,
+    buttonMarginBottom,
+    buttonBorderRadius,
+    imageHeight,
+    imageObjectFit,
+    imagePadding,
+    imageMarginBottom,
+    imageBorderRadius,
+
+
+
     widgetTitle,
     widgetTitleTag,
     widgetTitleBold,
@@ -280,6 +343,28 @@ export default function HeurekaPreview({
                                         cardShadowColor={cardShadowColor}
                                         cardShadowBlur={cardShadowBlur}
                                         cardShadowOpacity={cardShadowOpacity}
+                                        cardBorderEnabled={cardBorderEnabled}
+                                        cardBorderColor={cardBorderColor}
+                                        cardBorderWidth={cardBorderWidth}
+                                        productNameMarginTop={productNameMarginTop}
+                                        productNameMarginBottom={productNameMarginBottom}
+                                        priceMarginTop={priceMarginTop}
+                                        priceMarginBottom={priceMarginBottom}
+                                        buttonMarginTop={buttonMarginTop}
+                                        buttonMarginBottom={buttonMarginBottom}
+                                        buttonBorderRadius={buttonBorderRadius}
+                                        imageHeight={imageHeight}
+
+                                        imageObjectFit={imageObjectFit}
+                                        imagePadding={imagePadding}
+                                        imageMarginBottom={imageMarginBottom}
+                                        imageBorderRadius={imageBorderRadius}
+                                        cardPaddingX={cardPaddingX}
+                                        cardPaddingY={cardPaddingY}
+
+
+
+
                                     />
                                 </div>
                             ))}
