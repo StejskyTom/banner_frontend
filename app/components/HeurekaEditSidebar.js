@@ -524,7 +524,7 @@ export default function HeurekaEditSidebar({
                             </div>
                         </CollapsibleSection>
 
-                        <hr className="border-gray-800" />
+                        <hr className="border-0 h-[3px] bg-visualy-accent-4" />
 
                         <CollapsibleSection title="Nastavení vzhledu" defaultOpen={false}>
                             <div className="space-y-4">
@@ -675,7 +675,7 @@ export default function HeurekaEditSidebar({
 
                         </CollapsibleSection>
 
-                        <hr className="border-gray-800" />
+                        <hr className="border-0 h-[3px] bg-visualy-accent-4" />
 
                         <CollapsibleSection title="Nastavení obrázku" defaultOpen={false}>
                             <div className="space-y-4">
@@ -746,7 +746,7 @@ export default function HeurekaEditSidebar({
                             </div>
                         </CollapsibleSection>
 
-                        <hr className="border-gray-800" />
+                        <hr className="border-0 h-[3px] bg-visualy-accent-4" />
 
                         <CollapsibleSection title="Název produktu" defaultOpen={false}>
                             <TypographyControls
@@ -797,7 +797,7 @@ export default function HeurekaEditSidebar({
                             </div>
                         </CollapsibleSection>
 
-                        <hr className="border-gray-800" />
+                        <hr className="border-0 h-[3px] bg-visualy-accent-4" />
 
                         <CollapsibleSection title="Cena produktu" defaultOpen={false}>
                             <div className="space-y-4">
@@ -856,7 +856,7 @@ export default function HeurekaEditSidebar({
                             </div>
                         </CollapsibleSection>
 
-                        <hr className="border-gray-800" />
+                        <hr className="border-0 h-[3px] bg-visualy-accent-4" />
 
                         <CollapsibleSection title="Nastavení tlačítka" defaultOpen={false}>
                             <div className="space-y-4">
@@ -932,7 +932,7 @@ export default function HeurekaEditSidebar({
                             </div>
                         </CollapsibleSection>
 
-                        <hr className="border-gray-800" />
+                        <hr className="border-0 h-[3px] bg-visualy-accent-4" />
 
                         <CollapsibleSection title="Nastavení karty produktu" defaultOpen={false}>
                             <div className="space-y-6">
@@ -1012,7 +1012,7 @@ export default function HeurekaEditSidebar({
                                     </div>
                                 </div>
 
-                                <hr className="border-gray-800" />
+                                <hr className="border-0 h-[3px] bg-visualy-accent-4" />
 
                                 {/* Shadow Settings */}
                                 <div className="space-y-4">

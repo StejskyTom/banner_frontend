@@ -111,7 +111,6 @@ function SortableProductItem({
                 borderRadius: `${cardBorderRadius}px`,
                 backgroundColor: cardBackgroundColor,
                 boxShadow: shadowStyle,
-                boxShadow: shadowStyle,
                 border: cardBorderEnabled ? `${cardBorderWidth}px solid ${cardBorderColor}` : 'none',
                 padding: `${cardPaddingY}px ${cardPaddingX}px`
             }}
@@ -353,7 +352,7 @@ export default function HeurekaPreview({
                     <p className="text-sm">Vyberte produkty v levém panelu</p>
                 </div>
             ) : (
-                <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-8 min-h-[400px]">
+                <div className="p-8 min-h-[400px]">
                     <SortableContext items={selectedProductDetails.map(p => p.id)} strategy={rectSortingStrategy}>
                         <div className="relative group">
                             {layout === 'carousel' && carouselArrows && (
