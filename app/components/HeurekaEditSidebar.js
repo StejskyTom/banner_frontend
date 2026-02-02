@@ -19,9 +19,9 @@ const ToolButton = ({ active, children, onClick, title }) => (
         onClick={onClick}
         className={`p-2 rounded-md transition-all font-medium text-sm border flex items-center justify-center h-8 min-w-[32px] flex-1
             ${active
-                ? 'bg-green-500/20 text-green-400 border-green-500/50'
-                : 'bg-gray-800 border-gray-700 text-gray-400 hover:text-white hover:bg-gray-700 hover:border-gray-600'
-            }`}
+            ? 'bg-green-500/20 text-green-400 border-green-500/50'
+            : 'bg-gray-800 border-gray-700 text-gray-400 hover:text-white hover:bg-gray-700 hover:border-gray-600'
+        }`}
         title={title}
     >
         {children}
@@ -88,18 +88,18 @@ const CollapsibleSection = ({ title, children, defaultOpen = false }) => {
     const [isOpen, setIsOpen] = useState(defaultOpen);
 
     return (
-        <div className="group">
+        <div className={`group rounded-lg transition-colors duration-200 ${isOpen ? 'bg-gray-800/50' : ''}`}>
             <div
                 onClick={() => setIsOpen(!isOpen)}
-                className="flex items-center justify-between cursor-pointer list-none text-xs font-bold text-gray-300 hover:text-white uppercase px-1 py-2 select-none leading-none tracking-wider"
+                className={`flex items-center justify-between cursor-pointer list-none text-xs font-bold uppercase px-3 py-3 select-none leading-none tracking-wider rounded-lg transition-colors ${isOpen ? 'text-white bg-gray-700/50' : 'text-gray-300 hover:text-white hover:bg-gray-800/30'}`}
             >
                 <span className="translate-y-[1px]">{title}</span>
                 <ChevronDownIcon className={`w-4 h-4 transition-transform duration-300 ${isOpen ? 'rotate-180' : ''}`} />
             </div>
 
             <div className={`grid transition-[grid-template-rows] duration-300 ease-in-out ${isOpen ? 'grid-rows-[1fr] opacity-100' : 'grid-rows-[0fr] opacity-0'}`}>
-                <div className="overflow-hidden px-1 pb-1">
-                    <div className="space-y-4 mt-3">
+                <div className="overflow-hidden">
+                    <div className="space-y-4 px-3 py-4">
                         {children}
                     </div>
                 </div>
@@ -109,12 +109,12 @@ const CollapsibleSection = ({ title, children, defaultOpen = false }) => {
 };
 
 const TypographyControls = ({
-    color, setColor,
-    size, setSize,
-    font, setFont,
-    bold, setBold,
-    italic, setItalic
-}) => {
+                                color, setColor,
+                                size, setSize,
+                                font, setFont,
+                                bold, setBold,
+                                italic, setItalic
+                            }) => {
 
 
     return (
@@ -167,151 +167,151 @@ const TypographyControls = ({
 };
 
 export default function HeurekaEditSidebar({
-    activeTab,
-    products,
-    categories,
-    selectedCategory,
-    setSelectedCategory,
-    searchTerm,
-    handleSearch,
-    applyFilters,
-    loading,
-    selectedProducts,
-    toggleProductSelection,
-    page,
-    setPage,
-    totalPages,
-    layout,
-    setLayout,
-    gridColumns,
-    setGridColumns,
-    mobileGridColumns,
-    setMobileGridColumns,
+                                               activeTab,
+                                               products,
+                                               categories,
+                                               selectedCategory,
+                                               setSelectedCategory,
+                                               searchTerm,
+                                               handleSearch,
+                                               applyFilters,
+                                               loading,
+                                               selectedProducts,
+                                               toggleProductSelection,
+                                               page,
+                                               setPage,
+                                               totalPages,
+                                               layout,
+                                               setLayout,
+                                               gridColumns,
+                                               setGridColumns,
+                                               mobileGridColumns,
+                                               setMobileGridColumns,
 
-    carouselArrows,
-    setCarouselArrows,
-    carouselArrowsBackground,
-    setCarouselArrowsBackground,
-    carouselArrowsColor,
-    setCarouselArrowsColor,
-    carouselArrowsBorderRadius,
-    setCarouselArrowsBorderRadius,
-    carouselDots,
-    setCarouselDots,
-    carouselDotsColor,
-    setCarouselDotsColor,
-    carouselDotsActiveColor,
-    setCarouselDotsActiveColor,
-    carouselDotsMarginTop,
-    setCarouselDotsMarginTop,
-    widgetTitle,
-    setWidgetTitle,
-    widgetTitleTag,
-    setWidgetTitleTag,
-    widgetTitleBold,
-    setWidgetTitleBold,
-    widgetTitleItalic,
-    setWidgetTitleItalic,
-    widgetTitleColor,
-    setWidgetTitleColor,
-    widgetTitleSize,
-    setWidgetTitleSize,
-    widgetTitleFont,
-    setWidgetTitleFont,
-    widgetTitleAlign,
-    setWidgetTitleAlign,
-    widgetTitleMarginBottom,
-    setWidgetTitleMarginBottom,
-    buttonColor,
-    setButtonColor,
-    buttonText,
-    setButtonText,
-    cardBorderRadius,
-    setCardBorderRadius,
-    cardBackgroundColor,
-    setCardBackgroundColor,
-    productNameColor,
-    setProductNameColor,
-    productNameSize,
-    setProductNameSize,
-    productNameFont,
-    setProductNameFont,
-    productNameBold,
-    setProductNameBold,
-    productNameItalic,
-    setProductNameItalic,
-    productNameFull,
-    setProductNameFull,
-    priceColor,
-    setPriceColor,
-    priceSize,
-    setPriceSize,
-    priceFont,
-    setPriceFont,
-    priceBold,
-    setPriceBold,
-    priceItalic,
-    setPriceItalic,
-    priceFormat,
-    setPriceFormat,
-    buttonTextColor,
-    setButtonTextColor,
-    buttonFontSize,
-    setButtonFontSize,
-    buttonFont,
-    setButtonFont,
-    buttonBold,
-    setButtonBold,
-    buttonItalic,
-    setButtonItalic,
-    cardShadowEnabled,
-    setCardShadowEnabled,
-    cardShadowColor,
-    setCardShadowColor,
-    cardShadowBlur,
-    setCardShadowBlur,
-    cardShadowOpacity,
-    setCardShadowOpacity,
-    cardBorderEnabled,
-    setCardBorderEnabled,
-    cardBorderColor,
-    setCardBorderColor,
-    cardBorderWidth,
-    setCardBorderWidth,
-    productNameMarginTop,
-    setProductNameMarginTop,
-    productNameMarginBottom,
-    setProductNameMarginBottom,
-    priceMarginTop,
-    setPriceMarginTop,
-    priceMarginBottom,
-    setPriceMarginBottom,
-    buttonMarginTop,
-    setButtonMarginTop,
-    buttonMarginBottom,
-    setButtonMarginBottom,
-    buttonBorderRadius,
-    setButtonBorderRadius,
+                                               carouselArrows,
+                                               setCarouselArrows,
+                                               carouselArrowsBackground,
+                                               setCarouselArrowsBackground,
+                                               carouselArrowsColor,
+                                               setCarouselArrowsColor,
+                                               carouselArrowsBorderRadius,
+                                               setCarouselArrowsBorderRadius,
+                                               carouselDots,
+                                               setCarouselDots,
+                                               carouselDotsColor,
+                                               setCarouselDotsColor,
+                                               carouselDotsActiveColor,
+                                               setCarouselDotsActiveColor,
+                                               carouselDotsMarginTop,
+                                               setCarouselDotsMarginTop,
+                                               widgetTitle,
+                                               setWidgetTitle,
+                                               widgetTitleTag,
+                                               setWidgetTitleTag,
+                                               widgetTitleBold,
+                                               setWidgetTitleBold,
+                                               widgetTitleItalic,
+                                               setWidgetTitleItalic,
+                                               widgetTitleColor,
+                                               setWidgetTitleColor,
+                                               widgetTitleSize,
+                                               setWidgetTitleSize,
+                                               widgetTitleFont,
+                                               setWidgetTitleFont,
+                                               widgetTitleAlign,
+                                               setWidgetTitleAlign,
+                                               widgetTitleMarginBottom,
+                                               setWidgetTitleMarginBottom,
+                                               buttonColor,
+                                               setButtonColor,
+                                               buttonText,
+                                               setButtonText,
+                                               cardBorderRadius,
+                                               setCardBorderRadius,
+                                               cardBackgroundColor,
+                                               setCardBackgroundColor,
+                                               productNameColor,
+                                               setProductNameColor,
+                                               productNameSize,
+                                               setProductNameSize,
+                                               productNameFont,
+                                               setProductNameFont,
+                                               productNameBold,
+                                               setProductNameBold,
+                                               productNameItalic,
+                                               setProductNameItalic,
+                                               productNameFull,
+                                               setProductNameFull,
+                                               priceColor,
+                                               setPriceColor,
+                                               priceSize,
+                                               setPriceSize,
+                                               priceFont,
+                                               setPriceFont,
+                                               priceBold,
+                                               setPriceBold,
+                                               priceItalic,
+                                               setPriceItalic,
+                                               priceFormat,
+                                               setPriceFormat,
+                                               buttonTextColor,
+                                               setButtonTextColor,
+                                               buttonFontSize,
+                                               setButtonFontSize,
+                                               buttonFont,
+                                               setButtonFont,
+                                               buttonBold,
+                                               setButtonBold,
+                                               buttonItalic,
+                                               setButtonItalic,
+                                               cardShadowEnabled,
+                                               setCardShadowEnabled,
+                                               cardShadowColor,
+                                               setCardShadowColor,
+                                               cardShadowBlur,
+                                               setCardShadowBlur,
+                                               cardShadowOpacity,
+                                               setCardShadowOpacity,
+                                               cardBorderEnabled,
+                                               setCardBorderEnabled,
+                                               cardBorderColor,
+                                               setCardBorderColor,
+                                               cardBorderWidth,
+                                               setCardBorderWidth,
+                                               productNameMarginTop,
+                                               setProductNameMarginTop,
+                                               productNameMarginBottom,
+                                               setProductNameMarginBottom,
+                                               priceMarginTop,
+                                               setPriceMarginTop,
+                                               priceMarginBottom,
+                                               setPriceMarginBottom,
+                                               buttonMarginTop,
+                                               setButtonMarginTop,
+                                               buttonMarginBottom,
+                                               setButtonMarginBottom,
+                                               buttonBorderRadius,
+                                               setButtonBorderRadius,
 
-    imageHeight,
-    setImageHeight,
-    imageObjectFit,
-    setImageObjectFit,
-    imagePadding,
-    setImagePadding,
-    imageMarginBottom,
-    setImageMarginBottom,
-    imageBorderRadius,
-    setImageBorderRadius,
-    cardPaddingX,
-    setCardPaddingX,
-    cardPaddingY,
-    setCardPaddingY
-
-
+                                               imageHeight,
+                                               setImageHeight,
+                                               imageObjectFit,
+                                               setImageObjectFit,
+                                               imagePadding,
+                                               setImagePadding,
+                                               imageMarginBottom,
+                                               setImageMarginBottom,
+                                               imageBorderRadius,
+                                               setImageBorderRadius,
+                                               cardPaddingX,
+                                               setCardPaddingX,
+                                               cardPaddingY,
+                                               setCardPaddingY
 
 
-}) {
+
+
+                                           }) {
     if (!activeTab) return null;
 
     return (
@@ -374,7 +374,7 @@ export default function HeurekaEditSidebar({
                     </div>
 
                     {/* Product List */}
-                    <div className="flex-1 overflow-y-auto p-4 space-y-2">
+                    <div className="flex-1 overflow-y-auto p-4 space-y-2 [&::-webkit-scrollbar]:w-1.5 [&::-webkit-scrollbar-track]:bg-transparent [&::-webkit-scrollbar-thumb]:bg-gray-700 [&::-webkit-scrollbar-thumb]:rounded-full hover:[&::-webkit-scrollbar-thumb]:bg-gray-600 [scrollbar-width:thin] [scrollbar-color:rgb(55,65,81)_transparent]">
                         {loading ? (
                             <div className="flex justify-center py-8">
                                 <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-visualy-accent-4"></div>
@@ -391,9 +391,9 @@ export default function HeurekaEditSidebar({
                                     className={`
                                         flex items-start gap-3 p-3 rounded-lg border cursor-pointer transition-all group relative
                                         ${selectedProducts.has(product.id)
-                                            ? 'bg-visualy-accent-4/10 border-visualy-accent-4/50 ring-1 ring-visualy-accent-4/30'
-                                            : 'bg-gray-800 border-gray-700 hover:border-gray-600 hover:shadow-sm'
-                                        }
+                                        ? 'bg-visualy-accent-4/10 border-visualy-accent-4/50 ring-1 ring-visualy-accent-4/30'
+                                        : 'bg-gray-800 border-gray-700 hover:border-gray-600 hover:shadow-sm'
+                                    }
                                     `}
                                 >
                                     <div className="w-12 h-12 shrink-0 bg-white rounded border border-gray-200 p-1 flex items-center justify-center">
@@ -524,7 +524,7 @@ export default function HeurekaEditSidebar({
                             </div>
                         </CollapsibleSection>
 
-                        <hr className="border-0 h-[3px] bg-visualy-accent-4" />
+                        <hr className="border-0 h-[2px] bg-gradient-to-r from-transparent via-gray-600 to-transparent my-2" />
 
                         <CollapsibleSection title="Nastavení vzhledu" defaultOpen={false}>
                             <div className="space-y-4">
@@ -534,7 +534,7 @@ export default function HeurekaEditSidebar({
                                         className={`p-3 rounded-xl border-2 text-left transition-all ${layout === 'carousel'
                                             ? 'border-visualy-accent-4 bg-green-900/20 ring-1 ring-visualy-accent-4/20'
                                             : 'border-gray-700 hover:border-gray-600 bg-gray-800'
-                                            }`}
+                                        }`}
                                     >
                                         <div className="font-medium text-white mb-1">Carousel</div>
                                         <div className="text-xs text-gray-400">Produkty v posuvném pásu</div>
@@ -544,7 +544,7 @@ export default function HeurekaEditSidebar({
                                         className={`p-3 rounded-xl border-2 text-left transition-all ${layout === 'grid'
                                             ? 'border-visualy-accent-4 bg-green-900/20 ring-1 ring-visualy-accent-4/20'
                                             : 'border-gray-700 hover:border-gray-600 bg-gray-800'
-                                            }`}
+                                        }`}
                                     >
                                         <div className="font-medium text-white mb-1">Mřížka</div>
                                         <div className="text-xs text-gray-400">Statická mřížka produktů</div>
@@ -675,7 +675,7 @@ export default function HeurekaEditSidebar({
 
                         </CollapsibleSection>
 
-                        <hr className="border-0 h-[3px] bg-visualy-accent-4" />
+                        <hr className="border-0 h-[2px] bg-gradient-to-r from-transparent via-gray-600 to-transparent my-2" />
 
                         <CollapsibleSection title="Nastavení obrázku" defaultOpen={false}>
                             <div className="space-y-4">
@@ -746,7 +746,7 @@ export default function HeurekaEditSidebar({
                             </div>
                         </CollapsibleSection>
 
-                        <hr className="border-0 h-[3px] bg-visualy-accent-4" />
+                        <hr className="border-0 h-[2px] bg-gradient-to-r from-transparent via-gray-600 to-transparent my-2" />
 
                         <CollapsibleSection title="Název produktu" defaultOpen={false}>
                             <TypographyControls
@@ -797,7 +797,7 @@ export default function HeurekaEditSidebar({
                             </div>
                         </CollapsibleSection>
 
-                        <hr className="border-0 h-[3px] bg-visualy-accent-4" />
+                        <hr className="border-0 h-[2px] bg-gradient-to-r from-transparent via-gray-600 to-transparent my-2" />
 
                         <CollapsibleSection title="Cena produktu" defaultOpen={false}>
                             <div className="space-y-4">
@@ -856,7 +856,7 @@ export default function HeurekaEditSidebar({
                             </div>
                         </CollapsibleSection>
 
-                        <hr className="border-0 h-[3px] bg-visualy-accent-4" />
+                        <hr className="border-0 h-[2px] bg-gradient-to-r from-transparent via-gray-600 to-transparent my-2" />
 
                         <CollapsibleSection title="Nastavení tlačítka" defaultOpen={false}>
                             <div className="space-y-4">
@@ -932,7 +932,7 @@ export default function HeurekaEditSidebar({
                             </div>
                         </CollapsibleSection>
 
-                        <hr className="border-0 h-[3px] bg-visualy-accent-4" />
+                        <hr className="border-0 h-[2px] bg-gradient-to-r from-transparent via-gray-600 to-transparent my-2" />
 
                         <CollapsibleSection title="Nastavení karty produktu" defaultOpen={false}>
                             <div className="space-y-6">
@@ -1012,7 +1012,7 @@ export default function HeurekaEditSidebar({
                                     </div>
                                 </div>
 
-                                <hr className="border-0 h-[3px] bg-visualy-accent-4" />
+                                <hr className="border-0 h-[2px] bg-gradient-to-r from-transparent via-gray-600 to-transparent my-2" />
 
                                 {/* Shadow Settings */}
                                 <div className="space-y-4">
