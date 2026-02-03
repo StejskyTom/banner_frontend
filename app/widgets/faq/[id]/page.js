@@ -66,7 +66,27 @@ export default function FaqWidgetDetailPage() {
                     questionColor: widget.questionColor,
                     answerColor: widget.answerColor,
                     hoverColor: widget.hoverColor,
-                    backgroundColor: widget.backgroundColor
+                    backgroundColor: widget.backgroundColor,
+                    // Question styling
+                    questionTag: widget.questionTag,
+                    questionSize: widget.questionSize,
+                    questionFont: widget.questionFont,
+                    questionBold: widget.questionBold,
+                    questionItalic: widget.questionItalic,
+                    questionAlign: widget.questionAlign,
+                    questionMarginBottom: widget.questionMarginBottom,
+                    // Answer styling
+                    answerTag: widget.answerTag,
+                    answerSize: widget.answerSize,
+                    answerFont: widget.answerFont,
+                    answerBold: widget.answerBold,
+                    answerItalic: widget.answerItalic,
+                    answerAlign: widget.answerAlign,
+                    answerMarginBottom: widget.answerMarginBottom,
+                    // Arrow settings
+                    arrowPosition: widget.arrowPosition,
+                    arrowColor: widget.arrowColor,
+                    arrowSize: widget.arrowSize
                 })
             });
 

@@ -446,7 +446,7 @@ export default function HeurekaEditSidebar({
 
             {activeTab === 'settings' && (
                 <div className="flex-1 overflow-y-auto px-4 pb-4 pt-6 [&::-webkit-scrollbar]:hidden [-ms-overflow-style:'none'] [scrollbar-width:none]">
-                    <div className="space-y-6">
+                    <div>
                         <CollapsibleSection title="Nastavení nadpisu" defaultOpen={false}>
                             <div className="space-y-4">
                                 {/* Tag & Formatting Buttons */}

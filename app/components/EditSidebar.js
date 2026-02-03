@@ -189,7 +189,7 @@ function LogoItemEditor({ id, item, alt, onRemove, onLinkChange, onAltChange, on
       {/* Body */}
       {isOpen && (
         <div className="px-3 pb-3 pt-0 space-y-3">
-          <hr className="border-gray-700 mb-3" />
+          <hr className="border-0 h-[2px] bg-gradient-to-r from-transparent via-gray-600 to-transparent my-2" />
 
           <div className="flex gap-4">
             <div className="flex-1 space-y-3">
@@ -252,18 +252,18 @@ function CollapsibleSection({ title, children, defaultOpen = false }) {
   const [isOpen, setIsOpen] = useState(defaultOpen);
 
   return (
-    <div className="group">
+    <div className={`group rounded-lg transition-colors duration-200 ${isOpen ? 'bg-gray-800/50' : ''}`}>
       <div
         onClick={() => setIsOpen(!isOpen)}
-        className="flex items-center justify-between cursor-pointer list-none text-xs font-bold text-gray-300 hover:text-white uppercase px-1 py-2 select-none leading-none tracking-wider"
+        className={`flex items-center justify-between cursor-pointer list-none text-xs font-bold uppercase px-3 py-3 select-none leading-none tracking-wider rounded-lg transition-colors ${isOpen ? 'text-white bg-gray-700/50' : 'text-gray-300 hover:text-white hover:bg-gray-800/30'}`}
       >
         <span className="translate-y-[1px]">{title}</span>
         <ChevronDownIcon className={`w-4 h-4 transition-transform duration-300 ${isOpen ? 'rotate-180' : ''}`} />
       </div>
 
       <div className={`grid transition-[grid-template-rows] duration-300 ease-in-out ${isOpen ? 'grid-rows-[1fr] opacity-100' : 'grid-rows-[0fr] opacity-0'}`}>
-        <div className="overflow-hidden px-1 pb-1">
-          <div className="space-y-4 mt-3">
+        <div className="overflow-hidden">
+          <div className="space-y-4 px-3 py-4">
             {children}
           </div>
         </div>
@@ -440,7 +440,7 @@ export default function EditSidebar({ carousel, setCarousel, activeTab }) {
               <UploadAttachment widgetId={carousel.id} carousel={carousel} setCarousel={setCarousel} mode="url" />
             </div>
 
-            <hr className="border-gray-800 mb-6" />
+            <hr className="border-0 h-[2px] bg-gradient-to-r from-transparent via-gray-600 to-transparent my-2" />
 
             {carousel.attachments?.length > 0 ? (
               <DndContext
@@ -497,7 +497,7 @@ export default function EditSidebar({ carousel, setCarousel, activeTab }) {
         )}
 
         {activeTab === 'settings' && (
-          <div className="space-y-6">
+          <div>
 
             {/* Title Styles */}
             <CollapsibleSection title="Vzhled nadpisu" defaultOpen={false}>
@@ -509,7 +509,7 @@ export default function EditSidebar({ carousel, setCarousel, activeTab }) {
               />
             </CollapsibleSection>
 
-            <hr className="border-gray-800" />
+            <hr className="border-0 h-[2px] bg-gradient-to-r from-transparent via-gray-600 to-transparent my-2" />
 
             {/* Subtitle Styles */}
             <CollapsibleSection title="Vzhled podnadpisu" defaultOpen={false}>
@@ -521,7 +521,7 @@ export default function EditSidebar({ carousel, setCarousel, activeTab }) {
               />
             </CollapsibleSection>
 
-            <hr className="border-gray-800" />
+            <hr className="border-0 h-[2px] bg-gradient-to-r from-transparent via-gray-600 to-transparent my-2" />
 
             {/* Fade/Edges Styles */}
             <CollapsibleSection title="Okraje" defaultOpen={false}>
@@ -618,7 +618,7 @@ export default function EditSidebar({ carousel, setCarousel, activeTab }) {
               </div>
             </CollapsibleSection>
 
-            <hr className="border-gray-800" />
+            <hr className="border-0 h-[2px] bg-gradient-to-r from-transparent via-gray-600 to-transparent my-2" />
 
             {/* Image Styles (New) */}
             <CollapsibleSection title="Vzhled obrázků" defaultOpen={false}>
@@ -696,7 +696,7 @@ export default function EditSidebar({ carousel, setCarousel, activeTab }) {
               </div>
             </CollapsibleSection>
 
-            <hr className="border-gray-800" />
+            <hr className="border-0 h-[2px] bg-gradient-to-r from-transparent via-gray-600 to-transparent my-2" />
 
             {/* Slider/Grid Settings */}
             <CollapsibleSection title="Nastavení slideru" defaultOpen={false}>

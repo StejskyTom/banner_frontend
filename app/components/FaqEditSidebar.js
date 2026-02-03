@@ -7,60 +7,144 @@ import {
 } from '@dnd-kit/core';
 import { arrayMove, SortableContext, verticalListSortingStrategy, useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
-import { TrashIcon, Bars3Icon, ChevronDownIcon, ChevronUpIcon, SwatchIcon } from '@heroicons/react/24/outline';
+import { TrashIcon, Bars3Icon, ChevronDownIcon, ChevronUpIcon, BoldIcon, ItalicIcon } from '@heroicons/react/24/outline';
 import { PlusIcon } from '@heroicons/react/24/solid';
+import RangeSlider from './RangeSlider';
+import ColorInput from './ColorInput';
 
-const getContrastYIQ = (hexcolor) => {
-    if (!hexcolor) return '#000000';
-
-    // Remove hash
-    let hex = hexcolor.toString().replace('#', '');
-
-    // Handle 3-char shorthand
-    if (hex.length === 3) {
-        hex = hex.split('').map(c => c + c).join('');
-    }
-
-    // Attempt to handle non-hex colors or incomplete hex by defaulting to black
-    if (hex.length !== 6) return '#000000';
-
-    const r = parseInt(hex.substr(0, 2), 16);
-    const g = parseInt(hex.substr(2, 2), 16);
-    const b = parseInt(hex.substr(4, 2), 16);
-
-    if (isNaN(r) || isNaN(g) || isNaN(b)) return '#000000';
-
-    const yiq = ((r * 299) + (g * 587) + (b * 114)) / 1000;
-    return (yiq >= 128) ? '#000000' : '#ffffff';
-};
-
-const ColorInput = ({ label, value, onChange }) => {
-    const textColor = getContrastYIQ(value);
+const CollapsibleSection = ({ title, children, defaultOpen = false }) => {
+    const [isOpen, setIsOpen] = useState(defaultOpen);
 
     return (
-        <div>
-            <label className="text-xs font-medium text-gray-400 mb-2 block">{label}</label>
-            <div className="relative group">
-                <div className="relative flex items-center h-10 w-full rounded-md border border-gray-600 shadow-sm overflow-hidden ring-1 ring-white/5 transition-all focus-within:ring-2 focus-within:ring-indigo-500">
-                    <input
-                        type="text"
-                        value={value || ''}
-                        onChange={(e) => onChange(e.target.value)}
-                        className="w-full h-full text-left text-sm font-bold uppercase font-mono border-none focus:outline-none pl-3 pr-10"
-                        style={{ backgroundColor: value || '#ffffff', color: textColor }}
-                    />
+        <div className={`group rounded-lg transition-colors duration-200 ${isOpen ? 'bg-gray-800/50' : ''}`}>
+            <div
+                onClick={() => setIsOpen(!isOpen)}
+                className={`flex items-center justify-between cursor-pointer list-none text-xs font-bold uppercase px-3 py-3 select-none leading-none tracking-wider rounded-lg transition-colors ${isOpen ? 'text-white bg-gray-700/50' : 'text-gray-300 hover:text-white hover:bg-gray-800/30'}`}
+            >
+                <span className="translate-y-[1px]">{title}</span>
+                <ChevronDownIcon className={`w-4 h-4 transition-transform duration-300 ${isOpen ? 'rotate-180' : ''}`} />
+            </div>
 
-                    {/* Color Picker Trigger (Right Side) */}
-                    <div className="absolute right-0 top-0 bottom-0 w-10 flex items-center justify-center cursor-pointer border-l border-black/10 hover:bg-black/20 bg-black/5">
-                        <SwatchIcon className="h-5 w-5 opacity-70" style={{ color: textColor }} />
-                        <input
-                            type="color"
-                            value={value || '#000000'}
-                            onChange={(e) => onChange(e.target.value)}
-                            className="absolute inset-0 opacity-0 cursor-pointer"
-                        />
+            <div className={`grid transition-[grid-template-rows] duration-300 ease-in-out ${isOpen ? 'grid-rows-[1fr] opacity-100' : 'grid-rows-[0fr] opacity-0'}`}>
+                <div className="overflow-hidden">
+                    <div className="space-y-4 px-3 py-4">
+                        {children}
                     </div>
                 </div>
+            </div>
+        </div>
+    );
+};
+
+const ToolButton = ({ active, onClick, children, title }) => (
+    <button
+        type="button"
+        onMouseDown={(e) => e.preventDefault()}
+        onClick={onClick}
+        className={`p-2 rounded-md transition-all font-medium text-sm border flex items-center justify-center h-8 min-w-[32px] flex-1
+            ${active
+                ? 'bg-green-500/20 text-green-400 border-green-500/50'
+                : 'bg-gray-800 border-gray-700 text-gray-400 hover:text-white hover:bg-gray-700 hover:border-gray-600'
+            }`}
+        title={title}
+    >
+        {children}
+    </button>
+);
+
+const QuestionStyleControls = ({ widget, setWidget, prefix = 'question' }) => {
+    const tag = widget[`${prefix}Tag`] || 'h3';
+    const color = widget[`${prefix}Color`] || '#111827';
+    const size = widget[`${prefix}Size`] || '18px';
+    const font = widget[`${prefix}Font`] || 'sans-serif';
+    const isBold = widget[`${prefix}Bold`] ?? true;
+    const isItalic = widget[`${prefix}Italic`] || false;
+    const align = widget[`${prefix}Align`] || 'left';
+    const marginBottom = widget[`${prefix}MarginBottom`] ?? 8;
+
+    const handleChange = (key, value) => {
+        setWidget({ ...widget, [`${prefix}${key}`]: value });
+    };
+
+    return (
+        <div className="space-y-3">
+            {/* Tag & Style Buttons */}
+            <div className="flex flex-wrap gap-1 items-center mb-3">
+                <ToolButton onClick={() => handleChange('Tag', 'p')} active={tag === 'p'} title="Normal Text">T</ToolButton>
+                <ToolButton onClick={() => handleChange('Tag', 'h1')} active={tag === 'h1'} title="H1">H1</ToolButton>
+                <ToolButton onClick={() => handleChange('Tag', 'h2')} active={tag === 'h2'} title="H2">H2</ToolButton>
+                <ToolButton onClick={() => handleChange('Tag', 'h3')} active={tag === 'h3'} title="H3">H3</ToolButton>
+
+                <div className="w-px h-8 bg-gray-700 mx-1" />
+
+                <ToolButton onClick={() => handleChange('Bold', !isBold)} active={isBold} title="Tučně">
+                    <BoldIcon className="w-4 h-4" />
+                </ToolButton>
+                <ToolButton onClick={() => handleChange('Italic', !isItalic)} active={isItalic} title="Kurzíva">
+                    <ItalicIcon className="w-4 h-4" />
+                </ToolButton>
+            </div>
+
+            {/* Grid Inputs */}
+            <div className="grid grid-cols-2 gap-2 mb-3">
+                <div className="relative">
+                    <ColorInput
+                        value={color}
+                        onChange={(val) => handleChange('Color', val)}
+                    />
+                </div>
+                <select
+                    className="h-10 w-full bg-gray-800 border border-gray-700 text-white text-sm px-2 rounded-lg focus:outline-none focus:ring-1 focus:ring-green-500"
+                    onChange={(e) => handleChange('Size', e.target.value)}
+                    value={size}
+                >
+                    <option value="12px">12px</option>
+                    <option value="14px">14px</option>
+                    <option value="16px">16px</option>
+                    <option value="18px">18px</option>
+                    <option value="20px">20px</option>
+                    <option value="24px">24px</option>
+                    <option value="32px">32px</option>
+                </select>
+
+                <div>
+                    <select
+                        className="h-10 w-full bg-gray-800 border border-gray-700 text-white text-sm px-2 rounded-lg focus:outline-none focus:ring-1 focus:ring-green-500"
+                        onChange={(e) => handleChange('Font', e.target.value)}
+                        value={font}
+                    >
+                        <option value="sans-serif">Sans Serif</option>
+                        <option value="system-ui">System UI</option>
+                        <option value="Arial, sans-serif">Arial</option>
+                        <option value="Georgia, serif">Georgia</option>
+                        <option value="Courier New, monospace">Courier</option>
+                    </select>
+                </div>
+                <div>
+                    <select
+                        className="h-10 w-full bg-gray-800 border border-gray-700 text-white text-sm px-2 rounded-lg focus:outline-none focus:ring-1 focus:ring-green-500"
+                        onChange={(e) => handleChange('Align', e.target.value)}
+                        value={align}
+                    >
+                        <option value="left">Vlevo</option>
+                        <option value="center">Na střed</option>
+                        <option value="right">Vpravo</option>
+                    </select>
+                </div>
+            </div>
+
+            {/* Margin Slider */}
+            <div>
+                <label className="text-xs font-medium text-gray-400 mb-1.5 block">
+                    Spodní odsazení ({marginBottom}px)
+                </label>
+                <RangeSlider
+                    min={0}
+                    max={48}
+                    step={4}
+                    value={marginBottom}
+                    onChange={(e) => handleChange('MarginBottom', parseInt(e.target.value))}
+                />
             </div>
         </div>
     );
@@ -175,7 +259,7 @@ export default function FaqEditSidebar({ widget, setWidget, activeTab }) {
 
     return (
         <aside className="dark w-80 bg-gray-900 border-r border-gray-800 text-white h-full flex flex-col transition-all duration-300 shrink-0">
-            <div className="flex-1 overflow-y-auto p-4 custom-scrollbar">
+            <div className="flex-1 overflow-y-auto p-4 [&::-webkit-scrollbar]:w-1.5 [&::-webkit-scrollbar-track]:bg-transparent [&::-webkit-scrollbar-thumb]:bg-gray-700 [&::-webkit-scrollbar-thumb]:rounded-full hover:[&::-webkit-scrollbar-thumb]:bg-gray-600 [scrollbar-width:thin] [scrollbar-color:rgb(55,65,81)_transparent]">
                 {activeTab === 'content' && (
                     <div className="space-y-6">
                         <div>
@@ -222,47 +306,100 @@ export default function FaqEditSidebar({ widget, setWidget, activeTab }) {
                 )}
 
                 {activeTab === 'settings' && (
-                    <div className="space-y-6">
-                        <div>
-                            <label className="text-xs font-medium text-gray-400 mb-3 block">Font</label>
-                            <select
-                                value={widget.font || "sans-serif"}
-                                onChange={(e) => setWidget({ ...widget, font: e.target.value })}
-                                className="w-full bg-gray-800 border border-gray-700 text-white text-sm px-3 py-2 rounded focus:outline-none focus:ring-1 focus:ring-indigo-500"
-                            >
-                                <option value="sans-serif">Sans Serif</option>
-                                <option value="serif">Serif</option>
-                                <option value="monospace">Monospace</option>
-                            </select>
-                        </div>
-
-                        <hr className="border-gray-800" />
-
-                        <div className="grid grid-cols-2 gap-3">
-                            <ColorInput
-                                label="Barva otázky"
-                                value={widget.questionColor || '#111827'}
-                                onChange={(val) => setWidget({ ...widget, questionColor: val })}
+                    <div>
+                        <CollapsibleSection title="Nastavení otázky" defaultOpen={false}>
+                            <QuestionStyleControls
+                                widget={widget}
+                                setWidget={setWidget}
+                                prefix="question"
                             />
+                        </CollapsibleSection>
 
-                            <ColorInput
-                                label="Barva odpovědi"
-                                value={widget.answerColor || '#6B7280'}
-                                onChange={(val) => setWidget({ ...widget, answerColor: val })}
-                            />
+                        <hr className="border-0 h-[2px] bg-gradient-to-r from-transparent via-gray-600 to-transparent my-2" />
 
-                            <ColorInput
-                                label="Barva při najetí"
-                                value={widget.hoverColor || '#4F46E5'}
-                                onChange={(val) => setWidget({ ...widget, hoverColor: val })}
+                        <CollapsibleSection title="Nastavení odpovědi" defaultOpen={false}>
+                            <QuestionStyleControls
+                                widget={widget}
+                                setWidget={setWidget}
+                                prefix="answer"
                             />
+                        </CollapsibleSection>
 
-                            <ColorInput
-                                label="Barva pozadí"
-                                value={widget.backgroundColor || '#ffffff'}
-                                onChange={(val) => setWidget({ ...widget, backgroundColor: val })}
-                            />
-                        </div>
+                        <hr className="border-0 h-[2px] bg-gradient-to-r from-transparent via-gray-600 to-transparent my-2" />
+
+                        <CollapsibleSection title="Nastavení šipky" defaultOpen={false}>
+                            <div className="space-y-4">
+                                <div>
+                                    <label className="text-xs font-medium text-gray-400 mb-2 block">Pozice šipky</label>
+                                    <div className="grid grid-cols-3 gap-2">
+                                        <button
+                                            onClick={() => setWidget({ ...widget, arrowPosition: 'left' })}
+                                            className={`p-2 rounded-lg border text-xs transition-all ${widget.arrowPosition === 'left'
+                                                ? 'bg-green-500/20 text-green-400 border-green-500/50'
+                                                : 'bg-gray-800 border-gray-700 text-gray-400 hover:text-white'
+                                                }`}
+                                        >
+                                            Vlevo
+                                        </button>
+                                        <button
+                                            onClick={() => setWidget({ ...widget, arrowPosition: 'after' })}
+                                            className={`p-2 rounded-lg border text-xs transition-all ${(!widget.arrowPosition || widget.arrowPosition === 'after')
+                                                ? 'bg-green-500/20 text-green-400 border-green-500/50'
+                                                : 'bg-gray-800 border-gray-700 text-gray-400 hover:text-white'
+                                                }`}
+                                        >
+                                            Za textem
+                                        </button>
+                                        <button
+                                            onClick={() => setWidget({ ...widget, arrowPosition: 'right' })}
+                                            className={`p-2 rounded-lg border text-xs transition-all ${widget.arrowPosition === 'right'
+                                                ? 'bg-green-500/20 text-green-400 border-green-500/50'
+                                                : 'bg-gray-800 border-gray-700 text-gray-400 hover:text-white'
+                                                }`}
+                                        >
+                                            Vpravo
+                                        </button>
+                                    </div>
+                                </div>
+
+                                <ColorInput
+                                    label="Barva šipky"
+                                    value={widget.arrowColor || '#6B7280'}
+                                    onChange={(val) => setWidget({ ...widget, arrowColor: val })}
+                                />
+
+                                <div>
+                                    <label className="text-xs font-medium text-gray-400 mb-1.5 block">
+                                        Velikost šipky ({widget.arrowSize || 24}px)
+                                    </label>
+                                    <RangeSlider
+                                        min={16}
+                                        max={48}
+                                        step={2}
+                                        value={widget.arrowSize || 24}
+                                        onChange={(e) => setWidget({ ...widget, arrowSize: parseInt(e.target.value) })}
+                                    />
+                                </div>
+                            </div>
+                        </CollapsibleSection>
+
+                        <hr className="border-0 h-[2px] bg-gradient-to-r from-transparent via-gray-600 to-transparent my-2" />
+
+                        <CollapsibleSection title="Další nastavení" defaultOpen={false}>
+                            <div className="space-y-4">
+                                <ColorInput
+                                    label="Barva při najetí"
+                                    value={widget.hoverColor || '#4F46E5'}
+                                    onChange={(val) => setWidget({ ...widget, hoverColor: val })}
+                                />
+
+                                <ColorInput
+                                    label="Barva pozadí"
+                                    value={widget.backgroundColor || '#ffffff'}
+                                    onChange={(val) => setWidget({ ...widget, backgroundColor: val })}
+                                />
+                            </div>
+                        </CollapsibleSection>
                     </div>
                 )}
             </div>
