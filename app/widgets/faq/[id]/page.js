@@ -86,7 +86,11 @@ export default function FaqWidgetDetailPage() {
                     // Arrow settings
                     arrowPosition: widget.arrowPosition,
                     arrowColor: widget.arrowColor,
-                    arrowSize: widget.arrowSize
+                    arrowSize: widget.arrowSize,
+                    // Border settings
+                    borderEnabled: widget.borderEnabled,
+                    borderColor: widget.borderColor,
+                    borderWidth: widget.borderWidth
                 })
             });
 

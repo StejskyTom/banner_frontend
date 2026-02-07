@@ -11,15 +11,14 @@ import { TrashIcon, Bars3Icon, ChevronDownIcon, ChevronUpIcon, BoldIcon, ItalicI
 import { PlusIcon } from '@heroicons/react/24/solid';
 import RangeSlider from './RangeSlider';
 import ColorInput from './ColorInput';
+import Toggle from './Toggle';
 
-const CollapsibleSection = ({ title, children, defaultOpen = false }) => {
-    const [isOpen, setIsOpen] = useState(defaultOpen);
-
+const CollapsibleSection = ({ title, children, isOpen, onToggle }) => {
     return (
-        <div className={`group rounded-lg transition-colors duration-200 ${isOpen ? 'bg-gray-800/50' : ''}`}>
+        <div className={`group rounded-xl transition-all duration-300 border ${isOpen ? 'bg-gray-800 border-gray-600 shadow-lg my-2' : 'border-transparent'}`}>
             <div
-                onClick={() => setIsOpen(!isOpen)}
-                className={`flex items-center justify-between cursor-pointer list-none text-xs font-bold uppercase px-3 py-3 select-none leading-none tracking-wider rounded-lg transition-colors ${isOpen ? 'text-white bg-gray-700/50' : 'text-gray-300 hover:text-white hover:bg-gray-800/30'}`}
+                onClick={onToggle}
+                className={`flex items-center justify-between cursor-pointer list-none text-xs font-bold uppercase px-3 py-3 select-none leading-none tracking-wider rounded-xl transition-colors ${isOpen ? 'text-white bg-gray-700/50 rounded-b-none' : 'text-gray-300 hover:text-white hover:bg-gray-800/30'}`}
             >
                 <span className="translate-y-[1px]">{title}</span>
                 <ChevronDownIcon className={`w-4 h-4 transition-transform duration-300 ${isOpen ? 'rotate-180' : ''}`} />
@@ -27,7 +26,7 @@ const CollapsibleSection = ({ title, children, defaultOpen = false }) => {
 
             <div className={`grid transition-[grid-template-rows] duration-300 ease-in-out ${isOpen ? 'grid-rows-[1fr] opacity-100' : 'grid-rows-[0fr] opacity-0'}`}>
                 <div className="overflow-hidden">
-                    <div className="space-y-4 px-3 py-4">
+                    <div className="space-y-4 px-3 py-4 border-t border-gray-700/30">
                         {children}
                     </div>
                 </div>
@@ -211,6 +210,20 @@ function SortableQuestionItem({ id, question, onUpdate, onRemove }) {
 }
 
 export default function FaqEditSidebar({ widget, setWidget, activeTab }) {
+    const [openSections, setOpenSections] = useState({});
+    const [autoClose, setAutoClose] = useState(true);
+
+    const toggleSection = (id) => {
+        setOpenSections(prev => {
+            const isCurrentlyOpen = !!prev[id];
+            if (autoClose) {
+                return isCurrentlyOpen ? {} : { [id]: true };
+            } else {
+                return { ...prev, [id]: !isCurrentlyOpen };
+            }
+        });
+    };
+
     const sensors = useSensors(
         useSensor(PointerSensor, { activationConstraint: { distance: 5 } }),
         useSensor(KeyboardSensor)
@@ -259,8 +272,8 @@ export default function FaqEditSidebar({ widget, setWidget, activeTab }) {
 
     return (
         <aside className="dark w-80 bg-gray-900 border-r border-gray-800 text-white h-full flex flex-col transition-all duration-300 shrink-0">
-            <div className="flex-1 overflow-y-auto p-4 [&::-webkit-scrollbar]:w-1.5 [&::-webkit-scrollbar-track]:bg-transparent [&::-webkit-scrollbar-thumb]:bg-gray-700 [&::-webkit-scrollbar-thumb]:rounded-full hover:[&::-webkit-scrollbar-thumb]:bg-gray-600 [scrollbar-width:thin] [scrollbar-color:rgb(55,65,81)_transparent]">
-                {activeTab === 'content' && (
+            {activeTab === 'content' && (
+                <div className="flex-1 overflow-y-auto p-4 [&::-webkit-scrollbar]:w-1.5 [&::-webkit-scrollbar-track]:bg-transparent [&::-webkit-scrollbar-thumb]:bg-gray-700 [&::-webkit-scrollbar-thumb]:rounded-full hover:[&::-webkit-scrollbar-thumb]:bg-gray-600 [scrollbar-width:thin] [scrollbar-color:rgb(55,65,81)_transparent]">
                     <div className="space-y-6">
                         <div>
                             <label className="text-xs font-medium text-gray-400 mb-1.5 block">Název widgetu</label>
@@ -303,106 +316,247 @@ export default function FaqEditSidebar({ widget, setWidget, activeTab }) {
                             </button>
                         </div>
                     </div>
-                )}
+                </div>
+            )}
 
-                {activeTab === 'settings' && (
-                    <div>
-                        <CollapsibleSection title="Nastavení otázky" defaultOpen={false}>
-                            <QuestionStyleControls
-                                widget={widget}
-                                setWidget={setWidget}
-                                prefix="question"
-                            />
-                        </CollapsibleSection>
+            {activeTab === 'settings' && (
+                <>
+                    <div className="flex-1 overflow-y-auto px-4 pb-4 pt-6 [&::-webkit-scrollbar]:hidden [-ms-overflow-style:'none'] [scrollbar-width:none]">
+                        <div>
+                            <CollapsibleSection
+                                title="Nastavení otázky"
+                                isOpen={!!openSections['question']}
+                                onToggle={() => toggleSection('question')}
+                            >
+                                <QuestionStyleControls
+                                    widget={widget}
+                                    setWidget={setWidget}
+                                    prefix="question"
+                                />
+                            </CollapsibleSection>
 
-                        <hr className="border-0 h-[2px] bg-gradient-to-r from-transparent via-gray-600 to-transparent my-2" />
+                            <hr className="border-0 h-[2px] bg-gradient-to-r from-transparent via-gray-600 to-transparent my-2" />
 
-                        <CollapsibleSection title="Nastavení odpovědi" defaultOpen={false}>
-                            <QuestionStyleControls
-                                widget={widget}
-                                setWidget={setWidget}
-                                prefix="answer"
-                            />
-                        </CollapsibleSection>
+                            <CollapsibleSection
+                                title="Nastavení odpovědi"
+                                isOpen={!!openSections['answer']}
+                                onToggle={() => toggleSection('answer')}
+                            >
+                                <QuestionStyleControls
+                                    widget={widget}
+                                    setWidget={setWidget}
+                                    prefix="answer"
+                                />
+                            </CollapsibleSection>
 
-                        <hr className="border-0 h-[2px] bg-gradient-to-r from-transparent via-gray-600 to-transparent my-2" />
+                            <hr className="border-0 h-[2px] bg-gradient-to-r from-transparent via-gray-600 to-transparent my-2" />
 
-                        <CollapsibleSection title="Nastavení šipky" defaultOpen={false}>
-                            <div className="space-y-4">
-                                <div>
-                                    <label className="text-xs font-medium text-gray-400 mb-2 block">Pozice šipky</label>
-                                    <div className="grid grid-cols-3 gap-2">
-                                        <button
-                                            onClick={() => setWidget({ ...widget, arrowPosition: 'left' })}
-                                            className={`p-2 rounded-lg border text-xs transition-all ${widget.arrowPosition === 'left'
-                                                ? 'bg-green-500/20 text-green-400 border-green-500/50'
-                                                : 'bg-gray-800 border-gray-700 text-gray-400 hover:text-white'
-                                                }`}
-                                        >
-                                            Vlevo
-                                        </button>
-                                        <button
-                                            onClick={() => setWidget({ ...widget, arrowPosition: 'after' })}
-                                            className={`p-2 rounded-lg border text-xs transition-all ${(!widget.arrowPosition || widget.arrowPosition === 'after')
-                                                ? 'bg-green-500/20 text-green-400 border-green-500/50'
-                                                : 'bg-gray-800 border-gray-700 text-gray-400 hover:text-white'
-                                                }`}
-                                        >
-                                            Za textem
-                                        </button>
-                                        <button
-                                            onClick={() => setWidget({ ...widget, arrowPosition: 'right' })}
-                                            className={`p-2 rounded-lg border text-xs transition-all ${widget.arrowPosition === 'right'
-                                                ? 'bg-green-500/20 text-green-400 border-green-500/50'
-                                                : 'bg-gray-800 border-gray-700 text-gray-400 hover:text-white'
-                                                }`}
-                                        >
-                                            Vpravo
-                                        </button>
+                            <CollapsibleSection
+                                title="Nastavení šipky"
+                                isOpen={!!openSections['arrow']}
+                                onToggle={() => toggleSection('arrow')}
+                            >
+                                <div className="space-y-4">
+                                    <div>
+                                        <label className="text-xs font-medium text-gray-400 mb-2 block">Pozice šipky</label>
+                                        <div className="grid grid-cols-3 gap-2">
+                                            <button
+                                                onClick={() => setWidget({ ...widget, arrowPosition: 'left' })}
+                                                className={`p-2 rounded-lg border text-xs transition-all ${widget.arrowPosition === 'left'
+                                                    ? 'bg-green-500/20 text-green-400 border-green-500/50'
+                                                    : 'bg-gray-800 border-gray-700 text-gray-400 hover:text-white'
+                                                    }`}
+                                            >
+                                                Vlevo
+                                            </button>
+                                            <button
+                                                onClick={() => setWidget({ ...widget, arrowPosition: 'after' })}
+                                                className={`p-2 rounded-lg border text-xs transition-all ${(!widget.arrowPosition || widget.arrowPosition === 'after')
+                                                    ? 'bg-green-500/20 text-green-400 border-green-500/50'
+                                                    : 'bg-gray-800 border-gray-700 text-gray-400 hover:text-white'
+                                                    }`}
+                                            >
+                                                Za textem
+                                            </button>
+                                            <button
+                                                onClick={() => setWidget({ ...widget, arrowPosition: 'right' })}
+                                                className={`p-2 rounded-lg border text-xs transition-all ${widget.arrowPosition === 'right'
+                                                    ? 'bg-green-500/20 text-green-400 border-green-500/50'
+                                                    : 'bg-gray-800 border-gray-700 text-gray-400 hover:text-white'
+                                                    }`}
+                                            >
+                                                Vpravo
+                                            </button>
+                                        </div>
+                                    </div>
+
+                                    <ColorInput
+                                        label="Barva šipky"
+                                        value={widget.arrowColor || '#6B7280'}
+                                        onChange={(val) => setWidget({ ...widget, arrowColor: val })}
+                                    />
+
+                                    <div>
+                                        <label className="text-xs font-medium text-gray-400 mb-1.5 block">
+                                            Velikost šipky ({widget.arrowSize || 24}px)
+                                        </label>
+                                        <RangeSlider
+                                            min={16}
+                                            max={48}
+                                            step={2}
+                                            value={widget.arrowSize || 24}
+                                            onChange={(e) => setWidget({ ...widget, arrowSize: parseInt(e.target.value) })}
+                                        />
                                     </div>
                                 </div>
+                            </CollapsibleSection>
 
-                                <ColorInput
-                                    label="Barva šipky"
-                                    value={widget.arrowColor || '#6B7280'}
-                                    onChange={(val) => setWidget({ ...widget, arrowColor: val })}
-                                />
+                            <hr className="border-0 h-[2px] bg-gradient-to-r from-transparent via-gray-600 to-transparent my-2" />
 
-                                <div>
-                                    <label className="text-xs font-medium text-gray-400 mb-1.5 block">
-                                        Velikost šipky ({widget.arrowSize || 24}px)
-                                    </label>
-                                    <RangeSlider
-                                        min={16}
-                                        max={48}
-                                        step={2}
-                                        value={widget.arrowSize || 24}
-                                        onChange={(e) => setWidget({ ...widget, arrowSize: parseInt(e.target.value) })}
+                            <CollapsibleSection
+                                title="Nastavení rámečku"
+                                isOpen={!!openSections['border']}
+                                onToggle={() => toggleSection('border')}
+                            >
+                                <div className="space-y-4">
+                                    <Toggle
+                                        checked={widget.borderEnabled || false}
+                                        onChange={(val) => setWidget({ ...widget, borderEnabled: val })}
+                                        label="Zobrazit rámeček"
+                                    />
+                                    {widget.borderEnabled && (
+                                        <>
+                                            <ColorInput
+                                                label="Barva rámečku"
+                                                value={widget.borderColor || '#e5e7eb'}
+                                                onChange={(val) => setWidget({ ...widget, borderColor: val })}
+                                            />
+                                            <div>
+                                                <label className="text-xs font-medium text-gray-400 mb-1.5 block">
+                                                    Šířka rámečku ({widget.borderWidth || 1}px)
+                                                </label>
+                                                <RangeSlider
+                                                    min={1}
+                                                    max={10}
+                                                    step={1}
+                                                    value={widget.borderWidth || 1}
+                                                    onChange={(e) => setWidget({ ...widget, borderWidth: parseInt(e.target.value) })}
+                                                />
+                                            </div>
+                                        </>
+                                    )}
+                                </div>
+                            </CollapsibleSection>
+
+                            <hr className="border-0 h-[2px] bg-gradient-to-r from-transparent via-gray-600 to-transparent my-2" />
+
+                            <CollapsibleSection
+                                title="Nastavení oddělovače"
+                                isOpen={!!openSections['divider']}
+                                onToggle={() => toggleSection('divider')}
+                            >
+                                <div className="space-y-4">
+                                    <Toggle
+                                        checked={widget.dividerEnabled ?? true}
+                                        onChange={(val) => setWidget({ ...widget, dividerEnabled: val })}
+                                        label="Zobrazit oddělovač"
+                                    />
+                                    {(widget.dividerEnabled ?? true) && (
+                                        <>
+                                            <ColorInput
+                                                label="Barva oddělovače"
+                                                value={widget.dividerColor || '#e5e7eb'}
+                                                onChange={(val) => setWidget({ ...widget, dividerColor: val })}
+                                            />
+                                            <div>
+                                                <label className="text-xs font-medium text-gray-400 mb-1.5 block">
+                                                    Šířka oddělovače ({widget.dividerWidth || 100}%)
+                                                </label>
+                                                <RangeSlider
+                                                    min={10}
+                                                    max={100}
+                                                    step={5}
+                                                    value={widget.dividerWidth || 100}
+                                                    onChange={(e) => setWidget({ ...widget, dividerWidth: parseInt(e.target.value) })}
+                                                />
+                                            </div>
+                                            <div>
+                                                <label className="text-xs font-medium text-gray-400 mb-1.5 block">
+                                                    Výška oddělovače ({widget.dividerHeight || 1}px)
+                                                </label>
+                                                <RangeSlider
+                                                    min={1}
+                                                    max={10}
+                                                    step={1}
+                                                    value={widget.dividerHeight || 1}
+                                                    onChange={(e) => setWidget({ ...widget, dividerHeight: parseInt(e.target.value) })}
+                                                />
+                                            </div>
+                                            <div>
+                                                <label className="text-xs font-medium text-gray-400 mb-1.5 block">
+                                                    Odsazení oddělovače ({widget.dividerMargin || 8}px)
+                                                </label>
+                                                <RangeSlider
+                                                    min={0}
+                                                    max={50}
+                                                    step={2}
+                                                    value={widget.dividerMargin ?? 8}
+                                                    onChange={(e) => setWidget({ ...widget, dividerMargin: parseInt(e.target.value) })}
+                                                />
+                                            </div>
+                                            <div className="grid grid-cols-3 gap-2">
+                                                {['solid', 'dashed', 'dotted'].map((style) => (
+                                                    <button
+                                                        key={style}
+                                                        onClick={() => setWidget({ ...widget, dividerStyle: style })}
+                                                        className={`p-2 rounded text-xs font-medium capitalize border ${widget.dividerStyle === style || (!widget.dividerStyle && style === 'solid')
+                                                            ? 'bg-green-500/20 text-green-400 border-green-500/50'
+                                                            : 'bg-gray-800 border-gray-700 text-gray-400 hover:text-white'
+                                                            }`}
+                                                    >
+                                                        {style}
+                                                    </button>
+                                                ))}
+                                            </div>
+                                        </>
+                                    )}
+                                </div>
+                            </CollapsibleSection>
+
+                            <hr className="border-0 h-[2px] bg-gradient-to-r from-transparent via-gray-600 to-transparent my-2" />
+
+                            <CollapsibleSection
+                                title="Další nastavení"
+                                isOpen={!!openSections['other']}
+                                onToggle={() => toggleSection('other')}
+                            >
+                                <div className="space-y-4">
+                                    <ColorInput
+                                        label="Barva při najetí"
+                                        value={widget.hoverColor || '#4F46E5'}
+                                        onChange={(val) => setWidget({ ...widget, hoverColor: val })}
+                                    />
+
+                                    <ColorInput
+                                        label="Barva pozadí"
+                                        value={widget.backgroundColor || '#ffffff'}
+                                        onChange={(val) => setWidget({ ...widget, backgroundColor: val })}
                                     />
                                 </div>
-                            </div>
-                        </CollapsibleSection>
-
-                        <hr className="border-0 h-[2px] bg-gradient-to-r from-transparent via-gray-600 to-transparent my-2" />
-
-                        <CollapsibleSection title="Další nastavení" defaultOpen={false}>
-                            <div className="space-y-4">
-                                <ColorInput
-                                    label="Barva při najetí"
-                                    value={widget.hoverColor || '#4F46E5'}
-                                    onChange={(val) => setWidget({ ...widget, hoverColor: val })}
-                                />
-
-                                <ColorInput
-                                    label="Barva pozadí"
-                                    value={widget.backgroundColor || '#ffffff'}
-                                    onChange={(val) => setWidget({ ...widget, backgroundColor: val })}
-                                />
-                            </div>
-                        </CollapsibleSection>
+                            </CollapsibleSection>
+                        </div>
                     </div>
-                )}
-            </div>
-        </aside>
+
+                    <div className="p-4 border-t border-gray-800 bg-gray-900/95 backdrop-blur shrink-0">
+                        <Toggle
+                            checked={autoClose}
+                            onChange={setAutoClose}
+                            label="Zavírat neaktivní položky"
+                        />
+                    </div>
+                </>
+            )}
+
+        </aside >
     );
 }

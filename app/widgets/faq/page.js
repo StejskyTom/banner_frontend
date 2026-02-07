@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import { authorizedFetch } from '../../../lib/api';
 import Link from 'next/link';
-import { PencilSquareIcon, TrashIcon, PlusIcon, QuestionMarkCircleIcon, EllipsisVerticalIcon, CodeBracketIcon } from '@heroicons/react/24/solid';
+import { PencilSquareIcon, TrashIcon, PlusIcon, QuestionMarkCircleIcon, EllipsisVerticalIcon, CodeBracketIcon, DocumentDuplicateIcon } from '@heroicons/react/24/solid';
 import { useToast } from "../../components/ToastProvider";
 import { useRouter } from "next/navigation";
 import Loader from '../../components/Loader';
@@ -87,6 +87,25 @@ export default function FaqWidgetsPage() {
             }
         } catch (error) {
             showNotification('Chyba při mazání widgetu', 'error');
+        }
+    };
+
+    const handleDuplicate = async (widget) => {
+        try {
+            const res = await authorizedFetch(`/faq-widgets/${widget.id}/duplicate`, {
+                method: 'POST'
+            });
+
+            if (res?.ok) {
+                const newWidget = await res.json();
+                setWidgets([newWidget, ...widgets]);
+                showNotification('Widget byl úspěšně zduplikován', 'success');
+            } else {
+                showNotification('Nepodařilo se zduplikovat widget', 'error');
+            }
+        } catch (error) {
+            console.error('Error duplicating widget:', error);
+            showNotification('Chyba při duplikaci widgetu', 'error');
         }
     };
 
@@ -188,6 +207,12 @@ export default function FaqWidgetsPage() {
                                                             onClick={() => setEmbedWidgetId(widget.id)}
                                                         >
                                                             Publikovat
+                                                        </DropdownItem>
+                                                        <DropdownItem
+                                                            icon={DocumentDuplicateIcon}
+                                                            onClick={() => handleDuplicate(widget)}
+                                                        >
+                                                            Duplikovat
                                                         </DropdownItem>
                                                         <div className="my-1 border-t border-gray-100 dark:border-gray-700" />
                                                         <DropdownItem

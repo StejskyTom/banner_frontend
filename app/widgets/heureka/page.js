@@ -3,7 +3,7 @@
 import { useEffect, useState, Suspense } from 'react';
 import { authorizedFetch } from '../../../lib/api';
 import Link from 'next/link';
-import { PencilSquareIcon, TrashIcon, ArrowPathIcon, ShoppingBagIcon, PlusIcon, EllipsisVerticalIcon, CodeBracketIcon } from '@heroicons/react/24/solid';
+import { PencilSquareIcon, TrashIcon, ArrowPathIcon, ShoppingBagIcon, PlusIcon, EllipsisVerticalIcon, CodeBracketIcon, DocumentDuplicateIcon } from '@heroicons/react/24/solid';
 import { useToast } from "../../components/ToastProvider";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Dropdown, DropdownItem } from '../../components/Dropdown';
@@ -143,6 +143,26 @@ function HeurekaFeedsContent() {
     }
   };
 
+  const handleDuplicate = async (feed) => {
+    try {
+      showNotification('Duplikuji feed a produkty...', 'info');
+      const res = await authorizedFetch(`/heureka/feeds/${feed.id}/duplicate`, {
+        method: 'POST'
+      });
+
+      if (res?.ok) {
+        const newFeed = await res.json();
+        setFeeds([newFeed, ...feeds]);
+        showNotification('Feed byl úspěšně zduplikován', 'success');
+      } else {
+        showNotification('Nepodařilo se zduplikovat feed', 'error');
+      }
+    } catch (error) {
+      console.error('Error duplicating feed:', error);
+      showNotification('Chyba při duplikaci feedu', 'error');
+    }
+  };
+
   return (
     <div className="flex flex-col h-screen bg-gray-50 dark:bg-gray-900">
       {/* Top Bar */}
@@ -233,6 +253,12 @@ function HeurekaFeedsContent() {
                               onClick={() => handleSync(feed.id)}
                             >
                               Synchronizovat
+                            </DropdownItem>
+                            <DropdownItem
+                              icon={DocumentDuplicateIcon}
+                              onClick={() => handleDuplicate(feed)}
+                            >
+                              Duplikovat
                             </DropdownItem>
                             <div className="my-1 border-t border-gray-100 dark:border-gray-700" />
                             <DropdownItem

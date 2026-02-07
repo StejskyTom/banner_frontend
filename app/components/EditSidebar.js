@@ -248,14 +248,12 @@ function LogoItemEditor({ id, item, alt, onRemove, onLinkChange, onAltChange, on
 }
 
 
-function CollapsibleSection({ title, children, defaultOpen = false }) {
-  const [isOpen, setIsOpen] = useState(defaultOpen);
-
+function CollapsibleSection({ title, children, isOpen, onToggle }) {
   return (
-    <div className={`group rounded-lg transition-colors duration-200 ${isOpen ? 'bg-gray-800/50' : ''}`}>
+    <div className={`group rounded-xl transition-all duration-300 border ${isOpen ? 'bg-gray-800 border-gray-600 shadow-lg my-2' : 'border-transparent'}`}>
       <div
-        onClick={() => setIsOpen(!isOpen)}
-        className={`flex items-center justify-between cursor-pointer list-none text-xs font-bold uppercase px-3 py-3 select-none leading-none tracking-wider rounded-lg transition-colors ${isOpen ? 'text-white bg-gray-700/50' : 'text-gray-300 hover:text-white hover:bg-gray-800/30'}`}
+        onClick={onToggle}
+        className={`flex items-center justify-between cursor-pointer list-none text-xs font-bold uppercase px-3 py-3 select-none leading-none tracking-wider rounded-xl transition-colors ${isOpen ? 'text-white bg-gray-700/50 rounded-b-none' : 'text-gray-300 hover:text-white hover:bg-gray-800/30'}`}
       >
         <span className="translate-y-[1px]">{title}</span>
         <ChevronDownIcon className={`w-4 h-4 transition-transform duration-300 ${isOpen ? 'rotate-180' : ''}`} />
@@ -263,7 +261,7 @@ function CollapsibleSection({ title, children, defaultOpen = false }) {
 
       <div className={`grid transition-[grid-template-rows] duration-300 ease-in-out ${isOpen ? 'grid-rows-[1fr] opacity-100' : 'grid-rows-[0fr] opacity-0'}`}>
         <div className="overflow-hidden">
-          <div className="space-y-4 px-3 py-4">
+          <div className="space-y-4 px-3 py-4 border-t border-gray-700/30">
             {children}
           </div>
         </div>
@@ -273,6 +271,19 @@ function CollapsibleSection({ title, children, defaultOpen = false }) {
 }
 
 export default function EditSidebar({ carousel, setCarousel, activeTab }) {
+  const [openSections, setOpenSections] = useState({});
+  const [autoClose, setAutoClose] = useState(true);
+
+  const toggleSection = (id) => {
+    setOpenSections(prev => {
+      const isCurrentlyOpen = !!prev[id];
+      if (autoClose) {
+        return isCurrentlyOpen ? {} : { [id]: true };
+      } else {
+        return { ...prev, [id]: !isCurrentlyOpen };
+      }
+    });
+  };
   const showNotification = useToast();
 
   const sensors = useSensors(
@@ -403,8 +414,8 @@ export default function EditSidebar({ carousel, setCarousel, activeTab }) {
     <aside className="dark w-80 bg-gray-900 border-r border-gray-800 text-white h-full flex flex-col transition-all duration-300">
 
       {/* Obsah */}
-      <div className="flex-1 overflow-y-auto px-4 pb-4 pt-6 [&::-webkit-scrollbar]:hidden [-ms-overflow-style:'none'] [scrollbar-width:none]">
-        {activeTab === 'content' && (
+      {activeTab === 'content' && (
+        <div className="flex-1 overflow-y-auto px-4 pb-4 pt-6 [&::-webkit-scrollbar]:hidden [-ms-overflow-style:'none'] [scrollbar-width:none]">
           <>
             <div className="mb-6 space-y-4">
               {/* Title Section */}
@@ -494,259 +505,270 @@ export default function EditSidebar({ carousel, setCarousel, activeTab }) {
               <UploadAttachment widgetId={carousel.id} carousel={carousel} setCarousel={setCarousel} mode="dropzone" />
             </div>
           </>
-        )}
+        </div>
+      )}
 
-        {activeTab === 'settings' && (
-          <div>
+      {activeTab === 'settings' && (
+        <>
+          <div className="flex-1 overflow-y-auto px-4 pb-4 pt-6 [&::-webkit-scrollbar]:hidden [-ms-overflow-style:'none'] [scrollbar-width:none]">
+            <div>
 
-            {/* Title Styles */}
-            <CollapsibleSection title="Vzhled nadpisu" defaultOpen={false}>
-              <StyleControls
-                prefix="title"
-                settings={carousel.settings || {}}
-                onChange={updateSettings}
-                defaultMargin={12}
-              />
-            </CollapsibleSection>
-
-            <hr className="border-0 h-[2px] bg-gradient-to-r from-transparent via-gray-600 to-transparent my-2" />
-
-            {/* Subtitle Styles */}
-            <CollapsibleSection title="Vzhled podnadpisu" defaultOpen={false}>
-              <StyleControls
-                prefix="subtitle"
-                settings={carousel.settings || {}}
-                onChange={updateSettings}
-                defaultMargin={24}
-              />
-            </CollapsibleSection>
-
-            <hr className="border-0 h-[2px] bg-gradient-to-r from-transparent via-gray-600 to-transparent my-2" />
-
-            {/* Fade/Edges Styles */}
-            <CollapsibleSection title="Okraje" defaultOpen={false}>
-              <div className="space-y-4">
-                <Toggle
-                  checked={carousel.settings?.fadeEnabled !== false}
-                  onChange={(val) => updateSettings({ ...carousel.settings, fadeEnabled: val })}
-                  label="Zapnout rozmazání okrajů"
+              {/* Title Styles */}
+              <CollapsibleSection title="Vzhled nadpisu" isOpen={!!openSections['title-style']} onToggle={() => toggleSection('title-style')}>
+                <StyleControls
+                  prefix="title"
+                  settings={carousel.settings || {}}
+                  onChange={updateSettings}
+                  defaultMargin={12}
                 />
+              </CollapsibleSection>
 
-                {carousel.settings?.fadeEnabled !== false && (
-                  <>
-                    <div>
-                      <div className="flex items-center justify-between mb-2">
-                        <label className="text-xs font-medium text-gray-400">
-                          Šířka ({carousel.settings?.fadeWidth ?? (carousel.settings?.fadeWidthUnit === '%' ? 20 : 128)}{carousel.settings?.fadeWidthUnit ?? 'px'})
-                        </label>
-                        <div className="flex bg-gray-800 rounded p-0.5 border border-gray-700">
+              <hr className="border-0 h-[2px] bg-gradient-to-r from-transparent via-gray-600 to-transparent my-2" />
+
+              {/* Subtitle Styles */}
+              <CollapsibleSection title="Vzhled podnadpisu" isOpen={!!openSections['subtitle-style']} onToggle={() => toggleSection('subtitle-style')}>
+                <StyleControls
+                  prefix="subtitle"
+                  settings={carousel.settings || {}}
+                  onChange={updateSettings}
+                  defaultMargin={24}
+                />
+              </CollapsibleSection>
+
+              <hr className="border-0 h-[2px] bg-gradient-to-r from-transparent via-gray-600 to-transparent my-2" />
+
+              {/* Fade/Edges Styles */}
+              <CollapsibleSection title="Okraje" isOpen={!!openSections['edges']} onToggle={() => toggleSection('edges')}>
+                <div className="space-y-4">
+                  <Toggle
+                    checked={carousel.settings?.fadeEnabled !== false}
+                    onChange={(val) => updateSettings({ ...carousel.settings, fadeEnabled: val })}
+                    label="Zapnout rozmazání okrajů"
+                  />
+
+                  {carousel.settings?.fadeEnabled !== false && (
+                    <>
+                      <div>
+                        <div className="flex items-center justify-between mb-2">
+                          <label className="text-xs font-medium text-gray-400">
+                            Šířka ({carousel.settings?.fadeWidth ?? (carousel.settings?.fadeWidthUnit === '%' ? 20 : 128)}{carousel.settings?.fadeWidthUnit ?? 'px'})
+                          </label>
+                          <div className="flex bg-gray-800 rounded p-0.5 border border-gray-700">
+                            <button
+                              type="button"
+                              onClick={() => updateSettings({
+                                ...carousel.settings,
+                                fadeWidthUnit: 'px',
+                                fadeWidth: 128
+                              })}
+                              className={`px-2 py-0.5 text-[10px] font-bold rounded transition-colors ${(!carousel.settings?.fadeWidthUnit || carousel.settings?.fadeWidthUnit === 'px') ? 'bg-gray-700 text-white' : 'text-gray-400 hover:text-white'}`}
+                            >PX</button>
+                            <button
+                              type="button"
+                              onClick={() => updateSettings({
+                                ...carousel.settings,
+                                fadeWidthUnit: '%',
+                                fadeWidth: 20
+                              })}
+                              className={`px-2 py-0.5 text-[10px] font-bold rounded transition-colors ${carousel.settings?.fadeWidthUnit === '%' ? 'bg-gray-700 text-white' : 'text-gray-400 hover:text-white'}`}
+                            >%</button>
+                          </div>
+                        </div>
+                        <RangeSlider
+                          min={0}
+                          max={carousel.settings?.fadeWidthUnit === '%' ? 100 : 1000}
+                          step={carousel.settings?.fadeWidthUnit === '%' ? 1 : 8}
+                          value={carousel.settings?.fadeWidth ?? (carousel.settings?.fadeWidthUnit === '%' ? 20 : 128)}
+                          onChange={(e) => updateSettings({ ...carousel.settings, fadeWidth: parseInt(e.target.value) })}
+                        />
+                      </div>
+
+                      <div>
+                        <label className="text-xs font-medium text-gray-400 mb-2 block">Typ rozmazání</label>
+                        <div className="grid grid-cols-2 gap-2">
                           <button
-                            type="button"
-                            onClick={() => updateSettings({
-                              ...carousel.settings,
-                              fadeWidthUnit: 'px',
-                              fadeWidth: 128
-                            })}
-                            className={`px-2 py-0.5 text-[10px] font-bold rounded transition-colors ${(!carousel.settings?.fadeWidthUnit || carousel.settings?.fadeWidthUnit === 'px') ? 'bg-gray-700 text-white' : 'text-gray-400 hover:text-white'}`}
-                          >PX</button>
+                            onClick={() => updateSettings({ ...carousel.settings, fadeMode: 'mask' })}
+                            className={`p-2 rounded-lg border text-sm transition-all ${(carousel.settings?.fadeMode ?? 'mask') === 'mask'
+                              ? 'bg-green-500/20 text-green-400 border-green-500/50'
+                              : 'bg-gray-800 border-gray-700 text-gray-400 hover:text-white'
+                              }`}
+                          >
+                            Podle pozadí
+                          </button>
                           <button
-                            type="button"
-                            onClick={() => updateSettings({
-                              ...carousel.settings,
-                              fadeWidthUnit: '%',
-                              fadeWidth: 20
-                            })}
-                            className={`px-2 py-0.5 text-[10px] font-bold rounded transition-colors ${carousel.settings?.fadeWidthUnit === '%' ? 'bg-gray-700 text-white' : 'text-gray-400 hover:text-white'}`}
-                          >%</button>
+                            onClick={() => updateSettings({ ...carousel.settings, fadeMode: 'color' })}
+                            className={`p-2 rounded-lg border text-sm transition-all ${carousel.settings?.fadeMode === 'color'
+                              ? 'bg-green-500/20 text-green-400 border-green-500/50'
+                              : 'bg-gray-800 border-gray-700 text-gray-400 hover:text-white'
+                              }`}
+                          >
+                            Vlastní barva
+                          </button>
                         </div>
                       </div>
-                      <RangeSlider
-                        min={0}
-                        max={carousel.settings?.fadeWidthUnit === '%' ? 100 : 1000}
-                        step={carousel.settings?.fadeWidthUnit === '%' ? 1 : 8}
-                        value={carousel.settings?.fadeWidth ?? (carousel.settings?.fadeWidthUnit === '%' ? 20 : 128)}
-                        onChange={(e) => updateSettings({ ...carousel.settings, fadeWidth: parseInt(e.target.value) })}
-                      />
-                    </div>
 
-                    <div>
-                      <label className="text-xs font-medium text-gray-400 mb-2 block">Typ rozmazání</label>
-                      <div className="grid grid-cols-2 gap-2">
-                        <button
-                          onClick={() => updateSettings({ ...carousel.settings, fadeMode: 'mask' })}
-                          className={`p-2 rounded-lg border text-sm transition-all ${(carousel.settings?.fadeMode ?? 'mask') === 'mask'
-                            ? 'bg-green-500/20 text-green-400 border-green-500/50'
-                            : 'bg-gray-800 border-gray-700 text-gray-400 hover:text-white'
-                            }`}
-                        >
-                          Podle pozadí
-                        </button>
-                        <button
-                          onClick={() => updateSettings({ ...carousel.settings, fadeMode: 'color' })}
-                          className={`p-2 rounded-lg border text-sm transition-all ${carousel.settings?.fadeMode === 'color'
-                            ? 'bg-green-500/20 text-green-400 border-green-500/50'
-                            : 'bg-gray-800 border-gray-700 text-gray-400 hover:text-white'
-                            }`}
-                        >
-                          Vlastní barva
-                        </button>
+                      {carousel.settings?.fadeMode === 'color' && (
+                        <ColorInput
+                          label="Barva okraje"
+                          value={carousel.settings?.fadeColor || '#ffffff'}
+                          onChange={(val) => updateSettings({ ...carousel.settings, fadeColor: val })}
+                        />
+                      )}
+
+                      <div>
+                        <label className="text-xs font-medium text-gray-400 mb-2 block">
+                          Průhlednost ({carousel.settings?.fadeOpacity ?? 0}%)
+                        </label>
+                        <RangeSlider
+                          min={0}
+                          max={100}
+                          step={5}
+                          value={carousel.settings?.fadeOpacity ?? 0}
+                          onChange={(e) => updateSettings({ ...carousel.settings, fadeOpacity: parseInt(e.target.value) })}
+                        />
                       </div>
-                    </div>
+                    </>
+                  )}
+                </div>
+              </CollapsibleSection>
 
-                    {carousel.settings?.fadeMode === 'color' && (
+              <hr className="border-0 h-[2px] bg-gradient-to-r from-transparent via-gray-600 to-transparent my-2" />
+
+              {/* Image Styles (New) */}
+              <CollapsibleSection title="Vzhled obrázků" isOpen={!!openSections['image-style']} onToggle={() => toggleSection('image-style')}>
+                <div className="space-y-4">
+                  {/* Image Size (Moved) */}
+                  <div>
+                    <label className="text-xs font-medium text-gray-400 mb-2 block">
+                      Velikost ({carousel.imageSize || 64}px)
+                    </label>
+                    <RangeSlider
+                      min={32}
+                      max={128}
+                      step={4}
+                      value={carousel.imageSize || 64}
+                      onChange={(e) => setCarousel({ ...carousel, imageSize: parseInt(e.target.value) })}
+                    />
+                  </div>
+
+                  {/* Border Radius */}
+                  <div>
+                    <label className="text-xs font-medium text-gray-400 mb-2 block">
+                      Zaoblení ({carousel.settings?.imgRadius ?? 0}px)
+                    </label>
+                    <RangeSlider
+                      min={0}
+                      max={64}
+                      step={2}
+                      value={carousel.settings?.imgRadius ?? 0}
+                      onChange={(e) => updateSettings({ ...carousel.settings, imgRadius: parseInt(e.target.value) })}
+                    />
+                  </div>
+
+                  {/* Shadow */}
+                  <Toggle
+                    checked={carousel.settings?.shadowEnabled || false}
+                    onChange={(val) => updateSettings({ ...carousel.settings, shadowEnabled: val })}
+                    label="Stín pod obrázky"
+                  />
+
+                  {carousel.settings?.shadowEnabled && (
+                    <>
                       <ColorInput
-                        label="Barva okraje"
-                        value={carousel.settings?.fadeColor || '#ffffff'}
-                        onChange={(val) => updateSettings({ ...carousel.settings, fadeColor: val })}
+                        label="Barva stínu"
+                        value={carousel.settings?.shadowColor || '#000000'}
+                        onChange={(val) => updateSettings({ ...carousel.settings, shadowColor: val })}
                       />
-                    )}
 
-                    <div>
-                      <label className="text-xs font-medium text-gray-400 mb-2 block">
-                        Průhlednost ({carousel.settings?.fadeOpacity ?? 0}%)
-                      </label>
-                      <RangeSlider
-                        min={0}
-                        max={100}
-                        step={5}
-                        value={carousel.settings?.fadeOpacity ?? 0}
-                        onChange={(e) => updateSettings({ ...carousel.settings, fadeOpacity: parseInt(e.target.value) })}
-                      />
-                    </div>
-                  </>
-                )}
-              </div>
-            </CollapsibleSection>
+                      <div>
+                        <label className="text-xs font-medium text-gray-400 mb-2 block">
+                          Rozmazání stínu ({carousel.settings?.shadowBlur ?? 10}px)
+                        </label>
+                        <RangeSlider
+                          min={0}
+                          max={50}
+                          step={1}
+                          value={carousel.settings?.shadowBlur ?? 10}
+                          onChange={(e) => updateSettings({ ...carousel.settings, shadowBlur: parseInt(e.target.value) })}
+                        />
+                      </div>
 
-            <hr className="border-0 h-[2px] bg-gradient-to-r from-transparent via-gray-600 to-transparent my-2" />
-
-            {/* Image Styles (New) */}
-            <CollapsibleSection title="Vzhled obrázků" defaultOpen={false}>
-              <div className="space-y-4">
-                {/* Image Size (Moved) */}
-                <div>
-                  <label className="text-xs font-medium text-gray-400 mb-2 block">
-                    Velikost ({carousel.imageSize || 64}px)
-                  </label>
-                  <RangeSlider
-                    min={32}
-                    max={128}
-                    step={4}
-                    value={carousel.imageSize || 64}
-                    onChange={(e) => setCarousel({ ...carousel, imageSize: parseInt(e.target.value) })}
-                  />
+                      <div>
+                        <label className="text-xs font-medium text-gray-400 mb-2 block">
+                          Průhlednost stínu ({carousel.settings?.shadowOpacity ?? 20}%)
+                        </label>
+                        <RangeSlider
+                          min={0}
+                          max={100}
+                          step={5}
+                          value={carousel.settings?.shadowOpacity ?? 20}
+                          onChange={(e) => updateSettings({ ...carousel.settings, shadowOpacity: parseInt(e.target.value) })}
+                        />
+                      </div>
+                    </>
+                  )}
                 </div>
+              </CollapsibleSection>
 
-                {/* Border Radius */}
-                <div>
-                  <label className="text-xs font-medium text-gray-400 mb-2 block">
-                    Zaoblení ({carousel.settings?.imgRadius ?? 0}px)
-                  </label>
-                  <RangeSlider
-                    min={0}
-                    max={64}
-                    step={2}
-                    value={carousel.settings?.imgRadius ?? 0}
-                    onChange={(e) => updateSettings({ ...carousel.settings, imgRadius: parseInt(e.target.value) })}
+              <hr className="border-0 h-[2px] bg-gradient-to-r from-transparent via-gray-600 to-transparent my-2" />
+
+              {/* Slider/Grid Settings */}
+              <CollapsibleSection title="Nastavení slideru" isOpen={!!openSections['slider-settings']} onToggle={() => toggleSection('slider-settings')}>
+                <div className="space-y-4">
+                  <Toggle
+                    checked={carousel.settings?.enableAnimation !== false}
+                    onChange={(val) => updateSettings({ ...carousel.settings, enableAnimation: val })}
+                    label="Zapnout animaci (jezdící)"
                   />
-                </div>
 
-                {/* Shadow */}
-                <Toggle
-                  checked={carousel.settings?.shadowEnabled || false}
-                  onChange={(val) => updateSettings({ ...carousel.settings, shadowEnabled: val })}
-                  label="Stín pod obrázky"
-                />
-
-                {carousel.settings?.shadowEnabled && (
-                  <>
-                    <ColorInput
-                      label="Barva stínu"
-                      value={carousel.settings?.shadowColor || '#000000'}
-                      onChange={(val) => updateSettings({ ...carousel.settings, shadowColor: val })}
+                  <div>
+                    <label className="text-xs font-medium text-gray-400 mb-2 block">
+                      Mezera ({carousel.gap || 32}px)
+                    </label>
+                    <RangeSlider
+                      min={0}
+                      max={100}
+                      step={4}
+                      value={carousel.gap || 32}
+                      onChange={(e) => setCarousel({ ...carousel, gap: parseInt(e.target.value) })}
                     />
+                  </div>
 
-                    <div>
-                      <label className="text-xs font-medium text-gray-400 mb-2 block">
-                        Rozmazání stínu ({carousel.settings?.shadowBlur ?? 10}px)
-                      </label>
-                      <RangeSlider
-                        min={0}
-                        max={50}
-                        step={1}
-                        value={carousel.settings?.shadowBlur ?? 10}
-                        onChange={(e) => updateSettings({ ...carousel.settings, shadowBlur: parseInt(e.target.value) })}
+                  {carousel.settings?.enableAnimation !== false && (
+                    <>
+                      <div>
+                        <label className="text-xs font-medium text-gray-400 mb-2 block">
+                          Rychlost ({carousel.speed || 20}s)
+                        </label>
+                        <RangeSlider
+                          min={5}
+                          max={60}
+                          step={1}
+                          value={carousel.speed || 20}
+                          onChange={(e) => setCarousel({ ...carousel, speed: parseInt(e.target.value) })}
+                        />
+                      </div>
+
+                      <Toggle
+                        checked={carousel.pauseOnHover || false}
+                        onChange={(checked) => setCarousel({ ...carousel, pauseOnHover: checked })}
+                        label="Zastavit při najetí myši"
                       />
-                    </div>
-
-                    <div>
-                      <label className="text-xs font-medium text-gray-400 mb-2 block">
-                        Průhlednost stínu ({carousel.settings?.shadowOpacity ?? 20}%)
-                      </label>
-                      <RangeSlider
-                        min={0}
-                        max={100}
-                        step={5}
-                        value={carousel.settings?.shadowOpacity ?? 20}
-                        onChange={(e) => updateSettings({ ...carousel.settings, shadowOpacity: parseInt(e.target.value) })}
-                      />
-                    </div>
-                  </>
-                )}
-              </div>
-            </CollapsibleSection>
-
-            <hr className="border-0 h-[2px] bg-gradient-to-r from-transparent via-gray-600 to-transparent my-2" />
-
-            {/* Slider/Grid Settings */}
-            <CollapsibleSection title="Nastavení slideru" defaultOpen={false}>
-              <div className="space-y-4">
-                <Toggle
-                  checked={carousel.settings?.enableAnimation !== false}
-                  onChange={(val) => updateSettings({ ...carousel.settings, enableAnimation: val })}
-                  label="Zapnout animaci (jezdící)"
-                />
-
-                <div>
-                  <label className="text-xs font-medium text-gray-400 mb-2 block">
-                    Mezera ({carousel.gap || 32}px)
-                  </label>
-                  <RangeSlider
-                    min={0}
-                    max={100}
-                    step={4}
-                    value={carousel.gap || 32}
-                    onChange={(e) => setCarousel({ ...carousel, gap: parseInt(e.target.value) })}
-                  />
+                    </>
+                  )}
                 </div>
-
-                {carousel.settings?.enableAnimation !== false && (
-                  <>
-                    <div>
-                      <label className="text-xs font-medium text-gray-400 mb-2 block">
-                        Rychlost ({carousel.speed || 20}s)
-                      </label>
-                      <RangeSlider
-                        min={5}
-                        max={60}
-                        step={1}
-                        value={carousel.speed || 20}
-                        onChange={(e) => setCarousel({ ...carousel, speed: parseInt(e.target.value) })}
-                      />
-                    </div>
-
-                    <Toggle
-                      checked={carousel.pauseOnHover || false}
-                      onChange={(checked) => setCarousel({ ...carousel, pauseOnHover: checked })}
-                      label="Zastavit při najetí myši"
-                    />
-                  </>
-                )}
-              </div>
-            </CollapsibleSection>
+              </CollapsibleSection>
+            </div>
           </div>
-        )}
-      </div>
+          <div className="p-4 border-t border-gray-800 bg-gray-900/95 backdrop-blur shrink-0">
+            <Toggle
+              checked={autoClose}
+              onChange={setAutoClose}
+              label="Zavírat neaktivní položky"
+            />
+          </div>
+        </>
+      )}
     </aside>
   );
 }

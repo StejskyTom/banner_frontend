@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 
-function FaqItem({ question, settings }) {
+function FaqItem({ question, settings, isFirst, isLast }) {
     const [isHovered, setIsHovered] = useState(false);
 
     // Question styling from settings
@@ -54,10 +54,22 @@ function FaqItem({ question, settings }) {
         </span>
     );
 
+    // Divider styles
+    const dividerEnabled = settings.dividerEnabled ?? true;
+    const dividerStyle = {
+        borderBottomWidth: (!isLast && dividerEnabled) ? `${settings.dividerHeight || 1}px` : '0px',
+        borderBottomColor: settings.dividerColor || '#e5e7eb',
+        borderBottomStyle: settings.dividerStyle || 'solid',
+        width: `${settings.dividerWidth || 100}%`,
+        margin: '0 auto',
+        paddingBottom: isLast ? '0px' : `${settings.questionMarginBottom ?? 8}px`,
+        marginBottom: isLast ? '0px' : `${settings.dividerMargin ?? 8}px`,
+        paddingTop: isFirst ? '0px' : `${settings.dividerMargin ?? 8}px`,
+    };
+
     return (
         <div
-            className="border-b border-gray-200 dark:border-gray-700 last:border-0"
-            style={{ paddingBottom: `${settings.questionMarginBottom ?? 8}px`, marginBottom: `${settings.questionMarginBottom ?? 8}px` }}
+            style={dividerStyle}
         >
             <details className="group">
                 <summary
@@ -81,6 +93,8 @@ export default function FaqPreview({ widget }) {
     const containerStyle = {
         fontFamily: widget.font || 'sans-serif',
         backgroundColor: widget.backgroundColor || 'transparent',
+        border: widget.borderEnabled ? `${widget.borderWidth || 1}px solid ${widget.borderColor || '#e5e7eb'}` : 'none',
+        borderRadius: widget.borderRadius ? `${widget.borderRadius}px` : '0px',
     };
 
     return (
@@ -91,8 +105,14 @@ export default function FaqPreview({ widget }) {
                 </h2>
             )}
             <div className="space-y-0">
-                {(widget.questions || []).map((q) => (
-                    <FaqItem key={q.id} question={q} settings={widget} />
+                {(widget.questions || []).map((q, idx) => (
+                    <FaqItem
+                        key={q.id}
+                        question={q}
+                        settings={widget}
+                        isFirst={idx === 0}
+                        isLast={idx === (widget.questions || []).length - 1}
+                    />
                 ))}
                 {(widget.questions || []).length === 0 && (
                     <p className="text-gray-400 text-center py-8 italic">

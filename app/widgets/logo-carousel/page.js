@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react';
 import { authorizedFetch } from '../../../lib/api';
 import Link from 'next/link';
-import { PencilSquareIcon, TrashIcon, PhotoIcon, PlusIcon, EllipsisVerticalIcon, CodeBracketIcon } from '@heroicons/react/24/solid';
+import { PencilSquareIcon, TrashIcon, PhotoIcon, PlusIcon, EllipsisVerticalIcon, CodeBracketIcon, DocumentDuplicateIcon } from '@heroicons/react/24/solid';
 import { WidgetEmbedGenerator } from '../../components/WidgetEmbedGenerator';
 import { useToast } from "../../../app/components/ToastProvider";
 import { useRouter } from "next/navigation";
@@ -84,6 +84,26 @@ export default function CarouselListPage() {
       }
     } catch (error) {
       showNotification('Nepodařilo se vytvořit nový carousel', 'error');
+    }
+  };
+
+  const handleDuplicate = async (carousel) => {
+    try {
+      showNotification('Duplikuji carousel...', 'info');
+      const res = await authorizedFetch(`/widgets/${carousel.id}/duplicate`, {
+        method: 'POST'
+      });
+
+      if (res?.ok) {
+        const newCarousel = await res.json();
+        setCarousels([newCarousel, ...carousels]);
+        showNotification('Widget byl úspěšně zduplikován', 'success');
+      } else {
+        showNotification('Nepodařilo se zduplikovat widget', 'error');
+      }
+    } catch (error) {
+      console.error('Error duplicating widget:', error);
+      showNotification('Chyba při duplikaci widgetu', 'error');
     }
   };
 
@@ -184,6 +204,12 @@ export default function CarouselListPage() {
                               onClick={() => setEmbedWidgetId(carousel.id)}
                             >
                               Publikovat
+                            </DropdownItem>
+                            <DropdownItem
+                              icon={DocumentDuplicateIcon}
+                              onClick={() => handleDuplicate(carousel)}
+                            >
+                              Duplikovat
                             </DropdownItem>
                             <div className="my-1 border-t border-gray-100 dark:border-gray-700" />
                             <DropdownItem
