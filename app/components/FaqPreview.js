@@ -54,23 +54,27 @@ function FaqItem({ question, settings, isFirst, isLast }) {
         </span>
     );
 
-    // Divider styles
-    const dividerEnabled = settings.dividerEnabled ?? true;
-    const dividerStyle = {
-        borderBottomWidth: (!isLast && dividerEnabled) ? `${settings.dividerHeight || 1}px` : '0px',
-        borderBottomColor: settings.dividerColor || '#e5e7eb',
-        borderBottomStyle: settings.dividerStyle || 'solid',
-        width: `${settings.dividerWidth || 100}%`,
-        margin: '0 auto',
-        paddingBottom: isLast ? '0px' : `${settings.questionMarginBottom ?? 8}px`,
-        marginBottom: isLast ? '0px' : `${settings.dividerMargin ?? 8}px`,
+    const containerStyle = {
+        paddingBottom: '0px',
+        marginBottom: '0px',
         paddingTop: isFirst ? '0px' : `${settings.dividerMargin ?? 8}px`,
     };
 
+    const dividerEnabled = settings.dividerEnabled ?? true;
+    const dividerStyle = {
+        border: 'none',
+        height: `${settings.dividerHeight || 1}px`,
+        backgroundColor: settings.dividerColor || '#e5e7eb',
+        width: `${settings.dividerWidth || 100}%`,
+        margin: '0 auto',
+        marginTop: `${settings.dividerMargin ?? 8}px`,
+        // Support for dashed/dotted styles if needed, though background-color handles solid best for hr
+        borderTop: settings.dividerStyle && settings.dividerStyle !== 'solid' ? `${settings.dividerHeight || 1}px ${settings.dividerStyle} ${settings.dividerColor || '#e5e7eb'}` : 'none',
+        backgroundColor: settings.dividerStyle && settings.dividerStyle !== 'solid' ? 'transparent' : (settings.dividerColor || '#e5e7eb'),
+    };
+
     return (
-        <div
-            style={dividerStyle}
-        >
+        <div style={containerStyle}>
             <details className="group">
                 <summary
                     className="flex items-center cursor-pointer list-none py-2 transition-colors"
@@ -85,6 +89,7 @@ function FaqItem({ question, settings, isFirst, isLast }) {
                     {question.answer || 'Zde bude odpověď...'}
                 </AnswerTag>
             </details>
+            {!isLast && dividerEnabled && <hr style={dividerStyle} />}
         </div>
     );
 }

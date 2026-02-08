@@ -90,7 +90,15 @@ export default function FaqWidgetDetailPage() {
                     // Border settings
                     borderEnabled: widget.borderEnabled,
                     borderColor: widget.borderColor,
-                    borderWidth: widget.borderWidth
+                    borderWidth: widget.borderWidth,
+                    borderRadius: widget.borderRadius,
+                    // Divider settings
+                    dividerEnabled: widget.dividerEnabled,
+                    dividerColor: widget.dividerColor,
+                    dividerWidth: widget.dividerWidth,
+                    dividerHeight: widget.dividerHeight,
+                    dividerStyle: widget.dividerStyle,
+                    dividerMargin: widget.dividerMargin
                 })
             });
 

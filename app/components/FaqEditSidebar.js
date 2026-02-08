@@ -494,7 +494,7 @@ export default function FaqEditSidebar({ widget, setWidget, activeTab }) {
                                             </div>
                                             <div>
                                                 <label className="text-xs font-medium text-gray-400 mb-1.5 block">
-                                                    Odsazení oddělovače ({widget.dividerMargin || 8}px)
+                                                    Odsazení oddělovače ({widget.dividerMargin ?? 8}px)
                                                 </label>
                                                 <RangeSlider
                                                     min={0}
