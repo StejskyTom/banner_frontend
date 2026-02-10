@@ -67,18 +67,10 @@ const ColorInput = ({ label, value, onChange }) => {
 export function TextProperties({ block, onChange, activeFormats = {} }) {
     return (
         <>
-            <RichTextToolbar activeFormats={activeFormats} />
-
-            <Select
-                label="Zarovnání"
-                value={block.align || 'left'}
-                onChange={(val) => onChange({ ...block, align: val })}
-                options={[
-                    { value: 'left', label: 'Vlevo' },
-                    { value: 'center', label: 'Na střed' },
-                    { value: 'right', label: 'Vpravo' },
-                    { value: 'justify', label: 'Do bloku' },
-                ]}
+            <RichTextToolbar
+                activeFormats={activeFormats}
+                alignment={block.align || 'left'}
+                onAlignmentChange={(val) => onChange({ ...block, align: val })}
             />
         </>
     );
@@ -366,7 +358,7 @@ export function ProductProperties({ block, onChange, widgetId }) {
                                         {product.imgUrl && <img src={product.imgUrl} className="w-8 h-8 object-contain rounded bg-white" alt="" />}
                                         <div className="flex-1 min-w-0">
                                             <div className="text-sm font-medium text-gray-900 dark:text-white truncate">{product.productName}</div>
-                                            <div className="text-xs text-green-600 font-bold">{product.priceVat} Kč</div>
+                                            <div className="text-xs text-visualy-accent-4 font-bold">{product.priceVat} Kč</div>
                                         </div>
                                     </div>
                                 ))}

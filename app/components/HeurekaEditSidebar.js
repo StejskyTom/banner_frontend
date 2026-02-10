@@ -19,7 +19,7 @@ const ToolButton = ({ active, children, onClick, title }) => (
         onClick={onClick}
         className={`p-2 rounded-md transition-all font-medium text-sm border flex items-center justify-center h-8 min-w-[32px] flex-1
             ${active
-                ? 'bg-green-500/20 text-green-400 border-green-500/50'
+                ? 'bg-visualy-accent-4/20 text-visualy-accent-4 border-visualy-accent-4/50'
                 : 'bg-gray-800 border-gray-700 text-gray-400 hover:text-white hover:bg-gray-700 hover:border-gray-600'
             }`}
         title={title}
@@ -59,7 +59,7 @@ const ColorInput = ({ label, value, onChange }) => {
         <div>
             {label && <label className="text-xs font-medium text-gray-400 mb-2 block">{label}</label>}
             <div className="relative group">
-                <div className="relative flex items-center h-10 w-full rounded-md border border-gray-600 shadow-sm overflow-hidden ring-1 ring-white/5 transition-all focus-within:ring-1 focus-within:ring-green-500">
+                <div className="relative flex items-center h-10 w-full rounded-md border border-gray-600 shadow-sm overflow-hidden ring-1 ring-white/5 transition-all focus-within:ring-1 focus-within:ring-visualy-accent-4">
                     <input
                         type="text"
                         value={value || ''}
@@ -363,7 +363,7 @@ export default function HeurekaEditSidebar({
                                 value={widgetTitle}
                                 onChange={(e) => setWidgetTitle(e.target.value)}
                                 placeholder="Např. Doporučujeme"
-                                className="w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:ring-1 focus:ring-green-500"
+                                className="w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:ring-1 focus:ring-visualy-accent-4"
                             />
                         </div>
 
@@ -379,7 +379,7 @@ export default function HeurekaEditSidebar({
                                 value={searchTerm}
                                 onChange={handleSearch}
                                 onKeyDown={(e) => e.key === 'Enter' && applyFilters()}
-                                className="w-full pl-10 pr-4 py-2 bg-gray-800 border border-gray-700 rounded-lg focus:outline-none focus:ring-1 focus:ring-green-500 transition-all text-white placeholder-gray-500"
+                                className="w-full pl-10 pr-4 py-2 bg-gray-800 border border-gray-700 rounded-lg focus:outline-none focus:ring-1 focus:ring-visualy-accent-4 transition-all text-white placeholder-gray-500"
                             />
                             <MagnifyingGlassIcon className="h-5 w-5 text-gray-500 absolute left-3 top-2.5" />
                         </div>
@@ -392,7 +392,7 @@ export default function HeurekaEditSidebar({
                                     setSelectedCategory(e.target.value);
                                     setPage(1);
                                 }}
-                                className="w-full p-2 bg-gray-800 border border-gray-700 rounded-lg focus:outline-none focus:ring-1 focus:ring-green-500 transition-all text-sm text-white"
+                                className="w-full p-2 bg-gray-800 border border-gray-700 rounded-lg focus:outline-none focus:ring-1 focus:ring-visualy-accent-4 transition-all text-sm text-white"
                             >
                                 <option value="all">Všechny kategorie</option>
                                 {categories.map((cat, index) => (
@@ -443,7 +443,7 @@ export default function HeurekaEditSidebar({
                                         <h3 className="text-sm font-medium text-white truncate pr-6" title={product.productName}>
                                             {product.productName}
                                         </h3>
-                                        <p className="text-xs text-green-400 font-bold mt-0.5">
+                                        <p className="text-xs text-visualy-accent-4 font-bold mt-0.5">
                                             {product.priceVat} Kč
                                         </p>
                                     </div>
@@ -511,7 +511,7 @@ export default function HeurekaEditSidebar({
                                             />
                                         </div>
                                         <select
-                                            className="h-9 w-full bg-gray-800 border border-gray-700 text-white text-sm px-2 rounded-lg focus:outline-none focus:ring-1 focus:ring-green-500"
+                                            className="h-9 w-full bg-gray-800 border border-gray-700 text-white text-sm px-2 rounded-lg focus:outline-none focus:ring-1 focus:ring-visualy-accent-4"
                                             onChange={(e) => setWidgetTitleSize(e.target.value)}
                                             value={widgetTitleSize}
                                         >
@@ -524,7 +524,7 @@ export default function HeurekaEditSidebar({
                                         </select>
 
                                         <select
-                                            className="h-9 w-full bg-gray-800 border border-gray-700 text-white text-sm px-2 rounded-lg focus:outline-none focus:ring-1 focus:ring-green-500"
+                                            className="h-9 w-full bg-gray-800 border border-gray-700 text-white text-sm px-2 rounded-lg focus:outline-none focus:ring-1 focus:ring-visualy-accent-4"
                                             onChange={(e) => setWidgetTitleFont(e.target.value)}
                                             value={widgetTitleFont}
                                         >
@@ -536,7 +536,7 @@ export default function HeurekaEditSidebar({
                                             <option value="Courier New, monospace">Courier</option>
                                         </select>
                                         <select
-                                            className="h-9 w-full bg-gray-800 border border-gray-700 text-white text-sm px-2 rounded-lg focus:outline-none focus:ring-1 focus:ring-green-500"
+                                            className="h-9 w-full bg-gray-800 border border-gray-700 text-white text-sm px-2 rounded-lg focus:outline-none focus:ring-1 focus:ring-visualy-accent-4"
                                             onChange={(e) => setWidgetTitleAlign(e.target.value)}
                                             value={widgetTitleAlign}
                                         >

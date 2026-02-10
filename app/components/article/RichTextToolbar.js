@@ -57,7 +57,7 @@ const ColorInput = ({ label, value, onChange }) => {
     );
 };
 
-export default function RichTextToolbar({ activeFormats = {} }) {
+export default function RichTextToolbar({ activeFormats = {}, alignment, onAlignmentChange }) {
     const applyFontSize = (size) => {
 
         const selection = window.getSelection();
@@ -245,7 +245,7 @@ export default function RichTextToolbar({ activeFormats = {} }) {
                     </div>
 
                     <select
-                        className="h-9 w-full bg-gray-800 border border-gray-700 text-white text-xs px-2 rounded-lg focus:outline-none focus:ring-1 focus:ring-visualy-accent-4 rounded-lg"
+                        className="h-9 w-full bg-gray-800 border border-gray-700 text-white text-sm px-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-visualy-accent-4"
                         onChange={(e) => applyFontSize(e.target.value)}
                         value={activeFormats.fontSize || ''}
                     >
@@ -258,7 +258,7 @@ export default function RichTextToolbar({ activeFormats = {} }) {
                     </select>
 
                     <select
-                        className="h-9 w-full bg-gray-800 border border-gray-700 text-white text-xs px-2 rounded-lg focus:outline-none focus:ring-1 focus:ring-visualy-accent-4 col-span-2"
+                        className={`h-9 w-full bg-gray-800 border border-gray-700 text-white text-sm px-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-visualy-accent-4 ${!onAlignmentChange ? 'col-span-2' : ''}`}
                         onChange={(e) => applyFontFamily(e.target.value)}
                         value={activeFormats.fontFamily || ''}
                     >
@@ -268,6 +268,19 @@ export default function RichTextToolbar({ activeFormats = {} }) {
                         <option value="Georgia, serif">Georgia</option>
                         <option value="Courier New, monospace">Courier</option>
                     </select>
+
+                    {onAlignmentChange && (
+                        <select
+                            className="h-9 w-full bg-gray-800 border border-gray-700 text-white text-sm px-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-visualy-accent-4"
+                            onChange={(e) => onAlignmentChange(e.target.value)}
+                            value={alignment || 'left'}
+                        >
+                            <option value="left">Vlevo</option>
+                            <option value="center">Na střed</option>
+                            <option value="right">Vpravo</option>
+                            <option value="justify">Do bloku</option>
+                        </select>
+                    )}
                 </div>
             </div>
         </div>

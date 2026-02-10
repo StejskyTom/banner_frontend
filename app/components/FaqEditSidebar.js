@@ -42,7 +42,7 @@ const ToolButton = ({ active, onClick, children, title }) => (
         onClick={onClick}
         className={`p-2 rounded-md transition-all font-medium text-sm border flex items-center justify-center h-8 min-w-[32px] flex-1
             ${active
-                ? 'bg-green-500/20 text-green-400 border-green-500/50'
+                ? 'bg-visualy-accent-4/20 text-visualy-accent-4 border-visualy-accent-4/50'
                 : 'bg-gray-800 border-gray-700 text-gray-400 hover:text-white hover:bg-gray-700 hover:border-gray-600'
             }`}
         title={title}
@@ -92,7 +92,7 @@ const GenericStyleControls = ({ prefix, widget, setWidget, defaultMargin = 0 }) 
                     />
                 </div>
                 <select
-                    className="h-10 w-full bg-gray-800 border border-gray-700 text-white text-sm px-2 rounded-lg focus:outline-none focus:ring-1 focus:ring-green-500"
+                    className="h-10 w-full bg-gray-800 border border-gray-700 text-white text-sm px-2 rounded-lg focus:outline-none focus:ring-1 focus:ring-visualy-accent-4"
                     onChange={(e) => handleChange('Size', e.target.value)}
                     value={size}
                 >
@@ -107,7 +107,7 @@ const GenericStyleControls = ({ prefix, widget, setWidget, defaultMargin = 0 }) 
                 </select>
 
                 <select
-                    className="h-10 w-full bg-gray-800 border border-gray-700 text-white text-sm px-2 rounded-lg focus:outline-none focus:ring-1 focus:ring-green-500"
+                    className="h-10 w-full bg-gray-800 border border-gray-700 text-white text-sm px-2 rounded-lg focus:outline-none focus:ring-1 focus:ring-visualy-accent-4"
                     onChange={(e) => handleChange('Font', e.target.value)}
                     value={font}
                 >
@@ -118,7 +118,7 @@ const GenericStyleControls = ({ prefix, widget, setWidget, defaultMargin = 0 }) 
                     <option value="Courier New, monospace">Courier</option>
                 </select>
                 <select
-                    className="h-10 w-full bg-gray-800 border border-gray-700 text-white text-sm px-2 rounded-lg focus:outline-none focus:ring-1 focus:ring-green-500"
+                    className="h-10 w-full bg-gray-800 border border-gray-700 text-white text-sm px-2 rounded-lg focus:outline-none focus:ring-1 focus:ring-visualy-accent-4"
                     onChange={(e) => handleChange('Align', e.target.value)}
                     value={align}
                 >
@@ -186,7 +186,7 @@ const QuestionStyleControls = ({ widget, setWidget, prefix = 'question' }) => {
                     />
                 </div>
                 <select
-                    className="h-10 w-full bg-gray-800 border border-gray-700 text-white text-sm px-2 rounded-lg focus:outline-none focus:ring-1 focus:ring-green-500"
+                    className="h-10 w-full bg-gray-800 border border-gray-700 text-white text-sm px-2 rounded-lg focus:outline-none focus:ring-1 focus:ring-visualy-accent-4"
                     onChange={(e) => handleChange('Size', e.target.value)}
                     value={size}
                 >
@@ -201,7 +201,7 @@ const QuestionStyleControls = ({ widget, setWidget, prefix = 'question' }) => {
 
                 <div>
                     <select
-                        className="h-10 w-full bg-gray-800 border border-gray-700 text-white text-sm px-2 rounded-lg focus:outline-none focus:ring-1 focus:ring-green-500"
+                        className="h-10 w-full bg-gray-800 border border-gray-700 text-white text-sm px-2 rounded-lg focus:outline-none focus:ring-1 focus:ring-visualy-accent-4"
                         onChange={(e) => handleChange('Font', e.target.value)}
                         value={font}
                     >
@@ -214,7 +214,7 @@ const QuestionStyleControls = ({ widget, setWidget, prefix = 'question' }) => {
                 </div>
                 <div>
                     <select
-                        className="h-10 w-full bg-gray-800 border border-gray-700 text-white text-sm px-2 rounded-lg focus:outline-none focus:ring-1 focus:ring-green-500"
+                        className="h-10 w-full bg-gray-800 border border-gray-700 text-white text-sm px-2 rounded-lg focus:outline-none focus:ring-1 focus:ring-visualy-accent-4"
                         onChange={(e) => handleChange('Align', e.target.value)}
                         value={align}
                     >
@@ -282,7 +282,7 @@ function SortableQuestionItem({ id, question, onUpdate, onRemove }) {
                             type="text"
                             value={question.question}
                             onChange={(e) => onUpdate({ ...question, question: e.target.value })}
-                            className="w-full bg-gray-800 border border-gray-700 text-white text-sm px-3 py-2 rounded focus:outline-none focus:ring-1 focus:ring-green-500"
+                            className="w-full bg-gray-800 border border-gray-700 text-white text-sm px-3 py-2 rounded focus:outline-none focus:ring-1 focus:ring-visualy-accent-4"
                             placeholder="Např. Jaká je otevírací doba?"
                         />
                     </div>
@@ -292,7 +292,7 @@ function SortableQuestionItem({ id, question, onUpdate, onRemove }) {
                             value={question.answer}
                             onChange={(e) => onUpdate({ ...question, answer: e.target.value })}
                             rows={3}
-                            className="w-full bg-gray-800 border border-gray-700 text-white text-sm px-3 py-2 rounded focus:outline-none focus:ring-1 focus:ring-green-500 resize-none"
+                            className="w-full bg-gray-800 border border-gray-700 text-white text-sm px-3 py-2 rounded focus:outline-none focus:ring-1 focus:ring-visualy-accent-4 resize-none"
                             placeholder="Např. Otevřeno máme každý všední den..."
                         />
                     </div>
@@ -373,7 +373,7 @@ export default function FaqEditSidebar({ widget, setWidget, activeTab }) {
                             <input
                                 value={widget.name || ''}
                                 onChange={(e) => setWidget({ ...widget, name: e.target.value })}
-                                className="w-full bg-gray-800 border border-gray-700 text-white text-sm px-3 py-2 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-green-500 placeholder-gray-500"
+                                className="w-full bg-gray-800 border border-gray-700 text-white text-sm px-3 py-2 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-visualy-accent-4 placeholder-gray-500"
                                 placeholder="Zadejte nadpis"
                             />
                         </div>
@@ -383,7 +383,7 @@ export default function FaqEditSidebar({ widget, setWidget, activeTab }) {
                             <textarea
                                 value={widget.subtitleText || ''}
                                 onChange={(e) => setWidget({ ...widget, subtitleText: e.target.value })}
-                                className="w-full bg-gray-800 border border-gray-700 text-white text-sm px-3 py-2 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-green-500 placeholder-gray-500 resize-none"
+                                className="w-full bg-gray-800 border border-gray-700 text-white text-sm px-3 py-2 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-visualy-accent-4 placeholder-gray-500 resize-none"
                                 rows={2}
                                 placeholder="Doplňkový text pod nadpisem..."
                             />
@@ -492,7 +492,7 @@ export default function FaqEditSidebar({ widget, setWidget, activeTab }) {
                                             <button
                                                 onClick={() => setWidget({ ...widget, arrowPosition: 'left' })}
                                                 className={`p-2 rounded-lg border text-xs transition-all ${widget.arrowPosition === 'left'
-                                                    ? 'bg-green-500/20 text-green-400 border-green-500/50'
+                                                    ? 'bg-visualy-accent-4/20 text-visualy-accent-4 border-visualy-accent-4/50'
                                                     : 'bg-gray-800 border-gray-700 text-gray-400 hover:text-white'
                                                     }`}
                                             >
@@ -501,7 +501,7 @@ export default function FaqEditSidebar({ widget, setWidget, activeTab }) {
                                             <button
                                                 onClick={() => setWidget({ ...widget, arrowPosition: 'after' })}
                                                 className={`p-2 rounded-lg border text-xs transition-all ${(!widget.arrowPosition || widget.arrowPosition === 'after')
-                                                    ? 'bg-green-500/20 text-green-400 border-green-500/50'
+                                                    ? 'bg-visualy-accent-4/20 text-visualy-accent-4 border-visualy-accent-4/50'
                                                     : 'bg-gray-800 border-gray-700 text-gray-400 hover:text-white'
                                                     }`}
                                             >
@@ -510,7 +510,7 @@ export default function FaqEditSidebar({ widget, setWidget, activeTab }) {
                                             <button
                                                 onClick={() => setWidget({ ...widget, arrowPosition: 'right' })}
                                                 className={`p-2 rounded-lg border text-xs transition-all ${widget.arrowPosition === 'right'
-                                                    ? 'bg-green-500/20 text-green-400 border-green-500/50'
+                                                    ? 'bg-visualy-accent-4/20 text-visualy-accent-4 border-visualy-accent-4/50'
                                                     : 'bg-gray-800 border-gray-700 text-gray-400 hover:text-white'
                                                     }`}
                                             >
@@ -651,7 +651,7 @@ export default function FaqEditSidebar({ widget, setWidget, activeTab }) {
                                                         key={style}
                                                         onClick={() => setWidget({ ...widget, dividerStyle: style })}
                                                         className={`p-2 rounded text-xs font-medium capitalize border ${widget.dividerStyle === style || (!widget.dividerStyle && style === 'solid')
-                                                            ? 'bg-green-500/20 text-green-400 border-green-500/50'
+                                                            ? 'bg-visualy-accent-4/20 text-visualy-accent-4 border-visualy-accent-4/50'
                                                             : 'bg-gray-800 border-gray-700 text-gray-400 hover:text-white'
                                                             }`}
                                                     >

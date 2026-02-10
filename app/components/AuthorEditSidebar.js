@@ -53,7 +53,7 @@ function StyleControls({ prefix, settings, onChange, defaultMargin = 0 }) {
             onClick={onClick}
             className={`p-2 rounded-md transition-all font-medium text-sm border flex items-center justify-center h-8 min-w-[32px] flex-1
             ${active
-                    ? 'bg-green-500/20 text-green-400 border-green-500/50'
+                    ? 'bg-visualy-accent-4/20 text-visualy-accent-4 border-visualy-accent-4/50'
                     : 'bg-gray-800 border-gray-700 text-gray-400 hover:text-white hover:bg-gray-700 hover:border-gray-600'
                 }`}
             title={title}
@@ -90,7 +90,7 @@ function StyleControls({ prefix, settings, onChange, defaultMargin = 0 }) {
                     />
                 </div>
                 <select
-                    className="h-9 w-full bg-gray-800 border border-gray-700 text-white text-sm px-2 rounded-lg focus:outline-none focus:ring-1 focus:ring-green-500"
+                    className="h-9 w-full bg-gray-800 border border-gray-700 text-white text-sm px-2 rounded-lg focus:outline-none focus:ring-1 focus:ring-visualy-accent-4"
                     onChange={(e) => handleChange('Size', e.target.value)}
                     value={size}
                 >
@@ -105,7 +105,7 @@ function StyleControls({ prefix, settings, onChange, defaultMargin = 0 }) {
                 </select>
 
                 <select
-                    className="h-9 w-full bg-gray-800 border border-gray-700 text-white text-sm px-2 rounded-lg focus:outline-none focus:ring-1 focus:ring-green-500"
+                    className="h-9 w-full bg-gray-800 border border-gray-700 text-white text-sm px-2 rounded-lg focus:outline-none focus:ring-1 focus:ring-visualy-accent-4"
                     onChange={(e) => handleChange('Font', e.target.value)}
                     value={font}
                 >
@@ -116,7 +116,7 @@ function StyleControls({ prefix, settings, onChange, defaultMargin = 0 }) {
                     <option value="Courier New, monospace">Courier</option>
                 </select>
                 <select
-                    className="h-9 w-full bg-gray-800 border border-gray-700 text-white text-sm px-2 rounded-lg focus:outline-none focus:ring-1 focus:ring-green-500"
+                    className="h-9 w-full bg-gray-800 border border-gray-700 text-white text-sm px-2 rounded-lg focus:outline-none focus:ring-1 focus:ring-visualy-accent-4"
                     onChange={(e) => handleChange('Align', e.target.value)}
                     value={align}
                 >
@@ -182,7 +182,7 @@ export default function AuthorEditSidebar({ widget, setWidget, activeTab }) {
                             value={widget.name || ''}
                             onChange={(e) => handleUpdate('name', e.target.value)}
                             placeholder="Např. Můj profil"
-                            className="flex h-10 w-full rounded-md border border-gray-700 bg-gray-800 px-3 py-2 text-sm placeholder:text-gray-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 text-white"
+                            className="w-full bg-gray-800 border border-gray-700 text-white text-sm px-3 py-2 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-visualy-accent-4 placeholder-gray-500"
                         />
                     </div>
 
@@ -202,7 +202,7 @@ export default function AuthorEditSidebar({ widget, setWidget, activeTab }) {
                                     value={widget.authorPhotoUrl || ''}
                                     onChange={(e) => handleUpdate('authorPhotoUrl', e.target.value)}
                                     placeholder="https://..."
-                                    className="flex h-10 w-full rounded-md border border-gray-700 bg-gray-800 px-3 py-2 text-sm placeholder:text-gray-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 mt-1 text-white"
+                                    className="mt-1 w-full bg-gray-800 border border-gray-700 text-white text-sm px-3 py-2 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-visualy-accent-4 placeholder-gray-500"
                                 />
                             </div>
                         </div>
@@ -215,7 +215,7 @@ export default function AuthorEditSidebar({ widget, setWidget, activeTab }) {
                                 <input
                                     value={widget.authorName || ''}
                                     onChange={(e) => handleUpdate('authorName', e.target.value)}
-                                    className="flex h-10 w-full rounded-md border border-gray-700 bg-gray-800 px-3 py-2 text-sm placeholder:text-gray-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 pl-9 text-white"
+                                    className="pl-9 w-full bg-gray-800 border border-gray-700 text-white text-sm px-3 py-2 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-visualy-accent-4 placeholder-gray-500"
                                     placeholder="Jan Novák"
                                 />
                             </div>
@@ -228,7 +228,7 @@ export default function AuthorEditSidebar({ widget, setWidget, activeTab }) {
                                 value={widget.authorTitle || ''}
                                 onChange={(e) => handleUpdate('authorTitle', e.target.value)}
                                 placeholder="CEO & Founder"
-                                className="flex h-10 w-full rounded-md border border-gray-700 bg-gray-800 px-3 py-2 text-sm placeholder:text-gray-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 text-white"
+                                className="w-full bg-gray-800 border border-gray-700 text-white text-sm px-3 py-2 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-visualy-accent-4 placeholder-gray-500"
                             />
                         </div>
 
@@ -240,7 +240,7 @@ export default function AuthorEditSidebar({ widget, setWidget, activeTab }) {
                                 onChange={(e) => handleUpdate('authorBio', e.target.value)}
                                 rows={5}
                                 placeholder="Napište něco o sobě..."
-                                className="flex min-h-[80px] w-full rounded-md border border-gray-700 bg-gray-800 px-3 py-2 text-sm placeholder:text-gray-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 text-white"
+                                className="min-h-[80px] w-full bg-gray-800 border border-gray-700 text-white text-sm px-3 py-2 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-visualy-accent-4 placeholder-gray-500"
                             />
                         </div>
                     </div>
@@ -454,7 +454,7 @@ export default function AuthorEditSidebar({ widget, setWidget, activeTab }) {
                                         <button
                                             onClick={() => handleUpdate('layout', 'centered')}
                                             className={`p-3 border rounded-lg flex flex-col items-center gap-2 transition ${widget.layout === 'centered'
-                                                ? 'border-green-500/50 bg-green-500/10 text-green-400'
+                                                ? 'border-visualy-accent-4/50 bg-visualy-accent-4/10 text-visualy-accent-4'
                                                 : 'border-gray-700 hover:border-gray-600 text-gray-500'
                                                 }`}
                                         >
@@ -468,7 +468,7 @@ export default function AuthorEditSidebar({ widget, setWidget, activeTab }) {
                                         <button
                                             onClick={() => handleUpdate('layout', 'side-by-side')}
                                             className={`p-3 border rounded-lg flex flex-col items-center gap-2 transition ${widget.layout === 'side-by-side'
-                                                ? 'border-green-500/50 bg-green-500/10 text-green-400'
+                                                ? 'border-visualy-accent-4/50 bg-visualy-accent-4/10 text-visualy-accent-4'
                                                 : 'border-gray-700 hover:border-gray-600 text-gray-500'
                                                 }`}
                                         >

@@ -49,7 +49,7 @@ function StyleControls({ prefix, settings, onChange, defaultMargin = 0 }) {
       onClick={onClick}
       className={`p-2 rounded-md transition-all font-medium text-sm border flex items-center justify-center h-8 min-w-[32px] flex-1
             ${active
-          ? 'bg-green-500/20 text-green-400 border-green-500/50'
+          ? 'bg-visualy-accent-4/20 text-visualy-accent-4 border-visualy-accent-4/50'
           : 'bg-gray-800 border-gray-700 text-gray-400 hover:text-white hover:bg-gray-700 hover:border-gray-600'
         }`}
       title={title}
@@ -86,7 +86,7 @@ function StyleControls({ prefix, settings, onChange, defaultMargin = 0 }) {
           />
         </div>
         <select
-          className="h-9 w-full bg-gray-800 border border-gray-700 text-white text-sm px-2 rounded-lg focus:outline-none focus:ring-1 focus:ring-green-500"
+          className="h-9 w-full bg-gray-800 border border-gray-700 text-white text-sm px-2 rounded-lg focus:outline-none focus:ring-1 focus:ring-visualy-accent-4"
           onChange={(e) => handleChange('Size', e.target.value)}
           value={size}
         >
@@ -101,7 +101,7 @@ function StyleControls({ prefix, settings, onChange, defaultMargin = 0 }) {
         </select>
 
         <select
-          className="h-9 w-full bg-gray-800 border border-gray-700 text-white text-sm px-2 rounded-lg focus:outline-none focus:ring-1 focus:ring-green-500"
+          className="h-9 w-full bg-gray-800 border border-gray-700 text-white text-sm px-2 rounded-lg focus:outline-none focus:ring-1 focus:ring-visualy-accent-4"
           onChange={(e) => handleChange('Font', e.target.value)}
           value={font}
         >
@@ -112,7 +112,7 @@ function StyleControls({ prefix, settings, onChange, defaultMargin = 0 }) {
           <option value="Courier New, monospace">Courier</option>
         </select>
         <select
-          className="h-9 w-full bg-gray-800 border border-gray-700 text-white text-sm px-2 rounded-lg focus:outline-none focus:ring-1 focus:ring-green-500"
+          className="h-9 w-full bg-gray-800 border border-gray-700 text-white text-sm px-2 rounded-lg focus:outline-none focus:ring-1 focus:ring-visualy-accent-4"
           onChange={(e) => handleChange('Align', e.target.value)}
           value={align}
         >
@@ -149,7 +149,7 @@ function LogoItemEditor({ id, item, alt, onRemove, onLinkChange, onAltChange, on
   };
 
   return (
-    <div ref={setNodeRef} style={style} className={`bg-gray-800 rounded border transition-colors ${isOpen ? 'border-green-500/50 ring-1 ring-green-500/20' : 'border-gray-700 hover:border-gray-600'}`}>
+    <div ref={setNodeRef} style={style} className={`bg-gray-800 rounded border transition-colors ${isOpen ? 'border-visualy-accent-4/50 ring-1 ring-visualy-accent-4/20' : 'border-gray-700 hover:border-gray-600'}`}>
       {/* Header */}
       <div className="flex items-center p-2 gap-3 group">
         <button
@@ -200,7 +200,7 @@ function LogoItemEditor({ id, item, alt, onRemove, onLinkChange, onAltChange, on
                   value={item.link || ''}
                   onChange={(e) => onLinkChange(e.target.value)}
                   placeholder="https://"
-                  className="w-full text-xs px-2 py-1.5 bg-gray-900 border border-gray-700 text-gray-200 rounded focus:outline-none focus:ring-1 focus:ring-green-500 placeholder-gray-600"
+                  className="w-full text-xs px-2 py-1.5 bg-gray-900 border border-gray-700 text-gray-200 rounded focus:outline-none focus:ring-1 focus:ring-visualy-accent-4 placeholder-gray-600"
                 />
               </div>
               <div>
@@ -210,7 +210,7 @@ function LogoItemEditor({ id, item, alt, onRemove, onLinkChange, onAltChange, on
                   value={alt || ''}
                   onChange={(e) => onAltChange(e.target.value)}
                   placeholder="Popis obrázku..."
-                  className="w-full text-xs px-2 py-1.5 bg-gray-900 border border-gray-700 text-gray-200 rounded focus:outline-none focus:ring-1 focus:ring-green-500 placeholder-gray-600"
+                  className="w-full text-xs px-2 py-1.5 bg-gray-900 border border-gray-700 text-gray-200 rounded focus:outline-none focus:ring-1 focus:ring-visualy-accent-4 placeholder-gray-600"
                 />
               </div>
             </div>
@@ -436,9 +436,10 @@ export default function EditSidebar({ carousel, setCarousel, activeTab }) {
               <div>
                 <label className="text-xs font-medium text-gray-400 mb-1.5 block">Podnadpis</label>
                 <div>
-                  <TextArea
+                  <textarea
                     value={carousel.settings?.subtitleText || ''}
-                    onChange={(val) => updateSettings({ ...carousel.settings, subtitleText: val })}
+                    onChange={(e) => updateSettings({ ...carousel.settings, subtitleText: e.target.value })}
+                    className="w-full bg-gray-800 border border-gray-700 text-white text-sm px-3 py-2 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-visualy-accent-4 placeholder-gray-500"
                     placeholder="Doplňkový text pod nadpisem..."
                     rows={2}
                   />
@@ -589,7 +590,7 @@ export default function EditSidebar({ carousel, setCarousel, activeTab }) {
                           <button
                             onClick={() => updateSettings({ ...carousel.settings, fadeMode: 'mask' })}
                             className={`p-2 rounded-lg border text-sm transition-all ${(carousel.settings?.fadeMode ?? 'mask') === 'mask'
-                              ? 'bg-green-500/20 text-green-400 border-green-500/50'
+                              ? 'bg-visualy-accent-4/20 text-visualy-accent-4 border-visualy-accent-4/50'
                               : 'bg-gray-800 border-gray-700 text-gray-400 hover:text-white'
                               }`}
                           >
@@ -598,7 +599,7 @@ export default function EditSidebar({ carousel, setCarousel, activeTab }) {
                           <button
                             onClick={() => updateSettings({ ...carousel.settings, fadeMode: 'color' })}
                             className={`p-2 rounded-lg border text-sm transition-all ${carousel.settings?.fadeMode === 'color'
-                              ? 'bg-green-500/20 text-green-400 border-green-500/50'
+                              ? 'bg-visualy-accent-4/20 text-visualy-accent-4 border-visualy-accent-4/50'
                               : 'bg-gray-800 border-gray-700 text-gray-400 hover:text-white'
                               }`}
                           >

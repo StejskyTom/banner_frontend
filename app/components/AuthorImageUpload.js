@@ -48,8 +48,8 @@ export default function AuthorImageUpload({ widgetId, onUploadComplete }) {
         <div
             {...getRootProps()}
             className={`border-2 border-dashed rounded-lg p-6 text-center cursor-pointer transition flex flex-col items-center justify-center gap-3 ${isDragActive
-                    ? 'border-indigo-500 bg-indigo-50 dark:bg-indigo-900/20'
-                    : 'border-gray-300 dark:border-gray-600 bg-gray-50 dark:bg-gray-800'
+                ? 'border-visualy-accent-4 bg-visualy-accent-4/10 dark:bg-visualy-accent-4/20'
+                : 'border-gray-300 dark:border-gray-600 bg-gray-50 dark:bg-gray-800'
                 } ${uploading
                     ? 'opacity-50 cursor-not-allowed'
                     : 'hover:border-gray-400 dark:hover:border-gray-500'
@@ -58,13 +58,13 @@ export default function AuthorImageUpload({ widgetId, onUploadComplete }) {
             <input {...getInputProps()} />
             {uploading ? (
                 <div className="space-y-2">
-                    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-indigo-600 mx-auto"></div>
+                    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-visualy-accent-4 mx-auto"></div>
                     <p className="text-sm text-gray-500 dark:text-gray-400">Nahrávám...</p>
                 </div>
             ) : isDragActive ? (
                 <>
-                    <PhotoIcon className="h-10 w-10 text-indigo-500" />
-                    <p className="text-indigo-600 font-medium">Pusťte obrázek zde...</p>
+                    <PhotoIcon className="h-10 w-10 text-visualy-accent-4" />
+                    <p className="text-visualy-accent-4 font-medium">Pusťte obrázek zde...</p>
                 </>
             ) : (
                 <>

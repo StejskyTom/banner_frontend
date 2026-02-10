@@ -32,7 +32,7 @@ const ColorInput = ({ label, value, onChange }) => {
         <div>
             {label && <label className="text-xs font-medium text-gray-400 mb-2 block">{label}</label>}
             <div className="relative group">
-                <div className="relative flex items-center h-10 w-full rounded-md border border-gray-600 shadow-sm overflow-hidden ring-1 ring-white/5 transition-all focus-within:ring-1 focus-within:ring-green-500">
+                <div className="relative flex items-center h-10 w-full rounded-md border border-gray-600 shadow-sm overflow-hidden ring-1 ring-white/5 transition-all focus-within:ring-1 focus-within:ring-visualy-accent-4">
                     <input
                         type="text"
                         value={value || ''}
