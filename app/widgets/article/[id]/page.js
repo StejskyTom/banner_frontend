@@ -219,6 +219,28 @@ export default function ArticleEditPage() {
         return newBlock;
     };
 
+    const regenerateIds = (block) => ({
+        ...block,
+        id: crypto.randomUUID(),
+        ...(block.type === 'layout' && block.columns ? {
+            columns: block.columns.map(col => ({
+                ...col,
+                id: crypto.randomUUID(),
+                blocks: (col.blocks || []).map(regenerateIds)
+            }))
+        } : {})
+    });
+
+    const createBlockFromSaved = (savedData) => {
+        const { _savedId, _blockType, ...blockData } = savedData;
+        return regenerateIds({
+            ...blockData,
+            type: _blockType,
+            id: crypto.randomUUID(),
+            margin: blockData.margin || 24,
+        });
+    };
+
     const handleDragStart = (event) => {
         setActiveDragItem(event.active);
     };
@@ -232,6 +254,7 @@ export default function ArticleEditPage() {
         // Handle drop from Palette
         if (active.data.current?.isPaletteItem) {
             const type = active.data.current.type;
+            const savedBlockData = active.data.current.savedBlockData;
             const overId = String(over.id);
 
             // Drop into a layout column
@@ -239,7 +262,7 @@ export default function ArticleEditPage() {
                 const parts = overId.split(':');
                 const layoutBlockId = parts[1];
                 const colIndex = parseInt(parts[2], 10);
-                const newBlock = createNewBlock(type);
+                const newBlock = type === 'saved' ? createBlockFromSaved(savedBlockData) : createNewBlock(type);
                 // Smaller margin for child blocks
                 newBlock.margin = 12;
 
@@ -260,7 +283,7 @@ export default function ArticleEditPage() {
                 return;
             }
 
-            const newBlock = createNewBlock(type);
+            const newBlock = type === 'saved' ? createBlockFromSaved(savedBlockData) : createNewBlock(type);
 
             setWidget((prev) => {
                 const overIndex = prev.blocks.findIndex((b) => b.id === over.id);
@@ -399,15 +422,17 @@ export default function ArticleEditPage() {
                     />
 
                     {/* Preview Area */}
-                    <div className="flex-1 p-8 overflow-y-auto flex flex-col items-center bg-gray-50 dark:bg-gray-900/50">
-                        <ArticlePreview
-                            blocks={widget.blocks}
-                            selectedBlockId={selectedBlockId}
-                            onSelectBlock={setSelectedBlockId}
-                            onUpdateBlock={handleUpdateBlock}
-                            onFormatChange={setActiveFormats}
-                            onDeleteBlock={handleDeleteBlock}
-                        />
+                    <div className="flex-1 p-8 overflow-y-auto bg-gray-50 dark:bg-gray-900/50">
+                        <div className="flex flex-col items-center min-h-full">
+                            <ArticlePreview
+                                blocks={widget.blocks}
+                                selectedBlockId={selectedBlockId}
+                                onSelectBlock={setSelectedBlockId}
+                                onUpdateBlock={handleUpdateBlock}
+                                onFormatChange={setActiveFormats}
+                                onDeleteBlock={handleDeleteBlock}
+                            />
+                        </div>
                     </div>
                 </div>
 
