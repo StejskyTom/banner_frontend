@@ -11,6 +11,53 @@ export default function AuthorPreview({ widget }) {
         borderRadius = 0
     } = widget;
 
+    const s = widget.settings || {};
+
+    // Name styles
+    const NameTag = s.nameTag || 'h3';
+    const nameStyle = {
+        color: s.nameColor || widget.nameColor || '#111827',
+        fontSize: s.nameSize || '24px',
+        fontFamily: s.nameFont || 'sans-serif',
+        fontWeight: s.nameBold !== false ? 'bold' : 'normal',
+        fontStyle: s.nameItalic ? 'italic' : 'normal',
+        textAlign: s.nameAlign || (layout === 'side-by-side' ? 'left' : 'center'),
+        marginBottom: `${s.nameMarginBottom ?? 8}px`,
+        marginTop: 0,
+        lineHeight: 1.3,
+    };
+
+    // Position/Title styles
+    const PositionTag = s.positionTag || 'div';
+    const positionStyle = {
+        color: s.positionColor || widget.titleColor || '#4f46e5',
+        fontSize: s.positionSize || '14px',
+        fontFamily: s.positionFont || 'sans-serif',
+        fontWeight: s.positionBold ? 'bold' : '500',
+        fontStyle: s.positionItalic ? 'italic' : 'normal',
+        textAlign: s.positionAlign || (layout === 'side-by-side' ? 'left' : 'center'),
+        marginBottom: `${s.positionMarginBottom ?? 20}px`,
+        marginTop: 0,
+        textTransform: 'uppercase',
+        letterSpacing: '0.05em',
+        lineHeight: 1.4,
+    };
+
+    // Bio styles
+    const BioTag = s.bioTag || 'p';
+    const bioStyle = {
+        color: s.bioColor || widget.bioColor || '#4b5563',
+        fontSize: s.bioSize || '16px',
+        fontFamily: s.bioFont || 'sans-serif',
+        fontWeight: s.bioBold ? 'bold' : 'normal',
+        fontStyle: s.bioItalic ? 'italic' : 'normal',
+        textAlign: s.bioAlign || (layout === 'side-by-side' ? 'left' : 'center'),
+        marginBottom: `${s.bioMarginBottom ?? 0}px`,
+        marginTop: 0,
+        lineHeight: 1.6,
+        whiteSpace: 'pre-wrap',
+    };
+
     return (
         <div className="w-full h-full flex items-center justify-center p-8 bg-gray-100 dark:bg-gray-900/50 overflow-y-auto">
             <div
@@ -39,28 +86,19 @@ export default function AuthorPreview({ widget }) {
                 )}
 
                 <div className="flex-1 min-w-0">
-                    <h3
-                        className="text-2xl font-bold mb-2"
-                        style={{ color: widget.nameColor || '#111827' }}
-                    >
+                    <NameTag style={nameStyle}>
                         {authorName || 'Jméno Autora'}
-                    </h3>
+                    </NameTag>
 
                     {authorTitle && (
-                        <div
-                            className="font-medium uppercase tracking-wide text-sm mb-5"
-                            style={{ color: widget.titleColor || '#4f46e5' }}
-                        >
+                        <PositionTag style={positionStyle}>
                             {authorTitle}
-                        </div>
+                        </PositionTag>
                     )}
 
-                    <p
-                        className="leading-relaxed text-base whitespace-pre-wrap"
-                        style={{ color: widget.bioColor || '#4b5563' }}
-                    >
+                    <BioTag style={bioStyle}>
                         {authorBio || 'Zde se zobrazí váš životopis nebo popis...'}
-                    </p>
+                    </BioTag>
                 </div>
             </div>
         </div>
