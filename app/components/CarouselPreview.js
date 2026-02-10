@@ -13,9 +13,6 @@ export default function CarouselPreview({
 
     if (!carousel?.attachments?.length) return null;
 
-    // Duplicate enough times to ensure seamless infinite scroll
-    const duplicatedAttachments = [...carousel.attachments, ...carousel.attachments];
-
     const handleMouseEnter = () => {
         if (carousel.pauseOnHover) {
             setIsPaused(true);
@@ -32,12 +29,17 @@ export default function CarouselPreview({
         onUpdate({ settings: { ...settings, [key]: value } });
     };
 
-    // Calculate duration
-    // Calculate duration
+    // Calculate duration & infinite loop repeat count
     const speed = carousel.speed ?? 20;
     const enableAnimation = settings?.enableAnimation !== false;
-    const attachmentsToRender = enableAnimation ? [...carousel.attachments, ...carousel.attachments] : carousel.attachments;
-    const duration = (attachmentsToRender.length * speed) / 10;
+    const originalCount = carousel.attachments.length;
+    // Duplicate logos enough times so the strip is wider than 2x any viewport (~9000px)
+    const repeatCount = enableAnimation ? Math.max(2, Math.ceil(60 / Math.max(originalCount, 1))) : 1;
+    const attachmentsToRender = enableAnimation
+        ? Array(repeatCount).fill(carousel.attachments).flat()
+        : carousel.attachments;
+    const translatePercent = 100 / repeatCount;
+    const duration = (originalCount * speed) / 5;
 
     const titleStyle = {
         color: settings?.titleColor || '#000000',
@@ -235,7 +237,7 @@ export default function CarouselPreview({
             <style jsx global>{`
                 @keyframes scroll {
                     from { transform: translateX(0); }
-                    to { transform: translateX(-50%); }
+                    to { transform: translateX(-${translatePercent}%); }
                 }
             `}</style>
         </div >

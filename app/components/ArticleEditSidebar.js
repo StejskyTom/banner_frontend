@@ -10,7 +10,8 @@ import {
     ShoppingBagIcon,
     UserCircleIcon,
     DocumentTextIcon,
-    ChevronLeftIcon
+    ChevronLeftIcon,
+    ViewColumnsIcon
 } from '@heroicons/react/24/solid';
 import {
     TextProperties,
@@ -19,7 +20,8 @@ import {
     TableProperties,
     BannerProperties,
     ProductProperties,
-    AuthorProperties
+    AuthorProperties,
+    LayoutProperties
 } from './article/BlockProperties';
 
 // --- Draggable Palette Item ---
@@ -57,14 +59,43 @@ export default function ArticleEditSidebar({
     setSelectedBlockId,
     activeFormats
 }) {
+    const findBlockRecursive = (blocks, id) => {
+        for (const b of blocks) {
+            if (b.id === id) return b;
+            if (b.type === 'layout' && b.columns) {
+                for (const col of b.columns) {
+                    const found = findBlockRecursive(col.blocks || [], id);
+                    if (found) return found;
+                }
+            }
+        }
+        return null;
+    };
+
+    const updateBlocksRecursive = (blocks, updatedBlock) => {
+        return blocks.map(b => {
+            if (b.id === updatedBlock.id) return updatedBlock;
+            if (b.type === 'layout' && b.columns) {
+                return {
+                    ...b,
+                    columns: b.columns.map(col => ({
+                        ...col,
+                        blocks: updateBlocksRecursive(col.blocks || [], updatedBlock)
+                    }))
+                };
+            }
+            return b;
+        });
+    };
+
     const handleUpdateBlock = (updatedBlock) => {
         setWidget((prev) => ({
             ...prev,
-            blocks: prev.blocks.map((b) => (b.id === updatedBlock.id ? updatedBlock : b)),
+            blocks: updateBlocksRecursive(prev.blocks, updatedBlock),
         }));
     };
 
-    const selectedBlock = widget.blocks.find(b => b.id === selectedBlockId);
+    const selectedBlock = findBlockRecursive(widget.blocks, selectedBlockId);
 
     if (!activeTab) return null;
 
@@ -118,6 +149,9 @@ export default function ArticleEditSidebar({
                             {selectedBlock.type === 'author' && (
                                 <AuthorProperties block={selectedBlock} onChange={handleUpdateBlock} widgetId={widget.id} />
                             )}
+                            {selectedBlock.type === 'layout' && (
+                                <LayoutProperties block={selectedBlock} onChange={handleUpdateBlock} />
+                            )}
                         </div>
                     </div>
                 ) : (
@@ -137,6 +171,7 @@ export default function ArticleEditSidebar({
                                 <DraggablePaletteItem type="banner" label="Banner" icon={MegaphoneIcon} />
                                 <DraggablePaletteItem type="product" label="Produkt" icon={ShoppingBagIcon} />
                                 <DraggablePaletteItem type="author" label="Autor" icon={UserCircleIcon} />
+                                <DraggablePaletteItem type="layout" label="Layout" icon={ViewColumnsIcon} />
                             </div>
                         </div>
                     </div>

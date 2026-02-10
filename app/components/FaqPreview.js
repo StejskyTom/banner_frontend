@@ -14,7 +14,10 @@ function FaqItem({ question, settings, isFirst, isLast }) {
         fontWeight: settings.questionBold !== false ? 'bold' : 'normal',
         fontStyle: settings.questionItalic ? 'italic' : 'normal',
         textAlign: settings.questionAlign || 'left',
-        margin: 0,
+        marginTop: 0,
+        marginBottom: `${settings.questionMarginBottom ?? 8}px`,
+        marginLeft: 0,
+        marginRight: 0,
         flex: 1,
     };
 
@@ -63,14 +66,12 @@ function FaqItem({ question, settings, isFirst, isLast }) {
     const dividerEnabled = settings.dividerEnabled ?? true;
     const dividerStyle = {
         border: 'none',
-        height: `${settings.dividerHeight || 1}px`,
-        backgroundColor: settings.dividerColor || '#e5e7eb',
+        height: '0px',
+        borderTop: `${settings.dividerHeight || 1}px ${settings.dividerStyle || 'solid'} ${settings.dividerColor || '#e5e7eb'}`,
+        backgroundColor: 'transparent',
         width: `${settings.dividerWidth || 100}%`,
         margin: '0 auto',
         marginTop: `${settings.dividerMargin ?? 8}px`,
-        // Support for dashed/dotted styles if needed, though background-color handles solid best for hr
-        borderTop: settings.dividerStyle && settings.dividerStyle !== 'solid' ? `${settings.dividerHeight || 1}px ${settings.dividerStyle} ${settings.dividerColor || '#e5e7eb'}` : 'none',
-        backgroundColor: settings.dividerStyle && settings.dividerStyle !== 'solid' ? 'transparent' : (settings.dividerColor || '#e5e7eb'),
     };
 
     return (
@@ -102,12 +103,43 @@ export default function FaqPreview({ widget }) {
         borderRadius: widget.borderRadius ? `${widget.borderRadius}px` : '0px',
     };
 
+    const TitleTag = widget.titleTag || 'h2';
+    const titleStyle = {
+        color: widget.titleColor || '#111827',
+        fontSize: widget.titleSize || '24px',
+        fontWeight: widget.titleBold ? 'bold' : 'normal',
+        fontStyle: widget.titleItalic ? 'italic' : 'normal',
+        fontFamily: widget.titleFont || widget.font || 'sans-serif',
+        textAlign: widget.titleAlign || 'center',
+        marginBottom: `${widget.titleMarginBottom ?? 12}px`,
+        marginTop: 0,
+        lineHeight: 1.2
+    };
+
+    const SubtitleTag = widget.subtitleTag || 'p';
+    const subtitleStyle = {
+        color: widget.subtitleColor || '#6B7280',
+        fontSize: widget.subtitleSize || '16px',
+        fontWeight: widget.subtitleBold ? 'bold' : 'normal',
+        fontStyle: widget.subtitleItalic ? 'italic' : 'normal',
+        fontFamily: widget.subtitleFont || widget.font || 'sans-serif',
+        textAlign: widget.subtitleAlign || 'center',
+        marginBottom: `${widget.subtitleMarginBottom ?? 24}px`,
+        marginTop: 0,
+        lineHeight: 1.5
+    };
+
     return (
         <div className="w-full max-w-3xl mx-auto p-6 rounded-xl" style={containerStyle}>
             {widget.name && (
-                <h2 className="text-2xl font-bold mb-6" style={{ color: widget.questionColor || '#111827' }}>
+                <TitleTag style={titleStyle} className="mb-0">
                     {widget.name}
-                </h2>
+                </TitleTag>
+            )}
+            {widget.subtitleText && (
+                <SubtitleTag style={subtitleStyle} className="mb-0">
+                    {widget.subtitleText}
+                </SubtitleTag>
             )}
             <div className="space-y-0">
                 {(widget.questions || []).map((q, idx) => (

@@ -32,7 +32,7 @@ const ColorInput = ({ label, value, onChange }) => {
         <div>
             {label && <label className="text-xs font-medium text-gray-400 mb-2 block">{label}</label>}
             <div className="relative group">
-                <div className="relative flex items-center h-10 w-full rounded-md border border-gray-600 shadow-sm overflow-hidden ring-1 ring-white/5 transition-all focus-within:ring-2 focus-within:ring-green-500">
+                <div className="relative flex items-center h-10 w-full rounded-md border border-gray-600 shadow-sm overflow-hidden ring-1 ring-white/5 transition-all focus-within:ring-2 focus-within:ring-visualy-accent-4">
                     <input
                         type="text"
                         value={value || ''}
@@ -177,7 +177,7 @@ export default function RichTextToolbar({ activeFormats = {} }) {
             onClick={onClick}
             className={`p-2 rounded-md transition-all font-medium text-sm border flex items-center justify-center h-8 min-w-[32px]
                 ${active
-                    ? 'bg-green-500/20 text-green-400 border-green-500/50'
+                    ? 'bg-visualy-accent-4/20 text-visualy-accent-4 border-visualy-accent-4/50'
                     : 'bg-gray-800 border-gray-700 text-gray-400 hover:text-white hover:bg-gray-700 hover:border-gray-600'
                 }`}
             title={title}
@@ -245,7 +245,7 @@ export default function RichTextToolbar({ activeFormats = {} }) {
                     </div>
 
                     <select
-                        className="h-9 w-full bg-gray-800 border border-gray-700 text-white text-xs px-2 rounded-lg focus:outline-none focus:ring-1 focus:ring-green-500 rounded-lg"
+                        className="h-9 w-full bg-gray-800 border border-gray-700 text-white text-xs px-2 rounded-lg focus:outline-none focus:ring-1 focus:ring-visualy-accent-4 rounded-lg"
                         onChange={(e) => applyFontSize(e.target.value)}
                         value={activeFormats.fontSize || ''}
                     >
@@ -258,7 +258,7 @@ export default function RichTextToolbar({ activeFormats = {} }) {
                     </select>
 
                     <select
-                        className="h-9 w-full bg-gray-800 border border-gray-700 text-white text-xs px-2 rounded-lg focus:outline-none focus:ring-1 focus:ring-green-500 col-span-2"
+                        className="h-9 w-full bg-gray-800 border border-gray-700 text-white text-xs px-2 rounded-lg focus:outline-none focus:ring-1 focus:ring-visualy-accent-4 col-span-2"
                         onChange={(e) => applyFontFamily(e.target.value)}
                         value={activeFormats.fontFamily || ''}
                     >

@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { useParams } from 'next/navigation';
+import { useParams, useRouter } from 'next/navigation';
 import { authorizedFetch } from '../../../../lib/api';
 import { useToast } from "../../../components/ToastProvider";
 import {
@@ -12,18 +12,19 @@ import {
     TableCellsIcon,
     Cog6ToothIcon
 } from '@heroicons/react/24/solid';
-import Link from 'next/link';
 import Loader from '../../../components/Loader';
 import FaqEditSidebar from '../../../components/FaqEditSidebar';
 import FaqPreview from '../../../components/FaqPreview';
 
 export default function FaqWidgetDetailPage() {
     const { id } = useParams();
+    const router = useRouter();
     const [widget, setWidget] = useState(null);
     const [loading, setLoading] = useState(true);
     const [saving, setSaving] = useState(false);
     const [showEmbedModal, setShowEmbedModal] = useState(false);
     const [activeTab, setActiveTab] = useState('content');
+    const [isDirty, setIsDirty] = useState(false);
 
     const showNotification = useToast();
 
@@ -32,6 +33,17 @@ export default function FaqWidgetDetailPage() {
             fetchWidget();
         }
     }, [id]);
+
+    useEffect(() => {
+        const handleBeforeUnload = (e) => {
+            if (isDirty) {
+                e.preventDefault();
+                e.returnValue = '';
+            }
+        };
+        window.addEventListener('beforeunload', handleBeforeUnload);
+        return () => window.removeEventListener('beforeunload', handleBeforeUnload);
+    }, [isDirty]);
 
     const fetchWidget = async () => {
         try {
@@ -44,6 +56,7 @@ export default function FaqWidgetDetailPage() {
                     id: q.id || crypto.randomUUID()
                 }));
                 setWidget({ ...data, questions: questionsWithIds });
+                setIsDirty(false);
             } else {
                 showNotification('Nepodařilo se načíst widget', 'error');
             }
@@ -51,6 +64,22 @@ export default function FaqWidgetDetailPage() {
             showNotification('Chyba při načítání widgetu', 'error');
         } finally {
             setLoading(false);
+        }
+    };
+
+    const updateWidget = (newWidget) => {
+        setWidget(newWidget);
+        setIsDirty(true);
+    };
+
+    const handleBack = (e) => {
+        e.preventDefault();
+        if (isDirty) {
+            if (window.confirm('Máte neuložené změny. Opravdu chcete odejít?')) {
+                router.push('/widgets/faq');
+            }
+        } else {
+            router.push('/widgets/faq');
         }
     };
 
@@ -98,7 +127,26 @@ export default function FaqWidgetDetailPage() {
                     dividerWidth: widget.dividerWidth,
                     dividerHeight: widget.dividerHeight,
                     dividerStyle: widget.dividerStyle,
-                    dividerMargin: widget.dividerMargin
+                    dividerMargin: widget.dividerMargin,
+                    // Title settings
+                    titleTag: widget.titleTag,
+                    titleColor: widget.titleColor,
+                    titleSize: widget.titleSize,
+                    titleFont: widget.titleFont,
+                    titleBold: widget.titleBold,
+                    titleItalic: widget.titleItalic,
+                    titleAlign: widget.titleAlign,
+                    titleMarginBottom: widget.titleMarginBottom,
+                    // Subtitle settings
+                    subtitleText: widget.subtitleText,
+                    subtitleTag: widget.subtitleTag,
+                    subtitleColor: widget.subtitleColor,
+                    subtitleSize: widget.subtitleSize,
+                    subtitleFont: widget.subtitleFont,
+                    subtitleBold: widget.subtitleBold,
+                    subtitleItalic: widget.subtitleItalic,
+                    subtitleAlign: widget.subtitleAlign,
+                    subtitleMarginBottom: widget.subtitleMarginBottom
                 })
             });
 
@@ -112,6 +160,7 @@ export default function FaqWidgetDetailPage() {
                     id: q.id || crypto.randomUUID()
                 }));
                 setWidget({ ...updatedWidget, questions: questionsWithIds });
+                setIsDirty(false);
                 showNotification('Změny uloženy', 'success');
             } else {
                 showNotification('Nepodařilo se uložit změny', 'error');
@@ -141,12 +190,12 @@ export default function FaqWidgetDetailPage() {
             {/* Top Bar */}
             <div className="h-16 bg-gray-900 border-b border-gray-800 flex justify-between items-center px-6 shrink-0 z-10">
                 <div className="flex items-center gap-4">
-                    <Link
-                        href="/widgets/faq"
-                        className="p-2 rounded-lg hover:bg-gray-800 text-gray-400 hover:text-white transition-colors"
+                    <button
+                        onClick={handleBack}
+                        className="p-2 rounded-lg hover:bg-gray-800 text-gray-400 hover:text-white transition-colors cursor-pointer"
                     >
                         <ArrowLeftIcon className="h-5 w-5" />
-                    </Link>
+                    </button>
                     <h1 className="text-lg font-semibold text-white truncate max-w-md">
                         {widget.name}
                     </h1>
@@ -214,7 +263,7 @@ export default function FaqWidgetDetailPage() {
                 </div>
 
                 {/* Secondary Panel (EditSidebar) */}
-                <FaqEditSidebar widget={widget} setWidget={setWidget} activeTab={activeTab} />
+                <FaqEditSidebar widget={widget} setWidget={updateWidget} activeTab={activeTab} />
 
                 {/* Preview Area */}
                 <div className="flex-1 p-8 overflow-y-auto flex flex-col items-center bg-gray-50 dark:bg-gray-900/50">

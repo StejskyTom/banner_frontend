@@ -1,10 +1,9 @@
 'use client';
 
-import { useParams } from 'next/navigation';
+import { useParams, useRouter } from 'next/navigation';
 import { useState, useEffect } from 'react';
 import { authorizedFetch } from '../../../../lib/api';
 import { useToast } from '../../../components/ToastProvider';
-import Link from 'next/link';
 import Loader from '../../../components/Loader';
 import ArticleEditSidebar from '../../../components/ArticleEditSidebar';
 import ArticlePreview from '../../../components/ArticlePreview';
@@ -33,11 +32,13 @@ import {
     PhotoIcon,
     MegaphoneIcon,
     ShoppingBagIcon,
-    UserCircleIcon
+    UserCircleIcon,
+    ViewColumnsIcon
 } from '@heroicons/react/24/solid';
 
 export default function ArticleEditPage() {
     const { id } = useParams();
+    const router = useRouter();
     const [widget, setWidget] = useState(null);
     const [loading, setLoading] = useState(true);
     const [saving, setSaving] = useState(false);
@@ -46,6 +47,7 @@ export default function ArticleEditPage() {
     const [selectedBlockId, setSelectedBlockId] = useState(null);
     const [activeFormats, setActiveFormats] = useState({});
     const [activeDragItem, setActiveDragItem] = useState(null);
+    const [isDirty, setIsDirty] = useState(false);
     const showNotification = useToast();
 
     const sensors = useSensors(
@@ -57,6 +59,17 @@ export default function ArticleEditPage() {
         fetchWidget();
     }, [id]);
 
+    useEffect(() => {
+        const handleBeforeUnload = (e) => {
+            if (isDirty) {
+                e.preventDefault();
+                e.returnValue = '';
+            }
+        };
+        window.addEventListener('beforeunload', handleBeforeUnload);
+        return () => window.removeEventListener('beforeunload', handleBeforeUnload);
+    }, [isDirty]);
+
     const fetchWidget = async () => {
         try {
             const res = await authorizedFetch(`/article-widgets/${id}`);
@@ -67,6 +80,7 @@ export default function ArticleEditPage() {
                     id: block.id || crypto.randomUUID()
                 }));
                 setWidget({ ...data, blocks: blocksWithIds });
+                setIsDirty(false);
             } else {
                 showNotification('Nepodařilo se načíst widget', 'error');
             }
@@ -75,6 +89,22 @@ export default function ArticleEditPage() {
             showNotification('Chyba při načítání widgetu', 'error');
         } finally {
             setLoading(false);
+        }
+    };
+
+    const updateWidget = (newState) => {
+        setWidget(newState);
+        setIsDirty(true);
+    };
+
+    const handleBack = (e) => {
+        e.preventDefault();
+        if (isDirty) {
+            if (window.confirm('Máte neuložené změny. Opravdu chcete odejít?')) {
+                router.push('/widgets/article');
+            }
+        } else {
+            router.push('/widgets/article');
         }
     };
 
@@ -91,6 +121,7 @@ export default function ArticleEditPage() {
 
             if (res.ok) {
                 showNotification('Změny byly uloženy', 'success');
+                setIsDirty(false);
             } else {
                 showNotification('Nepodařilo se uložit změny', 'error');
             }
@@ -102,18 +133,52 @@ export default function ArticleEditPage() {
         }
     };
 
+    const updateBlocksRecursive = (blocks, updatedBlock) => {
+        return blocks.map(b => {
+            if (b.id === updatedBlock.id) return updatedBlock;
+            if (b.type === 'layout' && b.columns) {
+                return {
+                    ...b,
+                    columns: b.columns.map(col => ({
+                        ...col,
+                        blocks: updateBlocksRecursive(col.blocks || [], updatedBlock)
+                    }))
+                };
+            }
+            return b;
+        });
+    };
+
+    const deleteBlockRecursive = (blocks, blockId) => {
+        const filtered = blocks.filter(b => b.id !== blockId);
+        return filtered.map(b => {
+            if (b.type === 'layout' && b.columns) {
+                return {
+                    ...b,
+                    columns: b.columns.map(col => ({
+                        ...col,
+                        blocks: deleteBlockRecursive(col.blocks || [], blockId)
+                    }))
+                };
+            }
+            return b;
+        });
+    };
+
     const handleUpdateBlock = (updatedBlock) => {
         setWidget(prev => ({
             ...prev,
-            blocks: prev.blocks.map(b => b.id === updatedBlock.id ? updatedBlock : b)
+            blocks: updateBlocksRecursive(prev.blocks, updatedBlock)
         }));
+        setIsDirty(true);
     };
 
     const handleDeleteBlock = (blockId) => {
         setWidget(prev => ({
             ...prev,
-            blocks: prev.blocks.filter(b => b.id !== blockId)
+            blocks: deleteBlockRecursive(prev.blocks, blockId)
         }));
+        setIsDirty(true);
         if (selectedBlockId === blockId) setSelectedBlockId(null);
     };
 
@@ -143,6 +208,13 @@ export default function ArticleEditPage() {
             newBlock.borderRadius = 8;
         }
         if (type === 'author') { newBlock.layout = 'centered'; }
+        if (type === 'layout') {
+            newBlock.gap = 16;
+            newBlock.columns = [
+                { id: crypto.randomUUID(), width: 50, blocks: [] },
+                { id: crypto.randomUUID(), width: 50, blocks: [] },
+            ];
+        }
 
         return newBlock;
     };
@@ -160,6 +232,34 @@ export default function ArticleEditPage() {
         // Handle drop from Palette
         if (active.data.current?.isPaletteItem) {
             const type = active.data.current.type;
+            const overId = String(over.id);
+
+            // Drop into a layout column
+            if (overId.startsWith('layout-col:')) {
+                const parts = overId.split(':');
+                const layoutBlockId = parts[1];
+                const colIndex = parseInt(parts[2], 10);
+                const newBlock = createNewBlock(type);
+                // Smaller margin for child blocks
+                newBlock.margin = 12;
+
+                setWidget((prev) => {
+                    const newBlocks = prev.blocks.map(b => {
+                        if (b.id !== layoutBlockId) return b;
+                        const newColumns = b.columns.map((col, i) => {
+                            if (i !== colIndex) return col;
+                            return { ...col, blocks: [...(col.blocks || []), newBlock] };
+                        });
+                        return { ...b, columns: newColumns };
+                    });
+                    return { ...prev, blocks: newBlocks };
+                });
+                setIsDirty(true);
+
+                setSelectedBlockId(newBlock.id);
+                return;
+            }
+
             const newBlock = createNewBlock(type);
 
             setWidget((prev) => {
@@ -176,6 +276,7 @@ export default function ArticleEditPage() {
 
                 return { ...prev, blocks: newBlocks };
             });
+            setIsDirty(true);
 
             setSelectedBlockId(newBlock.id);
             return;
@@ -192,6 +293,7 @@ export default function ArticleEditPage() {
                     blocks: arrayMove(prev.blocks, oldIndex, newIndex),
                 };
             });
+            setIsDirty(true);
         }
     };
 
@@ -214,12 +316,12 @@ export default function ArticleEditPage() {
                 {/* Top Bar */}
                 <div className="h-16 bg-gray-900 border-b border-gray-800 flex justify-between items-center px-6 shrink-0 z-10">
                     <div className="flex items-center gap-4">
-                        <Link
-                            href="/widgets/article"
-                            className="p-2 rounded-lg hover:bg-gray-800 text-gray-400 hover:text-white transition-colors"
+                        <button
+                            onClick={handleBack}
+                            className="p-2 rounded-lg hover:bg-gray-800 text-gray-400 hover:text-white transition-colors cursor-pointer"
                         >
                             <ArrowLeftIcon className="h-5 w-5" />
-                        </Link>
+                        </button>
                         <h1 className="text-lg font-semibold text-white truncate max-w-md">
                             {widget.name}
                         </h1>
@@ -289,7 +391,7 @@ export default function ArticleEditPage() {
                     {/* Edit Sidebar */}
                     <ArticleEditSidebar
                         widget={widget}
-                        setWidget={setWidget}
+                        setWidget={updateWidget}
                         activeTab={activeTab}
                         selectedBlockId={selectedBlockId}
                         setSelectedBlockId={setSelectedBlockId}
@@ -321,6 +423,7 @@ export default function ArticleEditPage() {
                                 {activeDragItem.data.current?.type === 'banner' && <MegaphoneIcon className="h-5 w-5" />}
                                 {activeDragItem.data.current?.type === 'product' && <ShoppingBagIcon className="h-5 w-5" />}
                                 {activeDragItem.data.current?.type === 'author' && <UserCircleIcon className="h-5 w-5" />}
+                                {activeDragItem.data.current?.type === 'layout' && <ViewColumnsIcon className="h-5 w-5" />}
                             </div>
                             <span className="font-medium">
                                 {activeDragItem.data.current?.type === 'text' && 'Text'}
@@ -330,6 +433,7 @@ export default function ArticleEditPage() {
                                 {activeDragItem.data.current?.type === 'banner' && 'Banner'}
                                 {activeDragItem.data.current?.type === 'product' && 'Produkt'}
                                 {activeDragItem.data.current?.type === 'author' && 'Autor'}
+                                {activeDragItem.data.current?.type === 'layout' && 'Layout'}
                             </span>
                         </div>
                     ) : null}

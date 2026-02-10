@@ -240,6 +240,34 @@ export default function HeurekaEditSidebar({
     setProductNameItalic,
     productNameFull,
     setProductNameFull,
+    productNameMarginTop,
+    setProductNameMarginTop,
+    productNameMarginBottom,
+    setProductNameMarginBottom,
+
+    descriptionEnabled,
+    setDescriptionEnabled,
+    descriptionTag,
+    setDescriptionTag,
+    descriptionColor,
+    setDescriptionColor,
+    descriptionSize,
+    setDescriptionSize,
+    descriptionFont,
+    setDescriptionFont,
+    descriptionBold,
+    setDescriptionBold,
+    descriptionItalic,
+    setDescriptionItalic,
+    descriptionAlign,
+    setDescriptionAlign,
+    descriptionMarginTop,
+    setDescriptionMarginTop,
+    descriptionMarginBottom,
+    setDescriptionMarginBottom,
+    descriptionTruncateLength,
+    setDescriptionTruncateLength,
+
     priceColor,
     setPriceColor,
     priceSize,
@@ -276,10 +304,7 @@ export default function HeurekaEditSidebar({
     setCardBorderColor,
     cardBorderWidth,
     setCardBorderWidth,
-    productNameMarginTop,
-    setProductNameMarginTop,
-    productNameMarginBottom,
-    setProductNameMarginBottom,
+
     priceMarginTop,
     setPriceMarginTop,
     priceMarginBottom,
@@ -806,6 +831,76 @@ export default function HeurekaEditSidebar({
                                             onChange={(e) => setProductNameMarginBottom(parseInt(e.target.value))}
                                         />
                                     </div>
+                                </div>
+                            </CollapsibleSection>
+
+                            <hr className="border-0 h-[2px] bg-gradient-to-r from-transparent via-gray-600 to-transparent my-2" />
+
+                            <CollapsibleSection title="Popis produktu" isOpen={!!openSections['description']} onToggle={() => toggleSection('description')}>
+                                <div className="space-y-4">
+                                    <Toggle checked={descriptionEnabled} onChange={setDescriptionEnabled} label="Zobrazit popis" />
+
+                                    {descriptionEnabled && (
+                                        <>
+
+
+                                            <TypographyControls
+                                                color={descriptionColor}
+                                                setColor={setDescriptionColor}
+                                                size={descriptionSize}
+                                                setSize={setDescriptionSize}
+                                                font={descriptionFont}
+                                                setFont={setDescriptionFont}
+                                                bold={descriptionBold}
+                                                setBold={setDescriptionBold}
+                                                italic={descriptionItalic}
+                                                setItalic={setDescriptionItalic}
+                                            />
+
+                                            <div className="pt-2 border-t border-gray-800">
+                                                <div className="flex justify-between items-center mb-2">
+                                                    <label className="text-xs font-medium text-gray-400">Zkrátit popis ({descriptionTruncateLength} znaků)</label>
+                                                </div>
+                                                <RangeSlider
+                                                    min={10}
+                                                    max={500}
+                                                    step={5}
+                                                    value={descriptionTruncateLength}
+                                                    onChange={(e) => setDescriptionTruncateLength(parseInt(e.target.value))}
+                                                />
+                                                <div className="text-[10px] text-gray-500 mt-1">
+                                                    Omezí délku popisu a přidá "..."
+                                                </div>
+                                            </div>
+
+                                            <div className="pt-2 border-t border-gray-800 space-y-4">
+                                                <div>
+                                                    <div className="flex justify-between items-center mb-2">
+                                                        <label className="text-xs font-medium text-gray-400">Horní odsazení ({descriptionMarginTop}px)</label>
+                                                    </div>
+                                                    <RangeSlider
+                                                        min={0}
+                                                        max={64}
+                                                        step={1}
+                                                        value={descriptionMarginTop}
+                                                        onChange={(e) => setDescriptionMarginTop(parseInt(e.target.value))}
+                                                    />
+                                                </div>
+                                                <div>
+                                                    <div className="flex justify-between items-center mb-2">
+                                                        <label className="text-xs font-medium text-gray-400">Spodní odsazení ({descriptionMarginBottom}px)</label>
+                                                    </div>
+                                                    <RangeSlider
+                                                        min={0}
+                                                        max={64}
+                                                        step={1}
+                                                        value={descriptionMarginBottom}
+                                                        onChange={(e) => setDescriptionMarginBottom(parseInt(e.target.value))}
+                                                    />
+                                                </div>
+                                            </div>
+                                        </>
+                                    )}
                                 </div>
                             </CollapsibleSection>
 

@@ -1,6 +1,6 @@
 'use client';
 
-import { useParams } from 'next/navigation';
+import { useParams, useRouter } from 'next/navigation';
 import { useEffect, useState, useRef } from 'react';
 import { authorizedFetch } from '../../../../lib/api';
 import { useToast } from "../../../components/ToastProvider";
@@ -21,6 +21,7 @@ import HeurekaPreview from '../../../components/HeurekaPreview';
 
 export default function HeurekaFeedDetailPage() {
   const { feedId } = useParams();
+  const router = useRouter();
   const [feed, setFeed] = useState(null);
   const [products, setProducts] = useState([]);
   const [categories, setCategories] = useState([]);
@@ -35,6 +36,7 @@ export default function HeurekaFeedDetailPage() {
   const [sortBy, setSortBy] = useState('name_asc');
   const [saving, setSaving] = useState(false);
   const [activeTab, setActiveTab] = useState('content');
+  const [isDirty, setIsDirty] = useState(false);
   const lastRequestIdRef = useRef(0);
 
   // Settings
@@ -72,6 +74,18 @@ export default function HeurekaFeedDetailPage() {
   const [productNameFull, setProductNameFull] = useState(false);
   const [productNameMarginTop, setProductNameMarginTop] = useState(0);
   const [productNameMarginBottom, setProductNameMarginBottom] = useState(12);
+
+  const [descriptionEnabled, setDescriptionEnabled] = useState(false);
+  const [descriptionTag, setDescriptionTag] = useState('p');
+  const [descriptionColor, setDescriptionColor] = useState('#4b5563');
+  const [descriptionSize, setDescriptionSize] = useState('14px');
+  const [descriptionFont, setDescriptionFont] = useState('sans-serif');
+  const [descriptionBold, setDescriptionBold] = useState(false);
+  const [descriptionItalic, setDescriptionItalic] = useState(false);
+  const [descriptionAlign, setDescriptionAlign] = useState('center');
+  const [descriptionMarginTop, setDescriptionMarginTop] = useState(0);
+  const [descriptionMarginBottom, setDescriptionMarginBottom] = useState(12);
+  const [descriptionTruncateLength, setDescriptionTruncateLength] = useState(100);
 
   // Image Settings
   const [imageHeight, setImageHeight] = useState(192); // 48 * 4 = 192px
@@ -121,6 +135,40 @@ export default function HeurekaFeedDetailPage() {
       coordinateGetter: sortableKeyboardCoordinates,
     })
   );
+
+  useEffect(() => {
+    const handleBeforeUnload = (e) => {
+      if (isDirty) {
+        e.preventDefault();
+        e.returnValue = '';
+      }
+    };
+    window.addEventListener('beforeunload', handleBeforeUnload);
+    return () => window.removeEventListener('beforeunload', handleBeforeUnload);
+  }, [isDirty]);
+
+  const createSetter = (setter) => (value) => {
+    if (typeof value === 'function') {
+      setter((prev) => {
+        const newValue = value(prev);
+        return newValue;
+      });
+    } else {
+      setter(value);
+    }
+    setIsDirty(true);
+  };
+
+  const handleBack = (e) => {
+    e.preventDefault();
+    if (isDirty) {
+      if (window.confirm('Máte neuložené změny. Opravdu chcete odejít?')) {
+        router.push('/widgets/heureka');
+      }
+    } else {
+      router.push('/widgets/heureka');
+    }
+  };
 
   useEffect(() => {
     if (feedId) {
@@ -175,6 +223,18 @@ export default function HeurekaFeedDetailPage() {
         setProductNameFull(feed.layoutOptions.productNameFull || false);
         setProductNameMarginTop(feed.layoutOptions.productNameMarginTop !== undefined ? feed.layoutOptions.productNameMarginTop : 0);
         setProductNameMarginBottom(feed.layoutOptions.productNameMarginBottom !== undefined ? feed.layoutOptions.productNameMarginBottom : 12);
+
+        setDescriptionEnabled(feed.layoutOptions.descriptionEnabled !== undefined ? feed.layoutOptions.descriptionEnabled : false);
+        setDescriptionTag(feed.layoutOptions.descriptionTag || 'p');
+        setDescriptionColor(feed.layoutOptions.descriptionColor || '#4b5563');
+        setDescriptionSize(feed.layoutOptions.descriptionSize || '14px');
+        setDescriptionFont(feed.layoutOptions.descriptionFont || 'sans-serif');
+        setDescriptionBold(feed.layoutOptions.descriptionBold !== undefined ? feed.layoutOptions.descriptionBold : false);
+        setDescriptionItalic(feed.layoutOptions.descriptionItalic || false);
+        setDescriptionAlign(feed.layoutOptions.descriptionAlign || 'center');
+        setDescriptionMarginTop(feed.layoutOptions.descriptionMarginTop !== undefined ? feed.layoutOptions.descriptionMarginTop : 0);
+        setDescriptionMarginBottom(feed.layoutOptions.descriptionMarginBottom !== undefined ? feed.layoutOptions.descriptionMarginBottom : 12);
+        setDescriptionTruncateLength(feed.layoutOptions.descriptionTruncateLength !== undefined ? feed.layoutOptions.descriptionTruncateLength : 100);
 
         setImageHeight(feed.layoutOptions.imageHeight !== undefined ? feed.layoutOptions.imageHeight : 192);
         setImageObjectFit(feed.layoutOptions.imageObjectFit || 'contain');
@@ -314,6 +374,7 @@ export default function HeurekaFeedDetailPage() {
         return [...prev, product];
       }
     });
+    setIsDirty(true);
   };
 
   const handleDragEnd = (event) => {
@@ -325,6 +386,7 @@ export default function HeurekaFeedDetailPage() {
         const newIndex = items.findIndex((item) => item.id === over.id);
         return arrayMove(items, oldIndex, newIndex);
       });
+      setIsDirty(true);
     }
   };
 
@@ -346,7 +408,6 @@ export default function HeurekaFeedDetailPage() {
           layout: layout,
           layoutOptions: {
             layout: layout,
-            gridColumns: parseInt(gridColumns),
             gridColumns: parseInt(gridColumns),
             mobileGridColumns: parseInt(mobileGridColumns),
             carouselArrows,
@@ -407,7 +468,18 @@ export default function HeurekaFeedDetailPage() {
             cardBorderColor: cardBorderColor,
             cardBorderWidth: parseInt(cardBorderWidth),
             cardPaddingX: parseInt(cardPaddingX),
-            cardPaddingY: parseInt(cardPaddingY)
+            cardPaddingY: parseInt(cardPaddingY),
+            descriptionEnabled,
+            descriptionTag,
+            descriptionColor,
+            descriptionSize,
+            descriptionFont,
+            descriptionBold,
+            descriptionItalic,
+            descriptionAlign,
+            descriptionMarginTop: parseInt(descriptionMarginTop),
+            descriptionMarginBottom: parseInt(descriptionMarginBottom),
+            descriptionTruncateLength: parseInt(descriptionTruncateLength)
           },
           url: feed.url,
           name: feed.name
@@ -419,6 +491,7 @@ export default function HeurekaFeedDetailPage() {
       if (selectionRes?.ok && settingsRes?.ok) {
         const updatedFeed = await settingsRes.json();
         setFeed(updatedFeed);
+        setIsDirty(false);
         showNotification('Všechny změny byly uloženy', 'success');
       } else {
         showNotification('Některé změny se nepodařilo uložit', 'warning');
@@ -446,6 +519,55 @@ export default function HeurekaFeedDetailPage() {
 
   const totalPages = Math.ceil(totalItems / itemsPerPage);
 
+
+  const handleProductDescriptionChange = async (productId, newDescription) => {
+    setSelectedProductDetails(prev => prev.map(p =>
+      p.id === productId ? { ...p, description: newDescription } : p
+    ));
+    setProducts(prev => prev.map(p =>
+      p.id === productId ? { ...p, description: newDescription } : p
+    ));
+
+    try {
+      const res = await authorizedFetch(`/heureka/products/${productId}`, {
+        method: 'PUT',
+        body: JSON.stringify({ description: newDescription })
+      });
+
+      if (!res.ok) {
+        showNotification('Nepodařilo se uložit popis produktu', 'error');
+      }
+    } catch (error) {
+      showNotification('Chyba při ukládání popisu produktu', 'error');
+    }
+  };
+
+  const handleProductNameChange = async (productId, newName) => {
+    // 1. Update local state immediately for responsiveness
+    setSelectedProductDetails(prev => prev.map(p =>
+      p.id === productId ? { ...p, productName: newName } : p
+    ));
+
+    // Also update the main products list if the product is there
+    setProducts(prev => prev.map(p =>
+      p.id === productId ? { ...p, productName: newName } : p
+    ));
+
+    // 2. Call API to save changes
+    try {
+      const res = await authorizedFetch(`/heureka/products/${productId}`, {
+        method: 'PUT',
+        body: JSON.stringify({ productName: newName })
+      });
+
+      if (!res.ok) {
+        showNotification('Nepodařilo se uložit název produktu', 'error');
+      }
+    } catch (error) {
+      showNotification('Chyba při ukládání názvu produktu', 'error');
+    }
+  };
+
   if (loading && !feed) return <Loader />;
   if (!feed) return <div className="p-8 text-center text-red-500">Feed nenalezen</div>;
 
@@ -455,12 +577,12 @@ export default function HeurekaFeedDetailPage() {
         {/* Top Bar */}
         <div className="h-16 bg-gray-900 border-b border-gray-800 flex justify-between items-center px-6 shrink-0 z-10">
           <div className="flex items-center gap-4">
-            <Link
-              href="/widgets/heureka"
-              className="p-2 rounded-lg hover:bg-gray-800 text-gray-400 hover:text-white transition-colors"
+            <button
+              onClick={handleBack}
+              className="p-2 rounded-lg hover:bg-gray-800 text-gray-400 hover:text-white transition-colors cursor-pointer"
             >
               <ArrowLeftIcon className="h-5 w-5" />
-            </Link>
+            </button>
             <h1 className="text-lg font-semibold text-white truncate max-w-md">
               {feed.name}
             </h1>
@@ -544,119 +666,148 @@ export default function HeurekaFeedDetailPage() {
             setPage={setPage}
             totalPages={totalPages}
             layout={layout}
-            setLayout={setLayout}
+            setLayout={createSetter(setLayout)}
             gridColumns={gridColumns}
-            setGridColumns={setGridColumns}
+            setGridColumns={createSetter(setGridColumns)}
             mobileGridColumns={mobileGridColumns}
-            setMobileGridColumns={setMobileGridColumns}
+            setMobileGridColumns={createSetter(setMobileGridColumns)}
             carouselArrows={carouselArrows}
-            setCarouselArrows={setCarouselArrows}
+            setCarouselArrows={createSetter(setCarouselArrows)}
             carouselArrowsBackground={carouselArrowsBackground}
-            setCarouselArrowsBackground={setCarouselArrowsBackground}
+            setCarouselArrowsBackground={createSetter(setCarouselArrowsBackground)}
             carouselArrowsColor={carouselArrowsColor}
-            setCarouselArrowsColor={setCarouselArrowsColor}
+            setCarouselArrowsColor={createSetter(setCarouselArrowsColor)}
             carouselArrowsBorderRadius={carouselArrowsBorderRadius}
-            setCarouselArrowsBorderRadius={setCarouselArrowsBorderRadius}
+            setCarouselArrowsBorderRadius={createSetter(setCarouselArrowsBorderRadius)}
             carouselDots={carouselDots}
-            setCarouselDots={setCarouselDots}
+            setCarouselDots={createSetter(setCarouselDots)}
             carouselDotsColor={carouselDotsColor}
-            setCarouselDotsColor={setCarouselDotsColor}
+            setCarouselDotsColor={createSetter(setCarouselDotsColor)}
             carouselDotsActiveColor={carouselDotsActiveColor}
-            setCarouselDotsActiveColor={setCarouselDotsActiveColor}
+            setCarouselDotsActiveColor={createSetter(setCarouselDotsActiveColor)}
             carouselDotsMarginTop={carouselDotsMarginTop}
-            setCarouselDotsMarginTop={setCarouselDotsMarginTop}
+            setCarouselDotsMarginTop={createSetter(setCarouselDotsMarginTop)}
             widgetTitle={widgetTitle}
-            setWidgetTitle={setWidgetTitle}
+            setWidgetTitle={createSetter(setWidgetTitle)}
             widgetTitleTag={widgetTitleTag}
-            setWidgetTitleTag={setWidgetTitleTag}
+            setWidgetTitleTag={createSetter(setWidgetTitleTag)}
             widgetTitleBold={widgetTitleBold}
-            setWidgetTitleBold={setWidgetTitleBold}
+            setWidgetTitleBold={createSetter(setWidgetTitleBold)}
             widgetTitleItalic={widgetTitleItalic}
-            setWidgetTitleItalic={setWidgetTitleItalic}
+            setWidgetTitleItalic={createSetter(setWidgetTitleItalic)}
             widgetTitleColor={widgetTitleColor}
-            setWidgetTitleColor={setWidgetTitleColor}
+            setWidgetTitleColor={createSetter(setWidgetTitleColor)}
             widgetTitleSize={widgetTitleSize}
-            setWidgetTitleSize={setWidgetTitleSize}
+            setWidgetTitleSize={createSetter(setWidgetTitleSize)}
             widgetTitleFont={widgetTitleFont}
-            setWidgetTitleFont={setWidgetTitleFont}
+            setWidgetTitleFont={createSetter(setWidgetTitleFont)}
             widgetTitleAlign={widgetTitleAlign}
-            setWidgetTitleAlign={setWidgetTitleAlign}
+            setWidgetTitleAlign={createSetter(setWidgetTitleAlign)}
             widgetTitleMarginBottom={widgetTitleMarginBottom}
-            setWidgetTitleMarginBottom={setWidgetTitleMarginBottom}
+            setWidgetTitleMarginBottom={createSetter(setWidgetTitleMarginBottom)}
             buttonColor={buttonColor}
-            setButtonColor={setButtonColor}
+            setButtonColor={createSetter(setButtonColor)}
             buttonText={buttonText}
-            setButtonText={setButtonText}
+            setButtonText={createSetter(setButtonText)}
             cardBorderRadius={cardBorderRadius}
-            setCardBorderRadius={setCardBorderRadius}
+            setCardBorderRadius={createSetter(setCardBorderRadius)}
             cardBackgroundColor={cardBackgroundColor}
-            setCardBackgroundColor={setCardBackgroundColor}
+            setCardBackgroundColor={createSetter(setCardBackgroundColor)}
             productNameColor={productNameColor}
-            setProductNameColor={setProductNameColor}
+            setProductNameColor={createSetter(setProductNameColor)}
             productNameSize={productNameSize}
-            setProductNameSize={setProductNameSize}
+            setProductNameSize={createSetter(setProductNameSize)}
             productNameFont={productNameFont}
-            setProductNameFont={setProductNameFont}
+            setProductNameFont={createSetter(setProductNameFont)}
             productNameBold={productNameBold}
-            setProductNameBold={setProductNameBold}
+            setProductNameBold={createSetter(setProductNameBold)}
             productNameItalic={productNameItalic}
-            setProductNameItalic={setProductNameItalic}
+            setProductNameItalic={createSetter(setProductNameItalic)}
             productNameFull={productNameFull}
-            setProductNameFull={setProductNameFull}
+            setProductNameFull={createSetter(setProductNameFull)}
             productNameMarginTop={productNameMarginTop}
-            setProductNameMarginTop={setProductNameMarginTop}
+            setProductNameMarginTop={createSetter(setProductNameMarginTop)}
             productNameMarginBottom={productNameMarginBottom}
-            setProductNameMarginBottom={setProductNameMarginBottom}
+            setProductNameMarginBottom={createSetter(setProductNameMarginBottom)}
+
+            descriptionEnabled={descriptionEnabled}
+            setDescriptionEnabled={createSetter(setDescriptionEnabled)}
+            descriptionTag={descriptionTag}
+            setDescriptionTag={createSetter(setDescriptionTag)}
+            descriptionColor={descriptionColor}
+            setDescriptionColor={createSetter(setDescriptionColor)}
+            descriptionSize={descriptionSize}
+            setDescriptionSize={createSetter(setDescriptionSize)}
+            descriptionFont={descriptionFont}
+            setDescriptionFont={createSetter(setDescriptionFont)}
+            descriptionBold={descriptionBold}
+            setDescriptionBold={createSetter(setDescriptionBold)}
+            descriptionItalic={descriptionItalic}
+            setDescriptionItalic={createSetter(setDescriptionItalic)}
+            descriptionAlign={descriptionAlign}
+            setDescriptionAlign={createSetter(setDescriptionAlign)}
+            descriptionMarginTop={descriptionMarginTop}
+            setDescriptionMarginTop={createSetter(setDescriptionMarginTop)}
+            descriptionMarginBottom={descriptionMarginBottom}
+            setDescriptionMarginBottom={createSetter(setDescriptionMarginBottom)}
+
             imageHeight={imageHeight}
-            setImageHeight={setImageHeight}
+            setImageHeight={createSetter(setImageHeight)}
             imageObjectFit={imageObjectFit}
-            setImageObjectFit={setImageObjectFit}
+            setImageObjectFit={createSetter(setImageObjectFit)}
             imagePadding={imagePadding}
-            setImagePadding={setImagePadding}
+            setImagePadding={createSetter(setImagePadding)}
             imageMarginBottom={imageMarginBottom}
-            setImageMarginBottom={setImageMarginBottom}
+            setImageMarginBottom={createSetter(setImageMarginBottom)}
             imageBorderRadius={imageBorderRadius}
-            setImageBorderRadius={setImageBorderRadius}
+            setImageBorderRadius={createSetter(setImageBorderRadius)}
             priceColor={priceColor}
-            setPriceColor={setPriceColor}
+            setPriceColor={createSetter(setPriceColor)}
             priceSize={priceSize}
-            setPriceSize={setPriceSize}
+            setPriceSize={createSetter(setPriceSize)}
             priceFont={priceFont}
-            setPriceFont={setPriceFont}
+            setPriceFont={createSetter(setPriceFont)}
             priceBold={priceBold}
-            setPriceBold={setPriceBold}
+            setPriceBold={createSetter(setPriceBold)}
             priceItalic={priceItalic}
-            setPriceItalic={setPriceItalic}
+            setPriceItalic={createSetter(setPriceItalic)}
             priceFormat={priceFormat}
-            setPriceFormat={setPriceFormat}
+            setPriceFormat={createSetter(setPriceFormat)}
             priceMarginTop={priceMarginTop}
-            setPriceMarginTop={setPriceMarginTop}
+            setPriceMarginTop={createSetter(setPriceMarginTop)}
             priceMarginBottom={priceMarginBottom}
-            setPriceMarginBottom={setPriceMarginBottom}
+            setPriceMarginBottom={createSetter(setPriceMarginBottom)}
             buttonTextColor={buttonTextColor}
-            setButtonTextColor={setButtonTextColor}
+            setButtonTextColor={createSetter(setButtonTextColor)}
             buttonFontSize={buttonFontSize}
-            setButtonFontSize={setButtonFontSize}
+            setButtonFontSize={createSetter(setButtonFontSize)}
             buttonFont={buttonFont}
-            setButtonFont={setButtonFont}
+            setButtonFont={createSetter(setButtonFont)}
             buttonBold={buttonBold}
-            setButtonBold={setButtonBold}
+            setButtonBold={createSetter(setButtonBold)}
             buttonItalic={buttonItalic}
-            setButtonItalic={setButtonItalic}
+            setButtonItalic={createSetter(setButtonItalic)}
             buttonMarginTop={buttonMarginTop}
-            setButtonMarginTop={setButtonMarginTop}
+            setButtonMarginTop={createSetter(setButtonMarginTop)}
             buttonMarginBottom={buttonMarginBottom}
-            setButtonMarginBottom={setButtonMarginBottom}
+            setButtonMarginBottom={createSetter(setButtonMarginBottom)}
             buttonBorderRadius={buttonBorderRadius}
-            setButtonBorderRadius={setButtonBorderRadius}
+            setButtonBorderRadius={createSetter(setButtonBorderRadius)}
             cardShadowEnabled={cardShadowEnabled}
-            setCardShadowEnabled={setCardShadowEnabled}
+            setCardShadowEnabled={createSetter(setCardShadowEnabled)}
             cardShadowColor={cardShadowColor}
-            setCardShadowColor={setCardShadowColor}
+            setCardShadowColor={createSetter(setCardShadowColor)}
             cardShadowBlur={cardShadowBlur}
-            setCardShadowBlur={setCardShadowBlur}
+            setCardShadowBlur={createSetter(setCardShadowBlur)}
+
             cardShadowOpacity={cardShadowOpacity}
-            setCardShadowOpacity={setCardShadowOpacity}
+            setCardShadowOpacity={createSetter(setCardShadowOpacity)}
+
+
+
+            descriptionTruncateLength={descriptionTruncateLength}
+            setDescriptionTruncateLength={createSetter(setDescriptionTruncateLength)}
+
             itemsPerPage={itemsPerPage}
             setItemsPerPage={setItemsPerPage}
             sortBy={sortBy}
@@ -667,15 +818,15 @@ export default function HeurekaFeedDetailPage() {
             fetchProducts={fetchProducts}
 
             cardBorderEnabled={cardBorderEnabled}
-            setCardBorderEnabled={setCardBorderEnabled}
+            setCardBorderEnabled={createSetter(setCardBorderEnabled)}
             cardBorderColor={cardBorderColor}
-            setCardBorderColor={setCardBorderColor}
+            setCardBorderColor={createSetter(setCardBorderColor)}
             cardBorderWidth={cardBorderWidth}
-            setCardBorderWidth={setCardBorderWidth}
+            setCardBorderWidth={createSetter(setCardBorderWidth)}
             cardPaddingX={cardPaddingX}
-            setCardPaddingX={setCardPaddingX}
+            setCardPaddingX={createSetter(setCardPaddingX)}
             cardPaddingY={cardPaddingY}
-            setCardPaddingY={setCardPaddingY}
+            setCardPaddingY={createSetter(setCardPaddingY)}
           />
 
           {/* Preview Area */}
@@ -683,6 +834,8 @@ export default function HeurekaFeedDetailPage() {
             <HeurekaPreview
               selectedProductDetails={selectedProductDetails}
               onRemoveProduct={(p) => toggleProductSelection(p)}
+              onProductNameChange={handleProductNameChange}
+              onProductDescriptionChange={handleProductDescriptionChange}
               layout={layout}
               gridColumns={gridColumns}
               mobileGridColumns={mobileGridColumns}
@@ -717,6 +870,17 @@ export default function HeurekaFeedDetailPage() {
               productNameFull={productNameFull}
               productNameMarginTop={productNameMarginTop}
               productNameMarginBottom={productNameMarginBottom}
+              descriptionEnabled={descriptionEnabled}
+              descriptionTag={descriptionTag}
+              descriptionColor={descriptionColor}
+              descriptionSize={descriptionSize}
+              descriptionFont={descriptionFont}
+              descriptionBold={descriptionBold}
+              descriptionItalic={descriptionItalic}
+              descriptionAlign={descriptionAlign}
+              descriptionMarginTop={descriptionMarginTop}
+              descriptionMarginBottom={descriptionMarginBottom}
+              descriptionTruncateLength={descriptionTruncateLength}
               imageHeight={imageHeight}
               imageObjectFit={imageObjectFit}
               imagePadding={imagePadding}

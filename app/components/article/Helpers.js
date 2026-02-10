@@ -27,7 +27,7 @@ export function Input({ label, value, onChange, placeholder }) {
                 type="text"
                 value={value || ''}
                 onChange={(e) => onChange(e.target.value)}
-                className="w-full p-2.5 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg text-gray-900 dark:text-white focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+                className="w-full p-2.5 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg text-gray-900 dark:text-white focus:ring-2 focus:ring-visualy-accent-4 focus:border-visualy-accent-4"
                 placeholder={placeholder}
             />
         </div>
@@ -42,7 +42,7 @@ export function TextArea({ label, value, onChange, placeholder, rows = 3 }) {
                 value={value || ''}
                 onChange={(e) => onChange(e.target.value)}
                 rows={rows}
-                className="w-full p-2.5 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg text-gray-900 dark:text-white focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+                className="w-full p-2.5 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg text-gray-900 dark:text-white focus:ring-2 focus:ring-visualy-accent-4 focus:border-visualy-accent-4"
                 placeholder={placeholder}
             />
         </div>
@@ -56,7 +56,7 @@ export function Select({ label, value, onChange, options }) {
             <select
                 value={value}
                 onChange={(e) => onChange(e.target.value)}
-                className="w-full p-2.5 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg text-gray-900 dark:text-white text-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+                className="w-full p-2.5 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg text-gray-900 dark:text-white text-sm focus:ring-2 focus:ring-visualy-accent-4 focus:border-visualy-accent-4"
             >
                 {options.map(opt => (
                     <option key={opt.value} value={opt.value}>{opt.label}</option>

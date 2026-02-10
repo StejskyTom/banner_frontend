@@ -1,5 +1,5 @@
 'use client';
-import { useParams } from 'next/navigation';
+import { useParams, useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import EditSidebar from '../../../components/EditSidebar';
 import CarouselPreview from '../../../components/CarouselPreview';
@@ -12,12 +12,14 @@ import Loader from '../../../components/Loader';
 
 export default function CarouselEditPage() {
   const { id } = useParams();
+  const router = useRouter();
   const [carousel, setCarousel] = useState(null);
   const [loading, setLoading] = useState(true);
   const showNotification = useToast();
   const [isSaving, setIsSaving] = useState(false);
   const [showEmbedModal, setShowEmbedModal] = useState(false);
   const [activeTab, setActiveTab] = useState('content');
+  const [isDirty, setIsDirty] = useState(false);
 
   useEffect(() => {
     const loadCarousel = async () => {
@@ -26,6 +28,7 @@ export default function CarouselEditPage() {
         if (res && res.ok) {
           const data = await res.json();
           setCarousel(data);
+          setIsDirty(false);
         } else {
           showNotification('Nepodařilo se načíst carousel', 'error');
         }
@@ -40,6 +43,33 @@ export default function CarouselEditPage() {
       loadCarousel();
     }
   }, [id, showNotification]);
+
+  useEffect(() => {
+    const handleBeforeUnload = (e) => {
+      if (isDirty) {
+        e.preventDefault();
+        e.returnValue = '';
+      }
+    };
+    window.addEventListener('beforeunload', handleBeforeUnload);
+    return () => window.removeEventListener('beforeunload', handleBeforeUnload);
+  }, [isDirty]);
+
+  const updateCarousel = (newState) => {
+    setCarousel(newState);
+    setIsDirty(true);
+  };
+
+  const handleBack = (e) => {
+    e.preventDefault();
+    if (isDirty) {
+      if (window.confirm('Máte neuložené změny. Opravdu chcete odejít?')) {
+        router.push('/widgets/logo-carousel');
+      }
+    } else {
+      router.push('/widgets/logo-carousel');
+    }
+  };
 
   if (loading) return <Loader />;
   if (!carousel) return <p className="p-6 text-red-500">Nenalezeno...</p>;
@@ -72,7 +102,10 @@ export default function CarouselEditPage() {
         })
       });
 
-      if (res?.ok) showNotification("Uloženo", "success");
+      if (res?.ok) {
+        showNotification("Uloženo", "success");
+        setIsDirty(false);
+      }
       else showNotification("Chyba uložení", "error");
 
     } catch (err) {
@@ -97,12 +130,12 @@ export default function CarouselEditPage() {
       {/* Top Bar */}
       <div className="h-16 bg-gray-900 border-b border-gray-800 flex justify-between items-center px-6 shrink-0 z-10">
         <div className="flex items-center gap-4">
-          <Link
-            href="/widgets/logo-carousel"
-            className="p-2 rounded-lg hover:bg-gray-800 text-gray-400 hover:text-white transition-colors"
+          <button
+            onClick={handleBack}
+            className="p-2 rounded-lg hover:bg-gray-800 text-gray-400 hover:text-white transition-colors cursor-pointer"
           >
             <ArrowLeftIcon className="h-5 w-5" />
-          </Link>
+          </button>
           <h1 className="text-lg font-semibold text-white truncate max-w-md">
             {carousel.title}
           </h1>
@@ -172,7 +205,7 @@ export default function CarouselEditPage() {
         {/* Secondary Panel (EditSidebar) */}
         <EditSidebar
           carousel={carousel}
-          setCarousel={setCarousel}
+          setCarousel={updateCarousel}
           activeTab={activeTab}
         />
 
@@ -182,7 +215,7 @@ export default function CarouselEditPage() {
             <CarouselPreview
               carousel={carousel}
               settings={carousel.settings || {}}
-              onUpdate={(updates) => setCarousel({ ...carousel, ...updates })}
+              onUpdate={(updates) => updateCarousel({ ...carousel, ...updates })}
               isEditing={true}
             />
           </div>

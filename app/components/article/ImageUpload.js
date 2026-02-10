@@ -50,7 +50,7 @@ export default function ImageUpload({ url, onChange, widgetId, label = "Obrázek
                         </button>
                     </div>
                 ) : (
-                    <label className="w-24 h-24 flex-shrink-0 border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-lg flex flex-col items-center justify-center cursor-pointer hover:border-indigo-500 dark:hover:border-indigo-400 transition bg-gray-50 dark:bg-gray-800">
+                    <label className="w-24 h-24 flex-shrink-0 border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-lg flex flex-col items-center justify-center cursor-pointer hover:border-visualy-accent-4 dark:hover:border-visualy-accent-4 transition bg-gray-50 dark:bg-gray-800">
                         <PhotoIcon className="h-8 w-8 text-gray-400" />
                         <span className="text-xs text-gray-500 mt-1">{uploading ? '...' : 'Nahrát'}</span>
                         <input type="file" accept="image/*" onChange={handleUpload} className="hidden" disabled={uploading} />

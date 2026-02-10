@@ -4,6 +4,17 @@ import { SortableContext, verticalListSortingStrategy } from '@dnd-kit/sortable'
 import { useDroppable, useDndContext } from '@dnd-kit/core';
 import PreviewBlock from './article/PreviewBlock';
 
+const isBlockOrChildSelected = (block, selectedId) => {
+    if (!selectedId) return false;
+    if (block.id === selectedId) return true;
+    if (block.type === 'layout' && block.columns) {
+        return block.columns.some(col =>
+            (col.blocks || []).some(child => child.id === selectedId)
+        );
+    }
+    return false;
+};
+
 export default function ArticlePreview({ blocks, selectedBlockId, onSelectBlock, onUpdateBlock, onFormatChange, onDeleteBlock }) {
     const { setNodeRef } = useDroppable({
         id: 'preview-area',
@@ -29,8 +40,10 @@ export default function ArticlePreview({ blocks, selectedBlockId, onSelectBlock,
                     <PreviewBlock
                         key={block.id}
                         block={block}
-                        isSelected={selectedBlockId === block.id}
+                        isSelected={isBlockOrChildSelected(block, selectedBlockId)}
+                        selectedBlockId={selectedBlockId}
                         onClick={() => onSelectBlock(block.id)}
+                        onSelectBlock={onSelectBlock}
                         onChange={onUpdateBlock}
                         onFormatChange={onFormatChange}
                         onDelete={onDeleteBlock}

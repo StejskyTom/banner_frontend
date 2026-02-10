@@ -51,6 +51,99 @@ const ToolButton = ({ active, onClick, children, title }) => (
     </button>
 );
 
+const GenericStyleControls = ({ prefix, widget, setWidget, defaultMargin = 0 }) => {
+    const handleChange = (key, value) => {
+        setWidget({ ...widget, [`${prefix}${key}`]: value });
+    };
+
+    const tag = widget[`${prefix}Tag`] || 'h2';
+    const align = widget[`${prefix}Align`] || 'center';
+    const color = widget[`${prefix}Color`] || '#000000';
+    const size = widget[`${prefix}Size`] || '24px';
+    const font = widget[`${prefix}Font`] || 'sans-serif';
+    const isBold = widget[`${prefix}Bold`] || false;
+    const isItalic = widget[`${prefix}Italic`] || false;
+
+    return (
+        <div className="space-y-3">
+            {/* Buttons Row */}
+            <div className="flex flex-wrap gap-1 items-center mb-3">
+                <ToolButton onClick={() => handleChange('Tag', 'p')} active={tag === 'p'} title="Normal Text">T</ToolButton>
+                <ToolButton onClick={() => handleChange('Tag', 'h1')} active={tag === 'h1'} title="H1">H1</ToolButton>
+                <ToolButton onClick={() => handleChange('Tag', 'h2')} active={tag === 'h2'} title="H2">H2</ToolButton>
+                <ToolButton onClick={() => handleChange('Tag', 'h3')} active={tag === 'h3'} title="H3">H3</ToolButton>
+
+                <div className="w-px h-8 bg-gray-700 mx-1" />
+
+                <ToolButton onClick={() => handleChange('Bold', !isBold)} active={isBold} title="Tučně">
+                    <BoldIcon className="w-4 h-4" />
+                </ToolButton>
+                <ToolButton onClick={() => handleChange('Italic', !isItalic)} active={isItalic} title="Kurzíva">
+                    <ItalicIcon className="w-4 h-4" />
+                </ToolButton>
+            </div>
+
+            {/* Grid for Inputs */}
+            <div className="grid grid-cols-2 gap-2 mb-3">
+                <div className="relative">
+                    <ColorInput
+                        value={color}
+                        onChange={(val) => handleChange('Color', val)}
+                    />
+                </div>
+                <select
+                    className="h-10 w-full bg-gray-800 border border-gray-700 text-white text-sm px-2 rounded-lg focus:outline-none focus:ring-1 focus:ring-green-500"
+                    onChange={(e) => handleChange('Size', e.target.value)}
+                    value={size}
+                >
+                    <option value="12px">12px</option>
+                    <option value="14px">14px</option>
+                    <option value="16px">16px</option>
+                    <option value="18px">18px</option>
+                    <option value="20px">20px</option>
+                    <option value="24px">24px</option>
+                    <option value="32px">32px</option>
+                    <option value="48px">48px</option>
+                </select>
+
+                <select
+                    className="h-10 w-full bg-gray-800 border border-gray-700 text-white text-sm px-2 rounded-lg focus:outline-none focus:ring-1 focus:ring-green-500"
+                    onChange={(e) => handleChange('Font', e.target.value)}
+                    value={font}
+                >
+                    <option value="sans-serif">Sans Serif</option>
+                    <option value="system-ui">System UI</option>
+                    <option value="Arial, sans-serif">Arial</option>
+                    <option value="Georgia, serif">Georgia</option>
+                    <option value="Courier New, monospace">Courier</option>
+                </select>
+                <select
+                    className="h-10 w-full bg-gray-800 border border-gray-700 text-white text-sm px-2 rounded-lg focus:outline-none focus:ring-1 focus:ring-green-500"
+                    onChange={(e) => handleChange('Align', e.target.value)}
+                    value={align}
+                >
+                    <option value="left">Vlevo</option>
+                    <option value="center">Na střed</option>
+                    <option value="right">Vpravo</option>
+                </select>
+            </div>
+
+            <div>
+                <label className="text-xs font-medium text-gray-400 mb-1.5 block">
+                    Spodní odsazení ({widget[`${prefix}MarginBottom`] ?? defaultMargin}px)
+                </label>
+                <RangeSlider
+                    min={0}
+                    max={100}
+                    step={4}
+                    value={widget[`${prefix}MarginBottom`] ?? defaultMargin}
+                    onChange={(e) => handleChange('MarginBottom', parseInt(e.target.value))}
+                />
+            </div>
+        </div>
+    );
+};
+
 const QuestionStyleControls = ({ widget, setWidget, prefix = 'question' }) => {
     const tag = widget[`${prefix}Tag`] || 'h3';
     const color = widget[`${prefix}Color`] || '#111827';
@@ -140,7 +233,7 @@ const QuestionStyleControls = ({ widget, setWidget, prefix = 'question' }) => {
                 <RangeSlider
                     min={0}
                     max={48}
-                    step={4}
+                    step={1}
                     value={marginBottom}
                     onChange={(e) => handleChange('MarginBottom', parseInt(e.target.value))}
                 />
@@ -189,7 +282,7 @@ function SortableQuestionItem({ id, question, onUpdate, onRemove }) {
                             type="text"
                             value={question.question}
                             onChange={(e) => onUpdate({ ...question, question: e.target.value })}
-                            className="w-full bg-gray-800 border border-gray-700 text-white text-sm px-3 py-2 rounded focus:outline-none focus:ring-1 focus:ring-indigo-500"
+                            className="w-full bg-gray-800 border border-gray-700 text-white text-sm px-3 py-2 rounded focus:outline-none focus:ring-1 focus:ring-green-500"
                             placeholder="Např. Jaká je otevírací doba?"
                         />
                     </div>
@@ -199,7 +292,7 @@ function SortableQuestionItem({ id, question, onUpdate, onRemove }) {
                             value={question.answer}
                             onChange={(e) => onUpdate({ ...question, answer: e.target.value })}
                             rows={3}
-                            className="w-full bg-gray-800 border border-gray-700 text-white text-sm px-3 py-2 rounded focus:outline-none focus:ring-1 focus:ring-indigo-500 resize-none"
+                            className="w-full bg-gray-800 border border-gray-700 text-white text-sm px-3 py-2 rounded focus:outline-none focus:ring-1 focus:ring-green-500 resize-none"
                             placeholder="Např. Otevřeno máme každý všední den..."
                         />
                     </div>
@@ -276,11 +369,23 @@ export default function FaqEditSidebar({ widget, setWidget, activeTab }) {
                 <div className="flex-1 overflow-y-auto p-4 [&::-webkit-scrollbar]:w-1.5 [&::-webkit-scrollbar-track]:bg-transparent [&::-webkit-scrollbar-thumb]:bg-gray-700 [&::-webkit-scrollbar-thumb]:rounded-full hover:[&::-webkit-scrollbar-thumb]:bg-gray-600 [scrollbar-width:thin] [scrollbar-color:rgb(55,65,81)_transparent]">
                     <div className="space-y-6">
                         <div>
-                            <label className="text-xs font-medium text-gray-400 mb-1.5 block">Název widgetu</label>
+                            <label className="text-xs font-medium text-gray-400 mb-1.5 block">Název widgetu (Nadpis)</label>
                             <input
                                 value={widget.name || ''}
                                 onChange={(e) => setWidget({ ...widget, name: e.target.value })}
-                                className="w-full bg-gray-800 border border-gray-700 text-white text-sm px-3 py-2 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 placeholder-gray-500"
+                                className="w-full bg-gray-800 border border-gray-700 text-white text-sm px-3 py-2 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-green-500 placeholder-gray-500"
+                                placeholder="Zadejte nadpis"
+                            />
+                        </div>
+
+                        <div>
+                            <label className="text-xs font-medium text-gray-400 mb-1.5 block">Podnadpis</label>
+                            <textarea
+                                value={widget.subtitleText || ''}
+                                onChange={(e) => setWidget({ ...widget, subtitleText: e.target.value })}
+                                className="w-full bg-gray-800 border border-gray-700 text-white text-sm px-3 py-2 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-green-500 placeholder-gray-500 resize-none"
+                                rows={2}
+                                placeholder="Doplňkový text pod nadpisem..."
                             />
                         </div>
 
@@ -323,6 +428,30 @@ export default function FaqEditSidebar({ widget, setWidget, activeTab }) {
                 <>
                     <div className="flex-1 overflow-y-auto px-4 pb-4 pt-6 [&::-webkit-scrollbar]:hidden [-ms-overflow-style:'none'] [scrollbar-width:none]">
                         <div>
+                            {/* Title Styles */}
+                            <CollapsibleSection title="Vzhled nadpisu" isOpen={!!openSections['title-style']} onToggle={() => toggleSection('title-style')}>
+                                <GenericStyleControls
+                                    prefix="title"
+                                    widget={widget}
+                                    setWidget={setWidget}
+                                    defaultMargin={12}
+                                />
+                            </CollapsibleSection>
+
+                            <hr className="border-0 h-[2px] bg-gradient-to-r from-transparent via-gray-600 to-transparent my-2" />
+
+                            {/* Subtitle Styles */}
+                            <CollapsibleSection title="Vzhled podnadpisu" isOpen={!!openSections['subtitle-style']} onToggle={() => toggleSection('subtitle-style')}>
+                                <GenericStyleControls
+                                    prefix="subtitle"
+                                    widget={widget}
+                                    setWidget={setWidget}
+                                    defaultMargin={24}
+                                />
+                            </CollapsibleSection>
+
+                            <hr className="border-0 h-[2px] bg-gradient-to-r from-transparent via-gray-600 to-transparent my-2" />
+
                             <CollapsibleSection
                                 title="Nastavení otázky"
                                 isOpen={!!openSections['question']}
@@ -403,7 +532,7 @@ export default function FaqEditSidebar({ widget, setWidget, activeTab }) {
                                         <RangeSlider
                                             min={16}
                                             max={48}
-                                            step={2}
+                                            step={1}
                                             value={widget.arrowSize || 24}
                                             onChange={(e) => setWidget({ ...widget, arrowSize: parseInt(e.target.value) })}
                                         />
@@ -441,6 +570,18 @@ export default function FaqEditSidebar({ widget, setWidget, activeTab }) {
                                                     step={1}
                                                     value={widget.borderWidth || 1}
                                                     onChange={(e) => setWidget({ ...widget, borderWidth: parseInt(e.target.value) })}
+                                                />
+                                            </div>
+                                            <div>
+                                                <label className="text-xs font-medium text-gray-400 mb-1.5 block">
+                                                    Zaoblení rámečku ({widget.borderRadius || 0}px)
+                                                </label>
+                                                <RangeSlider
+                                                    min={0}
+                                                    max={32}
+                                                    step={1}
+                                                    value={widget.borderRadius || 0}
+                                                    onChange={(e) => setWidget({ ...widget, borderRadius: parseInt(e.target.value) })}
                                                 />
                                             </div>
                                         </>
@@ -499,7 +640,7 @@ export default function FaqEditSidebar({ widget, setWidget, activeTab }) {
                                                 <RangeSlider
                                                     min={0}
                                                     max={50}
-                                                    step={2}
+                                                    step={1}
                                                     value={widget.dividerMargin ?? 8}
                                                     onChange={(e) => setWidget({ ...widget, dividerMargin: parseInt(e.target.value) })}
                                                 />
