@@ -30,32 +30,18 @@ export default function DashboardPage() {
     useEffect(() => {
         const fetchStats = async () => {
             try {
-                // Fetch counts for all widget types
-                // Note: This assumes endpoints return lists. If endpoints are paginated, this might need adjustment.
-                // Ideally, backend should provide a stats endpoint. For now, we fetch lists and count.
-                const [logoRes, heurekaRes, faqRes, articleRes, authorRes] = await Promise.all([
-                    authorizedFetch('/logo-widgets'),
-                    authorizedFetch('/heureka-widgets'),
-                    authorizedFetch('/faq-widgets'),
-                    authorizedFetch('/article-widgets'),
-                    authorizedFetch('/author-widgets')
-                ]);
+                const res = await authorizedFetch('/user/stats');
 
-                const [logoData, heurekaData, faqData, articleData, authorData] = await Promise.all([
-                    logoRes.ok ? logoRes.json() : [],
-                    heurekaRes.ok ? heurekaRes.json() : [],
-                    faqRes.ok ? faqRes.json() : [],
-                    articleRes.ok ? articleRes.json() : [],
-                    authorRes.ok ? authorRes.json() : []
-                ]);
-
-                setStats({
-                    logo: Array.isArray(logoData) ? logoData.length : 0,
-                    heureka: Array.isArray(heurekaData) ? heurekaData.length : 0,
-                    faq: Array.isArray(faqData) ? faqData.length : 0,
-                    article: Array.isArray(articleData) ? articleData.length : 0,
-                    author: Array.isArray(authorData) ? authorData.length : 0
-                });
+                if (res.ok) {
+                    const data = await res.json();
+                    setStats({
+                        logo: data.logo || 0,
+                        heureka: data.heureka || 0,
+                        faq: data.faq || 0,
+                        article: data.article || 0,
+                        author: data.author || 0
+                    });
+                }
             } catch (error) {
                 console.error('Error fetching stats:', error);
             } finally {
@@ -225,7 +211,7 @@ export default function DashboardPage() {
                                             {loading ? '-' : card.count}
                                         </span>
                                         <span className="text-sm text-gray-500 dark:text-gray-400">
-                                            vytvořeno
+                                            zobrazení
                                         </span>
                                     </div>
                                 </div>
