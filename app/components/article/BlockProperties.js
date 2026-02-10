@@ -422,6 +422,7 @@ export function ProductProperties({ block, onChange, widgetId }) {
 }
 
 const LAYOUT_PRESETS = [
+    { label: '100', columns: [100], span: 2 },
     { label: '50 / 50', columns: [50, 50] },
     { label: '33 / 33 / 33', columns: [33.33, 33.33, 33.34] },
     { label: '25 / 50 / 25', columns: [25, 50, 25] },
@@ -478,7 +479,7 @@ export function LayoutProperties({ block, onChange }) {
                             <button
                                 key={preset.label}
                                 onClick={() => applyPreset(preset)}
-                                className="group relative p-3 bg-gray-800/50 border border-gray-700/50 rounded-xl hover:bg-gray-800 hover:border-gray-600 transition-all text-left"
+                                className={`group relative p-3 bg-gray-800/50 border border-gray-700/50 rounded-xl hover:bg-gray-800 hover:border-gray-600 transition-all text-left ${preset.span === 2 ? 'col-span-2' : ''}`}
                             >
                                 <div className="flex gap-1.5 mb-2 h-8">
                                     {preset.columns.map((w, i) => (

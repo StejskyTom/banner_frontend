@@ -19,6 +19,8 @@ import {
     PencilIcon,
     CheckIcon,
     BookmarkSquareIcon,
+    ArrowPathIcon,
+    LinkSlashIcon,
 } from '@heroicons/react/24/solid';
 import {
     TextProperties,
@@ -182,7 +184,7 @@ export default function ArticleEditSidebar({
     };
 
     const stripIds = (block) => {
-        const { id, ...data } = block;
+        const { id, savedBlockId, ...data } = block;
         if (data.type === 'layout' && data.columns) {
             data.columns = data.columns.map(col => ({
                 ...col,
@@ -191,6 +193,74 @@ export default function ArticleEditSidebar({
             }));
         }
         return data;
+    };
+
+    const [propagating, setPropagating] = useState(false);
+
+    const propagateInLocalBlocks = (blocks, savedBlockId, skipBlockId, newData) => {
+        return blocks.map(b => {
+            if (b.savedBlockId === savedBlockId && b.id !== skipBlockId) {
+                return {
+                    ...newData,
+                    id: b.id,
+                    savedBlockId: savedBlockId,
+                    type: newData.type || b.type,
+                    margin: b.margin,
+                };
+            }
+            if (b.type === 'layout' && b.columns) {
+                return {
+                    ...b,
+                    columns: b.columns.map(col => ({
+                        ...col,
+                        blocks: propagateInLocalBlocks(col.blocks || [], savedBlockId, skipBlockId, newData)
+                    }))
+                };
+            }
+            return b;
+        });
+    };
+
+    const handlePropagate = async () => {
+        if (!selectedBlock?.savedBlockId) return;
+        setPropagating(true);
+
+        try {
+            const blockData = stripIds(selectedBlock);
+            const res = await authorizedFetch(`/saved-blocks/${selectedBlock.savedBlockId}/propagate`, {
+                method: 'POST',
+                body: JSON.stringify({
+                    blockData,
+                    excludeWidgetId: widget.id,
+                }),
+            });
+
+            if (res.ok) {
+                const result = await res.json();
+
+                // Also update other instances of this global block in the current widget
+                setWidget(prev => ({
+                    ...prev,
+                    blocks: propagateInLocalBlocks(prev.blocks, selectedBlock.savedBlockId, selectedBlock.id, blockData)
+                }));
+
+                showNotification(`Změny promítnuty do ${result.updatedWidgets} dalších widgetů`, 'success');
+            } else {
+                showNotification('Nepodařilo se promítnout změny', 'error');
+            }
+        } catch (error) {
+            console.error('Error propagating block:', error);
+            showNotification('Chyba při promítání změn', 'error');
+        } finally {
+            setPropagating(false);
+        }
+    };
+
+    const handleUnlink = () => {
+        if (!selectedBlock?.savedBlockId) return;
+        const { savedBlockId, ...unlinkData } = selectedBlock;
+        handleUpdateBlock(unlinkData);
+        showNotification('Blok odpojen od šablony', 'success');
     };
 
     const handleSaveBlock = async () => {
@@ -345,47 +415,73 @@ export default function ArticleEditSidebar({
                                 <LayoutProperties block={selectedBlock} onChange={handleUpdateBlock} />
                             )}
 
-                            {/* Save as Template */}
+                            {/* Template Actions */}
                             <div className="mt-6 pt-4 border-t border-gray-800">
-                                {showSavePrompt ? (
-                                    <div className="space-y-2">
-                                        <input
-                                            autoFocus
-                                            value={saveBlockName}
-                                            onChange={(e) => setSaveBlockName(e.target.value)}
-                                            onKeyDown={(e) => { if (e.key === 'Enter') handleSaveBlock(); if (e.key === 'Escape') setShowSavePrompt(false); }}
-                                            placeholder="Název šablony..."
-                                            className="w-full bg-gray-800 border border-gray-700 text-white text-sm px-3 py-2 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-visualy-accent-4 placeholder-gray-500"
-                                        />
-                                        <div className="flex gap-2">
-                                            <button
-                                                onClick={handleSaveBlock}
-                                                disabled={!saveBlockName.trim()}
-                                                className="flex-1 flex items-center justify-center gap-2 px-3 py-2 bg-visualy-accent-4 hover:bg-visualy-accent-4/90 text-white text-sm font-medium rounded-lg transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
-                                            >
-                                                <CheckIcon className="h-4 w-4" />
-                                                Uložit
-                                            </button>
-                                            <button
-                                                onClick={() => { setShowSavePrompt(false); setSaveBlockName(''); }}
-                                                className="px-3 py-2 bg-gray-800 hover:bg-gray-700 text-gray-300 text-sm font-medium rounded-lg border border-gray-700 transition-colors"
-                                            >
-                                                Zrušit
-                                            </button>
+                                {selectedBlock.savedBlockId ? (
+                                    <div className="space-y-3">
+                                        <div className="flex items-center gap-2 px-3 py-2 bg-visualy-accent-4/10 rounded-lg border border-visualy-accent-4/20">
+                                            <BookmarkIcon className="h-4 w-4 text-visualy-accent-4 shrink-0" />
+                                            <span className="text-xs text-visualy-accent-4 font-medium">Globální šablona</span>
                                         </div>
+                                        <button
+                                            onClick={handlePropagate}
+                                            disabled={propagating}
+                                            className="w-full flex items-center justify-center gap-2 px-3 py-2.5 bg-visualy-accent-4 hover:bg-visualy-accent-4/90 text-white text-sm font-medium rounded-lg transition-colors disabled:opacity-70 disabled:cursor-not-allowed"
+                                        >
+                                            <ArrowPathIcon className={`h-4 w-4 ${propagating ? 'animate-spin' : ''}`} />
+                                            {propagating ? 'Promítám...' : 'Promítnout do všech'}
+                                        </button>
+                                        <button
+                                            onClick={handleUnlink}
+                                            className="w-full flex items-center justify-center gap-2 px-3 py-2 text-gray-500 hover:text-gray-300 text-xs font-medium transition-colors"
+                                        >
+                                            <LinkSlashIcon className="h-3.5 w-3.5" />
+                                            Odpojit od šablony
+                                        </button>
                                     </div>
                                 ) : (
-                                    <button
-                                        onClick={() => {
-                                            const defaultName = BLOCK_TYPE_LABELS[selectedBlock.type] || selectedBlock.type;
-                                            setSaveBlockName(defaultName);
-                                            setShowSavePrompt(true);
-                                        }}
-                                        className="w-full flex items-center justify-center gap-2 px-3 py-2.5 bg-visualy-accent-4/10 hover:bg-visualy-accent-4/20 text-visualy-accent-4 text-sm font-medium rounded-lg border border-visualy-accent-4/30 transition-colors"
-                                    >
-                                        <BookmarkSquareIcon className="h-4 w-4" />
-                                        Uložit jako šablonu
-                                    </button>
+                                    <>
+                                        {showSavePrompt ? (
+                                            <div className="space-y-2">
+                                                <input
+                                                    autoFocus
+                                                    value={saveBlockName}
+                                                    onChange={(e) => setSaveBlockName(e.target.value)}
+                                                    onKeyDown={(e) => { if (e.key === 'Enter') handleSaveBlock(); if (e.key === 'Escape') setShowSavePrompt(false); }}
+                                                    placeholder="Název šablony..."
+                                                    className="w-full bg-gray-800 border border-gray-700 text-white text-sm px-3 py-2 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-visualy-accent-4 placeholder-gray-500"
+                                                />
+                                                <div className="flex gap-2">
+                                                    <button
+                                                        onClick={handleSaveBlock}
+                                                        disabled={!saveBlockName.trim()}
+                                                        className="flex-1 flex items-center justify-center gap-2 px-3 py-2 bg-visualy-accent-4 hover:bg-visualy-accent-4/90 text-white text-sm font-medium rounded-lg transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+                                                    >
+                                                        <CheckIcon className="h-4 w-4" />
+                                                        Uložit
+                                                    </button>
+                                                    <button
+                                                        onClick={() => { setShowSavePrompt(false); setSaveBlockName(''); }}
+                                                        className="px-3 py-2 bg-gray-800 hover:bg-gray-700 text-gray-300 text-sm font-medium rounded-lg border border-gray-700 transition-colors"
+                                                    >
+                                                        Zrušit
+                                                    </button>
+                                                </div>
+                                            </div>
+                                        ) : (
+                                            <button
+                                                onClick={() => {
+                                                    const defaultName = BLOCK_TYPE_LABELS[selectedBlock.type] || selectedBlock.type;
+                                                    setSaveBlockName(defaultName);
+                                                    setShowSavePrompt(true);
+                                                }}
+                                                className="w-full flex items-center justify-center gap-2 px-3 py-2.5 bg-visualy-accent-4/10 hover:bg-visualy-accent-4/20 text-visualy-accent-4 text-sm font-medium rounded-lg border border-visualy-accent-4/30 transition-colors"
+                                            >
+                                                <BookmarkSquareIcon className="h-4 w-4" />
+                                                Uložit jako šablonu
+                                            </button>
+                                        )}
+                                    </>
                                 )}
                             </div>
                         </div>
@@ -400,6 +496,7 @@ export default function ArticleEditSidebar({
 
                         <div className="flex-1 overflow-y-auto p-4 custom-scrollbar">
                             <div className="space-y-3">
+                                <DraggablePaletteItem type="layout" label="Layout" icon={ViewColumnsIcon} />
                                 <DraggablePaletteItem type="text" label="Text" icon={Bars3BottomLeftIcon} />
                                 <DraggablePaletteItem type="image" label="Obrázek" icon={PhotoIcon} />
                                 <DraggablePaletteItem type="wrap" label="Text a obrázek" icon={PhotoIcon} />
@@ -407,7 +504,6 @@ export default function ArticleEditSidebar({
                                 <DraggablePaletteItem type="banner" label="Banner" icon={MegaphoneIcon} />
                                 <DraggablePaletteItem type="product" label="Produkt" icon={ShoppingBagIcon} />
                                 <DraggablePaletteItem type="author" label="Autor" icon={UserCircleIcon} />
-                                <DraggablePaletteItem type="layout" label="Layout" icon={ViewColumnsIcon} />
                             </div>
 
                             {/* Saved Templates */}

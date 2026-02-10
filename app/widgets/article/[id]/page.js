@@ -238,6 +238,7 @@ export default function ArticleEditPage() {
             type: _blockType,
             id: crypto.randomUUID(),
             margin: blockData.margin || 24,
+            savedBlockId: _savedId,
         });
     };
 
