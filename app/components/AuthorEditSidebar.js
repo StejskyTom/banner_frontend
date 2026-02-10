@@ -290,6 +290,160 @@ export default function AuthorEditSidebar({ widget, setWidget, activeTab }) {
 
                         <hr className="border-0 h-[2px] bg-gradient-to-r from-transparent via-gray-600 to-transparent my-2" />
 
+                        {/* Photo Style */}
+                        <CollapsibleSection title="Fotografie" isOpen={!!openSections['photo-style']} onToggle={() => toggleSection('photo-style')}>
+                            <div className="space-y-4">
+                                {/* Photo Size */}
+                                <div>
+                                    <label className="text-xs font-medium text-gray-400 mb-2 block">
+                                        Velikost ({settings.photoSize ?? 128}px)
+                                    </label>
+                                    <RangeSlider
+                                        min={64}
+                                        max={200}
+                                        step={4}
+                                        value={settings.photoSize ?? 128}
+                                        onChange={(e) => updateSettings({ ...settings, photoSize: parseInt(e.target.value) })}
+                                    />
+                                </div>
+
+                                {/* Border Radius */}
+                                <div>
+                                    <label className="text-xs font-medium text-gray-400 mb-2 block">
+                                        Zakulacení ({settings.photoRadius ?? 50}%)
+                                    </label>
+                                    <RangeSlider
+                                        min={0}
+                                        max={50}
+                                        step={1}
+                                        value={settings.photoRadius ?? 50}
+                                        onChange={(e) => updateSettings({ ...settings, photoRadius: parseInt(e.target.value) })}
+                                    />
+                                </div>
+
+                                {/* Border Width */}
+                                <div>
+                                    <label className="text-xs font-medium text-gray-400 mb-2 block">
+                                        Rámeček ({settings.photoBorderWidth ?? 4}px)
+                                    </label>
+                                    <RangeSlider
+                                        min={0}
+                                        max={8}
+                                        step={1}
+                                        value={settings.photoBorderWidth ?? 4}
+                                        onChange={(e) => updateSettings({ ...settings, photoBorderWidth: parseInt(e.target.value) })}
+                                    />
+                                </div>
+
+                                {/* Border Color */}
+                                <ColorInput
+                                    label="Barva rámečku"
+                                    value={settings.photoBorderColor || '#f3f4f6'}
+                                    onChange={(val) => updateSettings({ ...settings, photoBorderColor: val })}
+                                />
+
+                                {/* Shadow */}
+                                <Toggle
+                                    checked={settings.photoShadow || false}
+                                    onChange={(val) => updateSettings({ ...settings, photoShadow: val })}
+                                    label="Stín pod fotografií"
+                                />
+
+                                {settings.photoShadow && (
+                                    <>
+                                        <div>
+                                            <label className="text-xs font-medium text-gray-400 mb-2 block">
+                                                Rozmazání stínu ({settings.photoShadowBlur ?? 12}px)
+                                            </label>
+                                            <RangeSlider
+                                                min={0}
+                                                max={50}
+                                                step={1}
+                                                value={settings.photoShadowBlur ?? 12}
+                                                onChange={(e) => updateSettings({ ...settings, photoShadowBlur: parseInt(e.target.value) })}
+                                            />
+                                        </div>
+
+                                        <div>
+                                            <label className="text-xs font-medium text-gray-400 mb-2 block">
+                                                Průhlednost stínu ({settings.photoShadowOpacity ?? 25}%)
+                                            </label>
+                                            <RangeSlider
+                                                min={0}
+                                                max={100}
+                                                step={5}
+                                                value={settings.photoShadowOpacity ?? 25}
+                                                onChange={(e) => updateSettings({ ...settings, photoShadowOpacity: parseInt(e.target.value) })}
+                                            />
+                                        </div>
+                                    </>
+                                )}
+
+                                {/* Bottom Margin */}
+                                <div>
+                                    <label className="text-xs font-medium text-gray-400 mb-2 block">
+                                        Spodní odsazení ({settings.photoMarginBottom ?? 20}px)
+                                    </label>
+                                    <RangeSlider
+                                        min={0}
+                                        max={60}
+                                        step={4}
+                                        value={settings.photoMarginBottom ?? 20}
+                                        onChange={(e) => updateSettings({ ...settings, photoMarginBottom: parseInt(e.target.value) })}
+                                    />
+                                </div>
+                            </div>
+                        </CollapsibleSection>
+
+                        <hr className="border-0 h-[2px] bg-gradient-to-r from-transparent via-gray-600 to-transparent my-2" />
+
+                        {/* Border Settings */}
+                        <CollapsibleSection title="Nastavení rámečku" isOpen={!!openSections['border']} onToggle={() => toggleSection('border')}>
+                            <div className="space-y-4">
+                                <Toggle
+                                    checked={settings.borderEnabled || false}
+                                    onChange={(val) => updateSettings({ ...settings, borderEnabled: val })}
+                                    label="Zobrazit rámeček"
+                                />
+
+                                {settings.borderEnabled && (
+                                    <>
+                                        <ColorInput
+                                            label="Barva rámečku"
+                                            value={settings.borderColor || '#e5e7eb'}
+                                            onChange={(val) => updateSettings({ ...settings, borderColor: val })}
+                                        />
+                                        <div>
+                                            <label className="text-xs font-medium text-gray-400 mb-1.5 block">
+                                                Šířka rámečku ({settings.borderWidth ?? 1}px)
+                                            </label>
+                                            <RangeSlider
+                                                min={1}
+                                                max={10}
+                                                step={1}
+                                                value={settings.borderWidth ?? 1}
+                                                onChange={(e) => updateSettings({ ...settings, borderWidth: parseInt(e.target.value) })}
+                                            />
+                                        </div>
+                                        <div>
+                                            <label className="text-xs font-medium text-gray-400 mb-1.5 block">
+                                                Zaoblení rámečku ({widget.borderRadius || 0}px)
+                                            </label>
+                                            <RangeSlider
+                                                value={widget.borderRadius || 0}
+                                                onChange={(e) => handleUpdate('borderRadius', parseInt(e.target.value))}
+                                                min={0}
+                                                max={50}
+                                                step={1}
+                                            />
+                                        </div>
+                                    </>
+                                )}
+                            </div>
+                        </CollapsibleSection>
+
+                        <hr className="border-0 h-[2px] bg-gradient-to-r from-transparent via-gray-600 to-transparent my-2" />
+
                         {/* Other Settings */}
                         <CollapsibleSection title="Další nastavení" isOpen={!!openSections['other']} onToggle={() => toggleSection('other')}>
                             <div className="space-y-4">
@@ -330,20 +484,8 @@ export default function AuthorEditSidebar({ widget, setWidget, activeTab }) {
                                     </div>
                                 </div>
 
-                                {/* Border Radius */}
-                                <div className="space-y-2">
-                                    <div className="flex justify-between">
-                                        <label className="text-xs font-medium text-gray-400">Zaoblení rohů</label>
-                                        <span className="text-xs text-gray-500">{widget.borderRadius || 0}px</span>
-                                    </div>
-                                    <RangeSlider
-                                        value={widget.borderRadius || 0}
-                                        onChange={(e) => handleUpdate('borderRadius', parseInt(e.target.value))}
-                                        min={0}
-                                        max={50}
-                                        step={1}
-                                    />
-                                </div>
+
+
 
                                 <hr className="border-0 h-px bg-gray-700/50" />
 

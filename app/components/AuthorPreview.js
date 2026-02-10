@@ -58,6 +58,25 @@ export default function AuthorPreview({ widget }) {
         whiteSpace: 'pre-wrap',
     };
 
+    // Photo styles
+    const photoSize = s.photoSize ?? 128;
+    const photoRadius = s.photoRadius ?? 50;
+    const photoBorderWidth = s.photoBorderWidth ?? 4;
+    const photoBorderColor = s.photoBorderColor || '#f3f4f6';
+    const photoShadow = s.photoShadow ? `0 ${(s.photoShadowBlur ?? 12) / 3}px ${s.photoShadowBlur ?? 12}px rgba(0,0,0,${(s.photoShadowOpacity ?? 25) / 100})` : 'none';
+    const photoMarginBottom = s.photoMarginBottom ?? 20;
+
+    const photoStyle = {
+        width: `${photoSize}px`,
+        height: `${photoSize}px`,
+        borderRadius: `${photoRadius}%`,
+        objectFit: 'cover',
+        border: `${photoBorderWidth}px solid ${photoBorderColor}`,
+        boxShadow: photoShadow,
+        flexShrink: 0,
+        marginBottom: layout === 'side-by-side' ? 0 : `${photoMarginBottom}px`,
+    };
+
     return (
         <div className="w-full h-full flex items-center justify-center p-8 bg-gray-100 dark:bg-gray-900/50 overflow-y-auto">
             <div
@@ -67,20 +86,22 @@ export default function AuthorPreview({ widget }) {
                     }`}
                 style={{
                     backgroundColor: backgroundColor,
-                    borderRadius: `${borderRadius}px`
+                    borderRadius: `${borderRadius}px`,
+                    border: s.borderEnabled ? `${s.borderWidth || 1}px solid ${s.borderColor || '#e5e7eb'}` : 'none'
                 }}
             >
                 {authorPhotoUrl ? (
                     <img
                         src={authorPhotoUrl}
                         alt={authorName || 'Autor'}
-                        className={`w-32 h-32 rounded-full object-cover border-4 border-gray-100 flex-shrink-0 ${layout === 'side-by-side' ? '' : 'mb-5'
-                            }`}
+                        style={photoStyle}
                         onError={(e) => { e.target.src = 'https://via.placeholder.com/150?text=Foto'; }}
                     />
                 ) : (
-                    <div className={`w-32 h-32 rounded-full bg-gray-100 flex items-center justify-center text-gray-400 flex-shrink-0 ${layout === 'side-by-side' ? '' : 'mb-5'
-                        }`}>
+                    <div
+                        className="bg-gray-100 flex items-center justify-center text-gray-400"
+                        style={photoStyle}
+                    >
                         <PhotoIcon className="h-12 w-12" />
                     </div>
                 )}

@@ -98,7 +98,8 @@ export default function AuthorWidgetDetailPage() {
                     authorPhotoUrl: widget.authorPhotoUrl,
                     layout: widget.layout,
                     backgroundColor: widget.backgroundColor,
-                    borderRadius: widget.borderRadius
+                    borderRadius: widget.borderRadius,
+                    settings: widget.settings
                 })
             });
 
