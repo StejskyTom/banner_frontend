@@ -160,26 +160,21 @@ export default function ArticleEditSidebar({
     activeTab,
     selectedBlockId,
     setSelectedBlockId,
-    activeFormats
+    activeFormats,
+    savedBlocks = [],
+    onSavedBlocksChange,
 }) {
     const showNotification = useToast();
-    const [savedBlocks, setSavedBlocks] = useState([]);
     const [showSavePrompt, setShowSavePrompt] = useState(false);
     const [saveBlockName, setSaveBlockName] = useState('');
 
-    useEffect(() => {
-        fetchSavedBlocks();
-    }, []);
-
-    const fetchSavedBlocks = async () => {
-        try {
-            const res = await authorizedFetch('/saved-blocks');
-            if (res.ok) {
-                const data = await res.json();
-                setSavedBlocks(data);
+    const setSavedBlocks = (updater) => {
+        if (onSavedBlocksChange) {
+            if (typeof updater === 'function') {
+                onSavedBlocksChange(updater);
+            } else {
+                onSavedBlocksChange(() => updater);
             }
-        } catch (error) {
-            console.error('Error fetching saved blocks:', error);
         }
     };
 
@@ -279,10 +274,11 @@ export default function ArticleEditSidebar({
             });
 
             if (res.ok) {
+                const newSavedBlock = await res.json();
                 showNotification('Šablona uložena', 'success');
                 setShowSavePrompt(false);
                 setSaveBlockName('');
-                fetchSavedBlocks();
+                setSavedBlocks(prev => [...prev, newSavedBlock]);
             } else {
                 showNotification('Nepodařilo se uložit šablonu', 'error');
             }

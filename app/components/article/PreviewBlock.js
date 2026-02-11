@@ -14,16 +14,31 @@ import {
     ShoppingBagIcon,
     ChevronUpIcon,
     ChevronDownIcon,
-    XMarkIcon
+    XMarkIcon,
+    BookmarkIcon,
+    ViewColumnsIcon
 } from '@heroicons/react/24/solid';
 import ContentEditable from './ContentEditable';
 
 const CHILD_BLOCK_TYPES = [
     { type: 'text', label: 'Text', icon: Bars3BottomLeftIcon },
     { type: 'image', label: 'Obrázek', icon: PhotoIcon },
+    { type: 'table', label: 'Tabulka', icon: TableCellsIcon },
     { type: 'banner', label: 'Banner', icon: MegaphoneIcon },
     { type: 'product', label: 'Produkt', icon: ShoppingBagIcon },
+    { type: 'author', label: 'Autor', icon: UserCircleIcon },
 ];
+
+const SAVED_BLOCK_ICONS = {
+    text: Bars3BottomLeftIcon,
+    image: PhotoIcon,
+    banner: MegaphoneIcon,
+    product: ShoppingBagIcon,
+    table: TableCellsIcon,
+    wrap: PhotoIcon,
+    author: UserCircleIcon,
+    layout: ViewColumnsIcon,
+};
 
 function createChildBlock(type) {
     const newBlock = { id: crypto.randomUUID(), type, margin: 12 };
@@ -31,10 +46,12 @@ function createChildBlock(type) {
     if (type === 'image') { newBlock.url = ''; newBlock.width = 100; newBlock.align = 'center'; }
     if (type === 'banner') { newBlock.content = 'NADPIS'; newBlock.bgColor = '#f3f4f6'; newBlock.textColor = '#111827'; }
     if (type === 'product') { newBlock.name = 'Produkt'; newBlock.link = ''; newBlock.imgUrl = ''; newBlock.price = ''; newBlock.btnText = 'Koupit'; }
+    if (type === 'table') { newBlock.header = ['Sloupec 1', 'Sloupec 2']; newBlock.data = [['', '']]; newBlock.width = 100; newBlock.borderStyle = 'full'; newBlock.headerBgColor = '#f3f4f6'; newBlock.headerTextColor = '#111827'; }
+    if (type === 'author') { newBlock.authorName = ''; newBlock.authorTitle = ''; newBlock.authorBio = ''; newBlock.authorPhotoUrl = ''; }
     return newBlock;
 }
 
-function AddBlockMenu({ onAdd, isEmptyState = false }) {
+function AddBlockMenu({ onAdd, isEmptyState = false, savedBlocks = [], onAddSaved }) {
     const [open, setOpen] = useState(false);
     return (
         <div className={`relative group/add ${isEmptyState ? 'h-full flex-1 min-h-[140px]' : 'pt-2'}`}>
@@ -95,6 +112,37 @@ function AddBlockMenu({ onAdd, isEmptyState = false }) {
                                 </div>
                             </button>
                         ))}
+                        {savedBlocks.length > 0 && (
+                            <>
+                                <div className="mx-3 my-1 h-px bg-gray-100" />
+                                <div className="px-3 py-2 text-[10px] font-bold text-gray-400 uppercase tracking-wider flex items-center gap-1.5">
+                                    <BookmarkIcon className="h-3 w-3" />
+                                    <span>Uložené šablony</span>
+                                </div>
+                                {savedBlocks.map((sb) => {
+                                    const SbIcon = SAVED_BLOCK_ICONS[sb.blockType] || BookmarkIcon;
+                                    return (
+                                        <button
+                                            key={sb.id}
+                                            onClick={(e) => {
+                                                e.stopPropagation();
+                                                onAddSaved?.(sb);
+                                                setOpen(false);
+                                            }}
+                                            className="w-full px-3 py-2.5 text-left text-sm text-gray-700 hover:bg-visualy-accent-4/10 hover:text-visualy-accent-4 rounded-xl flex items-center gap-3 transition-colors group"
+                                        >
+                                            <div className="p-2 rounded-lg bg-visualy-accent-4/10 text-visualy-accent-4 group-hover:bg-visualy-accent-4/20 transition-colors">
+                                                <SbIcon className="h-5 w-5" />
+                                            </div>
+                                            <div className="flex flex-col min-w-0">
+                                                <span className="font-semibold leading-tight truncate">{sb.name}</span>
+                                                <span className="text-[10px] text-gray-400 group-hover:text-visualy-accent-4/60 transition-colors">Uložená šablona</span>
+                                            </div>
+                                        </button>
+                                    );
+                                })}
+                            </>
+                        )}
                     </div>
                 </>
             )}
@@ -226,7 +274,7 @@ function LayoutChildBlock({ childBlock, isSelected, onClick, onChange, onFormatC
     );
 }
 
-export default function PreviewBlock({ block, isSelected, selectedBlockId, onClick, onSelectBlock, onChange, onFormatChange, onDelete }) {
+export default function PreviewBlock({ block, isSelected, selectedBlockId, onClick, onSelectBlock, onChange, onFormatChange, onDelete, savedBlocks = [] }) {
     const {
         attributes,
         listeners,
@@ -527,6 +575,22 @@ export default function PreviewBlock({ block, isSelected, selectedBlockId, onCli
                 onChange({ ...block, columns: newColumns });
             };
 
+            const handleAddSavedChildBlock = (colIndex, savedBlock) => {
+                const { id, savedBlockId, ...blockData } = savedBlock.blockData;
+                const newChild = {
+                    ...blockData,
+                    type: savedBlock.blockType,
+                    id: crypto.randomUUID(),
+                    margin: 12,
+                    savedBlockId: savedBlock.id,
+                };
+                const newColumns = block.columns.map((col, i) => {
+                    if (i !== colIndex) return col;
+                    return { ...col, blocks: [...(col.blocks || []), newChild] };
+                });
+                onChange({ ...block, columns: newColumns });
+            };
+
             const handleUpdateChildBlock = (updatedChild) => {
                 const newColumns = block.columns.map(col => ({
                     ...col,
@@ -572,7 +636,7 @@ export default function PreviewBlock({ block, isSelected, selectedBlockId, onCli
                             {/* Child blocks area */}
                             <div className="flex-1 flex flex-col h-full">
                                 {(col.blocks || []).length === 0 ? (
-                                    <AddBlockMenu onAdd={(type) => handleAddChildBlock(colIndex, type)} isEmptyState={true} />
+                                    <AddBlockMenu onAdd={(type) => handleAddChildBlock(colIndex, type)} isEmptyState={true} savedBlocks={savedBlocks} onAddSaved={(sb) => handleAddSavedChildBlock(colIndex, sb)} />
                                 ) : (
                                     <>
                                         <div className="flex flex-col gap-2">
@@ -594,7 +658,7 @@ export default function PreviewBlock({ block, isSelected, selectedBlockId, onCli
                                                 />
                                             ))}
                                         </div>
-                                        <AddBlockMenu onAdd={(type) => handleAddChildBlock(colIndex, type)} />
+                                        <AddBlockMenu onAdd={(type) => handleAddChildBlock(colIndex, type)} savedBlocks={savedBlocks} onAddSaved={(sb) => handleAddSavedChildBlock(colIndex, sb)} />
                                     </>
                                 )}
                             </div>

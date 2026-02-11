@@ -15,7 +15,7 @@ const isBlockOrChildSelected = (block, selectedId) => {
     return false;
 };
 
-export default function ArticlePreview({ blocks, selectedBlockId, onSelectBlock, onUpdateBlock, onFormatChange, onDeleteBlock }) {
+export default function ArticlePreview({ blocks, selectedBlockId, onSelectBlock, onUpdateBlock, onFormatChange, onDeleteBlock, savedBlocks = [] }) {
     const { setNodeRef } = useDroppable({
         id: 'preview-area',
     });
@@ -47,6 +47,7 @@ export default function ArticlePreview({ blocks, selectedBlockId, onSelectBlock,
                         onChange={onUpdateBlock}
                         onFormatChange={onFormatChange}
                         onDelete={onDeleteBlock}
+                        savedBlocks={savedBlocks}
                     />
                 ))}
             </SortableContext>

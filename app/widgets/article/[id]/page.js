@@ -48,6 +48,7 @@ export default function ArticleEditPage() {
     const [activeFormats, setActiveFormats] = useState({});
     const [activeDragItem, setActiveDragItem] = useState(null);
     const [isDirty, setIsDirty] = useState(false);
+    const [savedBlocks, setSavedBlocks] = useState([]);
     const showNotification = useToast();
 
     const sensors = useSensors(
@@ -57,7 +58,20 @@ export default function ArticleEditPage() {
 
     useEffect(() => {
         fetchWidget();
+        fetchSavedBlocks();
     }, [id]);
+
+    const fetchSavedBlocks = async () => {
+        try {
+            const res = await authorizedFetch('/saved-blocks');
+            if (res.ok) {
+                const data = await res.json();
+                setSavedBlocks(data);
+            }
+        } catch (error) {
+            console.error('Error fetching saved blocks:', error);
+        }
+    };
 
     useEffect(() => {
         const handleBeforeUnload = (e) => {
@@ -420,6 +434,8 @@ export default function ArticleEditPage() {
                         selectedBlockId={selectedBlockId}
                         setSelectedBlockId={setSelectedBlockId}
                         activeFormats={activeFormats}
+                        savedBlocks={savedBlocks}
+                        onSavedBlocksChange={setSavedBlocks}
                     />
 
                     {/* Preview Area */}
@@ -432,6 +448,7 @@ export default function ArticleEditPage() {
                                 onUpdateBlock={handleUpdateBlock}
                                 onFormatChange={setActiveFormats}
                                 onDeleteBlock={handleDeleteBlock}
+                                savedBlocks={savedBlocks}
                             />
                         </div>
                     </div>
