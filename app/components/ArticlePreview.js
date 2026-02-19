@@ -42,7 +42,10 @@ export default function ArticlePreview({ blocks, selectedBlockId, onSelectBlock,
                         block={block}
                         isSelected={isBlockOrChildSelected(block, selectedBlockId)}
                         selectedBlockId={selectedBlockId}
-                        onClick={() => onSelectBlock(block.id)}
+                        onClick={(e) => {
+                            e.stopPropagation();
+                            onSelectBlock(block.id);
+                        }}
                         onSelectBlock={onSelectBlock}
                         onChange={onUpdateBlock}
                         onFormatChange={onFormatChange}

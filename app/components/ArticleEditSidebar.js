@@ -359,13 +359,25 @@ export default function ArticleEditSidebar({
 
     if (activeTab === 'settings') {
         return (
-            <div className="dark w-80 bg-gray-900 border-r border-gray-800 text-white flex flex-col h-full overflow-y-auto">
-                <div className="p-4 border-b border-gray-800">
-                    <h2 className="font-semibold text-white">Nastavení</h2>
-                </div>
-                <div className="p-4 text-gray-500 text-sm text-center">
-                    Zatím prázdné
-                </div>
+            <div className="dark w-80 bg-gray-900 border-r border-gray-800 text-white flex flex-col h-full overflow-hidden">
+                {selectedBlock ? (
+                    selectedBlock.type === 'product' ? (
+                        <ProductProperties block={selectedBlock} onChange={handleUpdateBlock} widgetId={widget.id} tab="settings" />
+                    ) : selectedBlock.type === 'author' ? (
+                        <AuthorProperties block={selectedBlock} onChange={handleUpdateBlock} widgetId={widget.id} tab="settings" />
+                    ) : (
+                        <div className="flex-1 overflow-y-auto p-4 space-y-4">
+                            {/* Add other block types here as needed for settings */}
+                            <div className="text-gray-500 text-sm text-center">
+                                Pro tento blok nejsou zatím žádná pokročilá nastavení.
+                            </div>
+                        </div>
+                    )
+                ) : (
+                    <div className="p-4 text-gray-500 text-sm text-center">
+                        Vyberte blok pro zobrazení nastavení.
+                    </div>
+                )}
             </div>
         );
     }
@@ -387,29 +399,30 @@ export default function ArticleEditSidebar({
                         </div>
                         <div className="flex-1 overflow-y-auto p-4 custom-scrollbar">
                             {selectedBlock.type === 'text' && (
-                                <TextProperties block={selectedBlock} onChange={handleUpdateBlock} activeFormats={activeFormats} />
+                                <TextProperties block={selectedBlock} onChange={handleUpdateBlock} activeFormats={activeFormats} tab="content" />
                             )}
                             {selectedBlock.type === 'image' && (
-                                <ImageProperties block={selectedBlock} onChange={handleUpdateBlock} widgetId={widget.id} />
+                                <ImageProperties block={selectedBlock} onChange={handleUpdateBlock} widgetId={widget.id} tab="content" />
                             )}
                             {selectedBlock.type === 'wrap' && (
-                                <WrapProperties block={selectedBlock} onChange={handleUpdateBlock} widgetId={widget.id} activeFormats={activeFormats} />
+                                <WrapProperties block={selectedBlock} onChange={handleUpdateBlock} widgetId={widget.id} activeFormats={activeFormats} tab="content" />
                             )}
                             {selectedBlock.type === 'table' && (
-                                <TableProperties block={selectedBlock} onChange={handleUpdateBlock} />
+                                <TableProperties block={selectedBlock} onChange={handleUpdateBlock} tab="content" />
                             )}
                             {selectedBlock.type === 'banner' && (
-                                <BannerProperties block={selectedBlock} onChange={handleUpdateBlock} />
+                                <BannerProperties block={selectedBlock} onChange={handleUpdateBlock} tab="content" />
                             )}
                             {selectedBlock.type === 'product' && (
-                                <ProductProperties block={selectedBlock} onChange={handleUpdateBlock} widgetId={widget.id} />
+                                <ProductProperties block={selectedBlock} onChange={handleUpdateBlock} widgetId={widget.id} tab="content" />
                             )}
                             {selectedBlock.type === 'author' && (
-                                <AuthorProperties block={selectedBlock} onChange={handleUpdateBlock} widgetId={widget.id} />
+                                <AuthorProperties block={selectedBlock} onChange={handleUpdateBlock} widgetId={widget.id} tab="content" />
                             )}
                             {selectedBlock.type === 'layout' && (
-                                <LayoutProperties block={selectedBlock} onChange={handleUpdateBlock} />
+                                <LayoutProperties block={selectedBlock} onChange={handleUpdateBlock} tab="content" />
                             )}
+
 
                             {/* Template Actions */}
                             <div className="mt-6 pt-4 border-t border-gray-800">

@@ -207,7 +207,57 @@ export default function ArticleEditPage() {
         if (type === 'image') { newBlock.url = ''; newBlock.width = 100; newBlock.align = 'center'; }
         if (type === 'wrap') { newBlock.content = 'Text s obtékáním'; newBlock.imgUrl = ''; newBlock.imgWidth = 40; newBlock.imgPos = 'right'; }
         if (type === 'banner') { newBlock.content = 'NADPIS SEKCE'; newBlock.bgColor = '#f3f4f6'; newBlock.textColor = '#111827'; }
-        if (type === 'product') { newBlock.name = 'Nový produkt'; newBlock.link = ''; newBlock.imgUrl = ''; newBlock.price = ''; newBlock.btnText = 'Koupit'; }
+        if (type === 'product') {
+            newBlock.name = 'Nový produkt';
+            newBlock.description = 'Krátký popis produktu...';
+            newBlock.link = '';
+            newBlock.imgUrl = '';
+            newBlock.price = '199 Kč';
+            newBlock.btnText = 'Koupit';
+
+            // Default styling mirroring Heureka widget
+            newBlock.imageHeight = 160;
+            newBlock.imageObjectFit = 'contain';
+            newBlock.imagePadding = 8;
+            newBlock.imageMarginBottom = 16;
+            newBlock.imageBorderRadius = 8;
+
+            newBlock.productNameColor = '#111827';
+            newBlock.productNameSize = '16px';
+            newBlock.productNameBold = true;
+            newBlock.productNameAlign = 'center';
+            newBlock.productNameMarginBottom = 12;
+
+            newBlock.descriptionEnabled = false;
+            newBlock.descriptionColor = '#4b5563';
+            newBlock.descriptionSize = '14px';
+            newBlock.descriptionAlign = 'center';
+            newBlock.descriptionTruncateLength = 100;
+
+            newBlock.priceColor = '#059669';
+            newBlock.priceSize = '20px';
+            newBlock.priceBold = true;
+            newBlock.priceAlign = 'center';
+            newBlock.priceMarginBottom = 16;
+
+            newBlock.btnColor = '#26AD80';
+            newBlock.btnTextColor = '#ffffff';
+            newBlock.btnFontSize = '14px';
+            newBlock.btnBold = true;
+            newBlock.btnBorderRadius = 8;
+
+            newBlock.cardBorderEnabled = true;
+            newBlock.cardBorderColor = '#e5e7eb';
+            newBlock.cardBorderWidth = 1;
+            newBlock.cardBackgroundColor = '#ffffff';
+            newBlock.cardPaddingX = 20;
+            newBlock.cardPaddingY = 20;
+            newBlock.cardBorderRadius = 12;
+            newBlock.cardShadowEnabled = true;
+            newBlock.cardShadowColor = '#000000';
+            newBlock.cardShadowBlur = 10;
+            newBlock.cardShadowOpacity = 10;
+        }
         if (type === 'table') {
             newBlock.rows = 3;
             newBlock.cols = 3;

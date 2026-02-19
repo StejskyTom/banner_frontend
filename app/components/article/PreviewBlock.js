@@ -16,7 +16,8 @@ import {
     ChevronDownIcon,
     XMarkIcon,
     BookmarkIcon,
-    ViewColumnsIcon
+    ViewColumnsIcon,
+    ImageIcon
 } from '@heroicons/react/24/solid';
 import ContentEditable from './ContentEditable';
 
@@ -112,7 +113,7 @@ function AddBlockMenu({ onAdd, isEmptyState = false, savedBlocks = [], onAddSave
                                 </div>
                             </button>
                         ))}
-                        {savedBlocks.length > 0 && (
+                        {savedBlocks && savedBlocks.length > 0 && (
                             <>
                                 <div className="mx-3 my-1 h-px bg-gray-100" />
                                 <div className="px-3 py-2 text-[10px] font-bold text-gray-400 uppercase tracking-wider flex items-center gap-1.5">
@@ -173,13 +174,7 @@ function DroppableColumn({ columnId, children }) {
     );
 }
 
-function LayoutChildBlock({ childBlock, isSelected, onClick, onChange, onFormatChange, onDelete, onMoveUp, onMoveDown, isFirst, isLast }) {
-    const resolveImageUrl = (url) => {
-        if (!url) return '';
-        if (url.startsWith('http')) return url;
-        return `${process.env.NEXT_PUBLIC_API_URL}${url}`;
-    };
-
+function LayoutChildBlock({ childBlock, isSelected, onClick, onChange, onFormatChange, onDelete, onMoveUp, onMoveDown, isFirst, isLast, renderProduct, resolveImageUrl }) {
     const renderChildContent = () => {
         if (childBlock.type === 'text') {
             return (
@@ -221,20 +216,84 @@ function LayoutChildBlock({ childBlock, isSelected, onClick, onChange, onFormatC
             );
         }
         if (childBlock.type === 'product') {
+            return renderProduct(childBlock, true);
+        }
+        if (childBlock.type === 'author') {
             return (
-                <div style={{ background: '#fff', border: '1px solid #e5e7eb', padding: '16px', borderRadius: '8px', textAlign: 'center', boxShadow: '0 1px 3px rgba(0,0,0,0.05)' }}>
-                    {childBlock.imgUrl ? (
-                        <img src={resolveImageUrl(childBlock.imgUrl)} style={{ width: '80px', height: '80px', objectFit: 'cover', borderRadius: '6px', margin: '0 auto 8px' }} alt="" />
-                    ) : (
-                        <div className="w-16 h-16 mx-auto mb-2 bg-gray-50 rounded-lg border border-dashed border-gray-200 flex items-center justify-center">
-                            <ShoppingBagIcon className="h-5 w-5 text-gray-300" />
-                        </div>
+                <div style={{
+                    backgroundColor: childBlock.backgroundColor || '#ffffff',
+                    borderRadius: `${childBlock.borderRadius || 0}px`,
+                    border: childBlock.borderEnabled ? `${childBlock.borderWidth || 1}px solid ${childBlock.borderColor || '#e5e7eb'}` : '1px solid #e5e7eb',
+                    padding: '16px',
+                    display: 'flex',
+                    flexDirection: childBlock.layout === 'side-by-side' ? 'row' : 'column',
+                    alignItems: 'center',
+                    gap: '12px',
+                    textAlign: childBlock.layout === 'side-by-side' ? 'left' : 'center',
+                    width: '100%'
+                }}>
+                    {childBlock.photoUrl && (
+                        <img
+                            src={resolveImageUrl(childBlock.photoUrl)}
+                            alt={childBlock.name}
+                            style={{
+                                width: '64px',
+                                height: '64px',
+                                objectFit: 'cover',
+                                borderRadius: `${childBlock.photoRadius !== undefined ? childBlock.photoRadius : 50}%`,
+                                boxShadow: childBlock.photoShadow ? `0 ${childBlock.photoShadowBlur ? childBlock.photoShadowBlur / 4 : 4}px ${childBlock.photoShadowBlur || 12}px ${hexToRgba('#000000', (childBlock.photoShadowOpacity || 25) / 100)}` : 'none',
+                                marginBottom: childBlock.layout !== 'side-by-side' ? `${childBlock.photoMarginBottom || 12}px` : '0',
+                                flexShrink: 0
+                            }}
+                        />
                     )}
-                    <div className="text-sm font-semibold text-gray-900">{childBlock.name || 'Produkt'}</div>
-                    {childBlock.price && <div className="text-green-600 font-bold text-xs mt-1">{childBlock.price}</div>}
-                    <span style={{ background: childBlock.btnColor || '#26AD80', color: 'white', padding: '6px 16px', borderRadius: '4px', fontSize: '12px', display: 'inline-block', marginTop: '8px' }}>
-                        {childBlock.btnText || 'Koupit'}
-                    </span>
+                    <div style={{ flex: 1, width: '100%' }}>
+                        {(childBlock.name || !childBlock.photoUrl) && (
+                            <div
+                                style={{
+                                    color: childBlock.authorNameColor || '#111827',
+                                    fontSize: childBlock.authorNameSize ? `calc(${childBlock.authorNameSize} * 0.9)` : '18px',
+                                    fontFamily: childBlock.authorNameFont || 'inherit',
+                                    fontWeight: childBlock.authorNameBold !== false ? 'bold' : 'normal',
+                                    fontStyle: childBlock.authorNameItalic ? 'italic' : 'normal',
+                                    textAlign: childBlock.layout === 'side-by-side' ? 'left' : (childBlock.authorNameAlign || 'center'),
+                                    marginBottom: `${childBlock.authorNameMarginBottom !== undefined ? childBlock.authorNameMarginBottom : 4}px`
+                                }}
+                            >
+                                {childBlock.name || 'Jméno autora'}
+                            </div>
+                        )}
+                        {childBlock.title && (
+                            <div
+                                style={{
+                                    color: childBlock.authorTitleColor || '#26AD80',
+                                    fontSize: childBlock.authorTitleSize ? `calc(${childBlock.authorTitleSize} * 0.9)` : '12px',
+                                    fontFamily: childBlock.authorTitleFont || 'inherit',
+                                    fontWeight: childBlock.authorTitleBold !== false ? 'bold' : 'normal',
+                                    fontStyle: childBlock.authorTitleItalic ? 'italic' : 'normal',
+                                    textAlign: childBlock.layout === 'side-by-side' ? 'left' : (childBlock.authorTitleAlign || 'center'),
+                                    marginBottom: `${childBlock.authorTitleMarginBottom !== undefined ? childBlock.authorTitleMarginBottom : 8}px`
+                                }}
+                            >
+                                {childBlock.title}
+                            </div>
+                        )}
+                        {childBlock.bio && (
+                            <div
+                                style={{
+                                    color: childBlock.authorBioColor || '#4b5563',
+                                    fontSize: childBlock.authorBioSize ? `calc(${childBlock.authorBioSize} * 0.9)` : '12px',
+                                    fontFamily: childBlock.authorBioFont || 'inherit',
+                                    fontWeight: childBlock.authorBioBold ? 'bold' : 'normal',
+                                    fontStyle: childBlock.authorBioItalic ? 'italic' : 'normal',
+                                    textAlign: childBlock.layout === 'side-by-side' ? 'left' : (childBlock.authorBioAlign || 'center'),
+                                    marginBottom: `${childBlock.authorBioMarginBottom !== undefined ? childBlock.authorBioMarginBottom : 0}px`
+                                }}
+                            >
+                                {childBlock.bio}
+                            </div>
+                        )}
+                    </div>
                 </div>
             );
         }
@@ -292,6 +351,18 @@ export default function PreviewBlock({ block, isSelected, selectedBlockId, onCli
     const style = {
         transform: CSS.Transform.toString(transform),
         transition,
+        opacity: isDragging ? 0.5 : 1,
+        marginBottom: `${block.margin || 24}px`,
+        position: 'relative'
+    };
+
+    const hexToRgba = (hex, alpha) => {
+        if (!hex) return `rgba(0, 0, 0, ${alpha})`;
+        if (!hex.startsWith('#')) return hex;
+        const r = parseInt(hex.slice(1, 3), 16);
+        const g = parseInt(hex.slice(3, 5), 16);
+        const b = parseInt(hex.slice(5, 7), 16);
+        return `rgba(${r}, ${g}, ${b}, ${alpha})`;
     };
 
     const resolveImageUrl = (url) => {
@@ -300,39 +371,132 @@ export default function PreviewBlock({ block, isSelected, selectedBlockId, onCli
         return `${process.env.NEXT_PUBLIC_API_URL}${url}`;
     };
 
+    const renderProduct = (productBlock, isNested = false) => {
+        const cardStyle = {
+            background: productBlock.cardBackgroundColor || '#ffffff',
+            border: productBlock.cardBorderEnabled ? `${productBlock.cardBorderWidth || 1}px solid ${productBlock.cardBorderColor || '#e5e7eb'}` : '1px solid #e5e7eb',
+            padding: `${productBlock.cardPaddingY !== undefined ? productBlock.cardPaddingY : (isNested ? 16 : 20)}px ${productBlock.cardPaddingX !== undefined ? productBlock.cardPaddingX : (isNested ? 16 : 20)}px`,
+            borderRadius: productBlock.cardBorderRadius !== undefined ? `${productBlock.cardBorderRadius}px` : (isNested ? '8px' : '12px'),
+            textAlign: 'center',
+            boxShadow: productBlock.cardShadowEnabled
+                ? `0 ${productBlock.cardShadowBlur ? productBlock.cardShadowBlur / 4 : 4}px ${productBlock.cardShadowBlur || 10}px ${hexToRgba(productBlock.cardShadowColor || '#000000', (productBlock.cardShadowOpacity || 10) / 100)}`
+                : (isNested ? 'none' : '0 4px 6px -1px rgba(0, 0, 0, 0.1)'),
+            maxWidth: isNested ? 'none' : '400px',
+            margin: isNested ? '0' : `0 auto ${productBlock.margin !== undefined ? productBlock.margin : 24}px`
+        };
+
+        const imageStyle = {
+            width: '100%',
+            height: `${productBlock.imageHeight || (isNested ? 120 : 160)}px`,
+            objectFit: productBlock.imageObjectFit || 'contain',
+            borderRadius: `${productBlock.imageBorderRadius !== undefined ? productBlock.imageBorderRadius : 8}px`,
+            padding: `${productBlock.imagePadding !== undefined ? productBlock.imagePadding : 8}px`,
+            marginBottom: `${productBlock.imageMarginBottom !== undefined ? productBlock.imageMarginBottom : 16}px`,
+            display: 'block',
+            margin: `0 auto ${productBlock.imageMarginBottom || 16}px auto`
+        };
+
+        const nameStyle = {
+            color: productBlock.productNameColor || '#111827',
+            fontSize: productBlock.productNameSize || (isNested ? '14px' : '16px'),
+            fontFamily: productBlock.productNameFont || 'inherit',
+            fontWeight: productBlock.productNameBold ? 'bold' : '600',
+            fontStyle: productBlock.productNameItalic ? 'italic' : 'normal',
+            textAlign: productBlock.productNameAlign || 'center',
+            marginTop: `${productBlock.productNameMarginTop || 0}px`,
+            marginBottom: `${productBlock.productNameMarginBottom !== undefined ? productBlock.productNameMarginBottom : (isNested ? 4 : 12)}px`,
+            display: productBlock.productNameFull ? 'block' : '-webkit-box',
+            WebkitLineClamp: productBlock.productNameFull ? 'none' : 2,
+            WebkitBoxOrient: 'vertical',
+            overflow: 'hidden',
+        };
+
+        const descriptionStyle = {
+            color: productBlock.descriptionColor || '#4b5563',
+            fontSize: productBlock.descriptionSize || '14px',
+            fontFamily: productBlock.descriptionFont || 'inherit',
+            fontWeight: productBlock.descriptionBold ? 'bold' : 'normal',
+            fontStyle: productBlock.descriptionItalic ? 'italic' : 'normal',
+            textAlign: productBlock.descriptionAlign || 'center',
+            lineHeight: '1.4',
+            marginTop: `${productBlock.descriptionMarginTop || 0}px`,
+            marginBottom: `${productBlock.descriptionMarginBottom || 16}px`,
+            display: '-webkit-box',
+            WebkitLineClamp: productBlock.descriptionTruncateLength ? Math.ceil(productBlock.descriptionTruncateLength / 50) : 3,
+            WebkitBoxOrient: 'vertical',
+            overflow: 'hidden'
+        };
+
+        const priceStyle = {
+            color: productBlock.priceColor || '#059669',
+            fontSize: productBlock.priceSize || (isNested ? '14px' : '20px'),
+            fontFamily: productBlock.priceFont || 'inherit',
+            fontWeight: productBlock.priceBold !== false ? 'bold' : 'normal',
+            fontStyle: productBlock.priceItalic ? 'italic' : 'normal',
+            textAlign: productBlock.priceAlign || 'center',
+            marginTop: `${productBlock.priceMarginTop || (isNested ? 4 : 0)}px`,
+            marginBottom: `${productBlock.priceMarginBottom !== undefined ? productBlock.priceMarginBottom : 16}px`
+        };
+
+        const btnStyle = {
+            background: productBlock.btnColor || '#26AD80',
+            color: productBlock.btnTextColor || 'white',
+            fontSize: productBlock.btnFontSize || (isNested ? '12px' : '14px'),
+            fontFamily: productBlock.btnFont || 'inherit',
+            fontWeight: productBlock.btnBold ? 'bold' : '500',
+            fontStyle: productBlock.btnItalic ? 'italic' : 'normal',
+            padding: isNested ? '6px 16px' : '10px 24px',
+            borderRadius: productBlock.btnBorderRadius !== undefined ? `${productBlock.btnBorderRadius}px` : (isNested ? '4px' : '8px'),
+            display: 'inline-block',
+            marginTop: `${productBlock.buttonMarginTop || 8}px`,
+            marginBottom: `${productBlock.buttonMarginBottom || 0}px`,
+            textDecoration: 'none'
+        };
+
+        const TitleTag = productBlock.productNameTag || 'h3';
+
+        return (
+            <div style={cardStyle}>
+                {productBlock.imgUrl && (
+                    <div style={{ padding: `${productBlock.imagePadding || 0}px` }}>
+                        <img
+                            src={resolveImageUrl(productBlock.imgUrl)}
+                            alt={productBlock.name || ''}
+                            style={imageStyle}
+                        />
+                    </div>
+                )}
+
+                <TitleTag style={nameStyle}>{productBlock.name || 'Produkt'}</TitleTag>
+
+                {productBlock.descriptionEnabled !== false && productBlock.description && (
+                    <div style={descriptionStyle}>{productBlock.description}</div>
+                )}
+
+                {productBlock.price && (
+                    <div style={priceStyle}>{productBlock.price}</div>
+                )}
+
+                <a href={productBlock.link || '#'} style={btnStyle} onClick={(e) => e.preventDefault()}>
+                    {productBlock.btnText || 'Koupit'}
+                </a>
+            </div>
+        );
+    };
+
     const renderContent = () => {
-        // Margin is now handled by the wrapper padding, so we reset it here for inner content
         const margin = { marginBottom: 0 };
 
         if (block.type === 'text') {
-            const styles = {
-                textAlign: block.align || 'left',
-                ...margin,
-                width: '100%',
-                background: 'transparent',
-                border: 'none',
-                outline: 'none',
-                resize: 'none',
-                overflow: 'hidden',
-                lineHeight: 1.5,
-                minHeight: '1.5em',
-                fontSize: '16px'
-            };
-
             return (
                 <ContentEditable
                     tagName="div"
                     html={block.content || ''}
                     onChange={(html) => onChange({ ...block, content: html })}
                     onFormatChange={onFormatChange}
-                    style={styles}
+                    style={{ textAlign: block.align || 'left', ...margin, width: '100%', background: 'transparent', border: 'none', outline: 'none', lineHeight: 1.5, minHeight: '1.5em', fontSize: '16px' }}
                     className="focus:outline-none empty:before:content-[attr(placeholder)] empty:before:text-gray-400 [&>h1]:text-2xl [&>h1]:font-bold [&>h2]:text-xl [&>h2]:font-bold [&>h3]:text-lg [&>h3]:font-bold [&>p]:mb-2"
                     placeholder="Klikněte a pište..."
-                    onClick={(e) => {
-                        if (document.activeElement !== e.currentTarget) {
-                            e.currentTarget.focus();
-                        }
-                    }}
                 />
             );
         }
@@ -344,6 +508,85 @@ export default function PreviewBlock({ block, isSelected, selectedBlockId, onCli
                     ) : (
                         <div className="bg-gray-100 rounded-lg p-8 text-center text-gray-400">Vyberte obrázek v nastavení</div>
                     )}
+                </div>
+            );
+        }
+        if (block.type === 'author') {
+            return (
+                <div style={{
+                    backgroundColor: block.backgroundColor || '#ffffff',
+                    borderRadius: `${block.borderRadius || 0}px`,
+                    border: block.borderEnabled ? `${block.borderWidth || 1}px solid ${block.borderColor || '#e5e7eb'}` : 'none',
+                    padding: '24px',
+                    display: 'flex',
+                    flexDirection: block.layout === 'side-by-side' ? 'row' : 'column',
+                    alignItems: 'center',
+                    gap: '16px',
+                    textAlign: block.layout === 'side-by-side' ? 'left' : 'center',
+                    ...margin
+                }}>
+                    {block.photoUrl && (
+                        <img
+                            src={resolveImageUrl(block.photoUrl)}
+                            alt={block.name}
+                            style={{
+                                width: '80px',
+                                height: '80px',
+                                objectFit: 'cover',
+                                borderRadius: `${block.photoRadius !== undefined ? block.photoRadius : 50}%`,
+                                boxShadow: block.photoShadow ? `0 ${block.photoShadowBlur ? block.photoShadowBlur / 4 : 4}px ${block.photoShadowBlur || 12}px ${hexToRgba('#000000', (block.photoShadowOpacity || 25) / 100)}` : 'none',
+                                marginBottom: block.layout !== 'side-by-side' ? `${block.photoMarginBottom || 16}px` : '0',
+                                flexShrink: 0
+                            }}
+                        />
+                    )}
+                    <div style={{ flex: 1 }}>
+                        {(block.name || !block.photoUrl) && (
+                            <div
+                                style={{
+                                    color: block.authorNameColor || '#111827',
+                                    fontSize: block.authorNameSize || '20px',
+                                    fontFamily: block.authorNameFont || 'inherit',
+                                    fontWeight: block.authorNameBold !== false ? 'bold' : 'normal',
+                                    fontStyle: block.authorNameItalic ? 'italic' : 'normal',
+                                    textAlign: block.layout === 'side-by-side' ? 'left' : (block.authorNameAlign || 'center'),
+                                    marginBottom: `${block.authorNameMarginBottom !== undefined ? block.authorNameMarginBottom : 4}px`
+                                }}
+                            >
+                                {block.name || 'Jméno autora'}
+                            </div>
+                        )}
+                        {block.title && (
+                            <div
+                                style={{
+                                    color: block.authorTitleColor || '#26AD80',
+                                    fontSize: block.authorTitleSize || '14px',
+                                    fontFamily: block.authorTitleFont || 'inherit',
+                                    fontWeight: block.authorTitleBold !== false ? 'bold' : 'normal',
+                                    fontStyle: block.authorTitleItalic ? 'italic' : 'normal',
+                                    textAlign: block.layout === 'side-by-side' ? 'left' : (block.authorTitleAlign || 'center'),
+                                    marginBottom: `${block.authorTitleMarginBottom !== undefined ? block.authorTitleMarginBottom : 12}px`
+                                }}
+                            >
+                                {block.title}
+                            </div>
+                        )}
+                        {block.bio && (
+                            <div
+                                style={{
+                                    color: block.authorBioColor || '#4b5563',
+                                    fontSize: block.authorBioSize || '14px',
+                                    fontFamily: block.authorBioFont || 'inherit',
+                                    fontWeight: block.authorBioBold ? 'bold' : 'normal',
+                                    fontStyle: block.authorBioItalic ? 'italic' : 'normal',
+                                    textAlign: block.layout === 'side-by-side' ? 'left' : (block.authorBioAlign || 'center'),
+                                    marginBottom: `${block.authorBioMarginBottom !== undefined ? block.authorBioMarginBottom : 0}px`
+                                }}
+                            >
+                                {block.bio}
+                            </div>
+                        )}
+                    </div>
                 </div>
             );
         }
@@ -367,25 +610,9 @@ export default function PreviewBlock({ block, isSelected, selectedBlockId, onCli
                         html={block.content || block.text || ''}
                         onChange={(html) => onChange({ ...block, content: html })}
                         onFormatChange={onFormatChange}
-                        style={{
-                            background: 'transparent',
-                            border: 'none',
-                            outline: 'none',
-                            resize: 'none',
-                            lineHeight: 1.6,
-                            minHeight: '1.5em',
-                            display: 'block',
-                            width: 'auto',
-                            overflow: 'visible',
-                            fontSize: '16px'
-                        }}
+                        style={{ background: 'transparent', border: 'none', outline: 'none', lineHeight: 1.6, minHeight: '1.5em', fontSize: '16px' }}
                         className="focus:outline-none empty:before:content-[attr(placeholder)] empty:before:text-gray-400 [&>h1]:text-2xl [&>h1]:font-bold [&>h2]:text-xl [&>h2]:font-bold [&>h3]:text-lg [&>h3]:font-bold [&>p]:mb-2"
                         placeholder="Klikněte a pište..."
-                        onClick={(e) => {
-                            if (document.activeElement !== e.currentTarget) {
-                                e.currentTarget.focus();
-                            }
-                        }}
                     />
                     <div style={{ clear: 'both' }}></div>
                 </div>
@@ -393,83 +620,18 @@ export default function PreviewBlock({ block, isSelected, selectedBlockId, onCli
         }
         if (block.type === 'banner') {
             return (
-                <div style={{
-                    background: block.bgColor || '#f3f4f6',
-                    padding: '24px',
-                    borderRadius: '12px',
-                    textAlign: 'center',
-                    borderLeft: '4px solid #26AD80',
-                    ...margin
-                }}>
+                <div style={{ background: block.bgColor || '#f3f4f6', padding: '24px', borderRadius: '12px', textAlign: 'center', borderLeft: '4px solid #26AD80', ...margin }}>
                     <input
                         value={block.content || ''}
                         onChange={(e) => onChange({ ...block, content: e.target.value })}
-                        style={{
-                            color: block.textColor || '#111827',
-                            margin: 0,
-                            textTransform: 'uppercase',
-                            fontSize: '18px',
-                            fontWeight: 700,
-                            background: 'transparent',
-                            border: 'none',
-                            textAlign: 'center',
-                            width: '100%',
-                            outline: 'none'
-                        }}
+                        style={{ color: block.textColor || '#111827', textTransform: 'uppercase', fontSize: '18px', fontWeight: 700, background: 'transparent', border: 'none', textAlign: 'center', width: '100%', outline: 'none' }}
                         placeholder="NADPIS SEKCE"
                     />
                 </div>
             );
         }
         if (block.type === 'product') {
-            return (
-                <div style={{
-                    background: '#ffffff',
-                    border: '1px solid #e5e7eb',
-                    padding: '24px',
-                    borderRadius: '12px',
-                    textAlign: 'center',
-                    boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)',
-                    maxWidth: '400px',
-                    margin: `0 auto ${block.margin !== undefined ? block.margin : 24}px`
-                }}>
-                    {block.imgUrl && <img src={resolveImageUrl(block.imgUrl)} style={{ width: '120px', height: '120px', objectFit: 'cover', borderRadius: '8px', marginBottom: '16px', display: 'block', margin: '0 auto 16px auto' }} alt="" />}
-                    <input
-                        value={block.name || ''}
-                        onChange={(e) => onChange({ ...block, name: e.target.value })}
-                        style={{
-                            color: '#111827', margin: '0 0 16px 0', fontSize: '18px', fontWeight: 600,
-                            background: 'transparent', border: 'none', textAlign: 'center', width: '100%', outline: 'none'
-                        }}
-                        placeholder="Název produktu"
-                    />
-                    {block.description && (
-                        <p style={{
-                            color: '#4b5563',
-                            fontSize: '14px',
-                            lineHeight: '1.4',
-                            margin: '0 0 16px 0',
-                            display: '-webkit-box',
-                            WebkitLineClamp: '3',
-                            WebkitBoxOrient: 'vertical',
-                            overflow: 'hidden'
-                        }}>
-                            {block.description}
-                        </p>
-                    )}
-                    {block.price && <p style={{ color: '#059669', fontWeight: 'bold', marginBottom: '16px' }}>{block.price}</p>}
-                    <span style={{
-                        background: block.btnColor || '#26AD80',
-                        color: 'white',
-                        padding: '10px 24px',
-                        borderRadius: '6px',
-                        fontWeight: 500,
-                        display: 'inline-block'
-                    }}>
-                        {block.btnText || 'Koupit'}
-                    </span>
-                </div>
-            );
+            return renderProduct(block, false);
         }
         if (block.type === 'author') {
             return (
@@ -565,7 +727,6 @@ export default function PreviewBlock({ block, isSelected, selectedBlockId, onCli
         }
         if (block.type === 'layout') {
             const gap = block.gap !== undefined ? block.gap : 16;
-
             const handleAddChildBlock = (colIndex, type) => {
                 const newChild = createChildBlock(type);
                 const newColumns = block.columns.map((col, i) => {
@@ -574,23 +735,15 @@ export default function PreviewBlock({ block, isSelected, selectedBlockId, onCli
                 });
                 onChange({ ...block, columns: newColumns });
             };
-
             const handleAddSavedChildBlock = (colIndex, savedBlock) => {
                 const { id, savedBlockId, ...blockData } = savedBlock.blockData;
-                const newChild = {
-                    ...blockData,
-                    type: savedBlock.blockType,
-                    id: crypto.randomUUID(),
-                    margin: 12,
-                    savedBlockId: savedBlock.id,
-                };
+                const newChild = { ...blockData, type: savedBlock.blockType, id: crypto.randomUUID(), margin: 12, savedBlockId: savedBlock.id };
                 const newColumns = block.columns.map((col, i) => {
                     if (i !== colIndex) return col;
                     return { ...col, blocks: [...(col.blocks || []), newChild] };
                 });
                 onChange({ ...block, columns: newColumns });
             };
-
             const handleUpdateChildBlock = (updatedChild) => {
                 const newColumns = block.columns.map(col => ({
                     ...col,
@@ -598,7 +751,6 @@ export default function PreviewBlock({ block, isSelected, selectedBlockId, onCli
                 }));
                 onChange({ ...block, columns: newColumns });
             };
-
             const handleDeleteChildBlock = (childId) => {
                 const newColumns = block.columns.map(col => ({
                     ...col,
@@ -606,7 +758,6 @@ export default function PreviewBlock({ block, isSelected, selectedBlockId, onCli
                 }));
                 onChange({ ...block, columns: newColumns });
             };
-
             const handleMoveChildBlock = (colIndex, blockIndex, direction) => {
                 const newColumns = [...block.columns];
                 const col = { ...newColumns[colIndex], blocks: [...newColumns[colIndex].blocks] };
@@ -621,43 +772,34 @@ export default function PreviewBlock({ block, isSelected, selectedBlockId, onCli
             return (
                 <div style={{ display: 'flex', gap: `${gap}px`, ...margin }}>
                     {block.columns.map((col, colIndex) => (
-                        <div
-                            key={col.id}
-                            style={{ width: `${col.width}%`, minHeight: '120px' }}
-                            className="group/col relative flex flex-col border border-dashed border-gray-200 rounded-xl p-3 hover:bg-gray-50/50 hover:border-visualy-accent-4/40 transition-all duration-200"
-                        >
-                            {/* Column label - hidden by default, shown on hover */}
+                        <div key={col.id} style={{ width: `${col.width}%`, minHeight: '120px' }} className="group/col relative flex flex-col border border-dashed border-gray-200 rounded-xl p-3 hover:bg-gray-50/50 hover:border-visualy-accent-4/40 transition-all duration-200">
                             <div className="absolute -top-3 left-3 opacity-0 group-hover/col:opacity-100 transition-opacity z-10">
                                 <span className="bg-white border border-gray-200 text-[10px] text-gray-500 font-semibold px-2 py-0.5 rounded-full shadow-sm whitespace-nowrap">
                                     {Math.round(col.width)}%
                                 </span>
                             </div>
-
-                            {/* Child blocks area */}
                             <div className="flex-1 flex flex-col h-full">
                                 {(col.blocks || []).length === 0 ? (
                                     <AddBlockMenu onAdd={(type) => handleAddChildBlock(colIndex, type)} isEmptyState={true} savedBlocks={savedBlocks} onAddSaved={(sb) => handleAddSavedChildBlock(colIndex, sb)} />
                                 ) : (
                                     <>
-                                        <div className="flex flex-col gap-2">
-                                            {(col.blocks || []).map((childBlock, blockIndex) => (
-                                                <LayoutChildBlock
-                                                    key={childBlock.id}
-                                                    childBlock={childBlock}
-                                                    columnBlock={col}
-                                                    parentBlock={block}
-                                                    isSelected={selectedBlockId === childBlock.id}
-                                                    onClick={() => onSelectBlock?.(childBlock.id)}
-                                                    onChange={handleUpdateChildBlock}
-                                                    onFormatChange={onFormatChange}
-                                                    onDelete={() => handleDeleteChildBlock(childBlock.id)}
-                                                    onMoveUp={() => handleMoveChildBlock(colIndex, blockIndex, -1)}
-                                                    onMoveDown={() => handleMoveChildBlock(colIndex, blockIndex, 1)}
-                                                    isFirst={blockIndex === 0}
-                                                    isLast={blockIndex === (col.blocks || []).length - 1}
-                                                />
-                                            ))}
-                                        </div>
+                                        {(col.blocks || []).map((childBlock, blockIndex) => (
+                                            <LayoutChildBlock
+                                                key={childBlock.id}
+                                                childBlock={childBlock}
+                                                isSelected={selectedBlockId === childBlock.id}
+                                                onClick={() => onSelectBlock(childBlock.id)}
+                                                onChange={handleUpdateChildBlock}
+                                                onFormatChange={onFormatChange}
+                                                onDelete={() => handleDeleteChildBlock(childBlock.id)}
+                                                onMoveUp={() => handleMoveChildBlock(colIndex, blockIndex, -1)}
+                                                onMoveDown={() => handleMoveChildBlock(colIndex, blockIndex, 1)}
+                                                isFirst={blockIndex === 0}
+                                                isLast={blockIndex === col.blocks.length - 1}
+                                                renderProduct={renderProduct}
+                                                resolveImageUrl={resolveImageUrl}
+                                            />
+                                        ))}
                                         <AddBlockMenu onAdd={(type) => handleAddChildBlock(colIndex, type)} savedBlocks={savedBlocks} onAddSaved={(sb) => handleAddSavedChildBlock(colIndex, sb)} />
                                     </>
                                 )}
@@ -670,66 +812,23 @@ export default function PreviewBlock({ block, isSelected, selectedBlockId, onCli
         return null;
     };
 
-
-    // Calculate dynamic padding based on block margin
-    const paddingTop = `${block.margin !== undefined ? block.margin : 24}px`;
-
     return (
-        <div
-            ref={setNodeRef}
-            style={style}
-            className="relative transition-all duration-200"
-        >
-            {/* Hit Area / Spacing */}
-            <div style={{ height: paddingTop }} className="w-full" />
-
-            {/* Drop Indicator - Positioned in the middle of the gap (padding) */}
-            {showDropIndicator && (
-                <div className="absolute top-0 left-0 right-0 h-1 bg-visualy-accent-4 rounded-full z-50 shadow-sm pointer-events-none transform translate-y-1/2" style={{ top: `calc(${paddingTop} / 2)` }} />
-            )}
-
-            {/* Inner Content Block */}
-            <div
-                onClick={(e) => {
-                    e.stopPropagation();
-                    onClick();
-                }}
-                className={`
-                    relative group border-2 rounded-xl px-4
-                    ${isSelected
-                        ? 'border-visualy-accent-4 ring-4 ring-visualy-accent-4/10 z-10'
-                        : 'border-transparent hover:border-gray-200'
-                    }
-                    ${isDragging ? 'opacity-50' : 'opacity-100'}
-                `}
-            >
-                {/* Drag Handle */}
-                <div
-                    {...attributes}
-                    {...listeners}
-                    className={`
-                        absolute -top-9 left-0 p-2 bg-white text-gray-400 hover:text-visualy-accent-4 rounded-full shadow-sm border border-gray-200 transition-all cursor-move touch-none z-20 flex items-center justify-center
-                        ${isSelected ? 'opacity-100' : 'opacity-0 group-hover:opacity-100'}
-                    `}
-                    title="Přesunout blok"
-                >
-                    <ArrowsUpDownIcon className="h-4 w-4" />
-                </div>
-
-                {/* Delete Button */}
-                <button
-                    onClick={(e) => { e.stopPropagation(); onDelete(block.id); }}
-                    className={`
-                        absolute -top-9 right-0 p-2 bg-white text-red-500 hover:bg-red-50 hover:text-red-600 rounded-full shadow-sm border border-gray-200 transition-all z-20 flex items-center justify-center
-                        ${isSelected ? 'opacity-100' : 'opacity-0 group-hover:opacity-100'}
-                    `}
-                    title="Odstranit blok"
-                >
-                    <TrashIcon className="h-4 w-4" />
-                </button>
-
-                {renderContent()}
+        <div ref={setNodeRef} style={style} {...attributes} {...listeners} onClick={onClick} className={`relative group p-4 rounded-2xl transition-all duration-200 ${isSelected ? 'ring-2 ring-visualy-accent-4 bg-visualy-accent-4/[0.03] shadow-lg shadow-visualy-accent-4/5' : 'hover:bg-gray-50/80 hover:ring-1 hover:ring-gray-200'} ${isDragging ? 'z-50' : 'z-10'} ${showDropIndicator ? 'ring-2 ring-visualy-accent-4 ring-dashed bg-visualy-accent-4/10' : ''}`}>
+            {/* Simple handle indicator on hover */}
+            <div className="absolute -left-2 top-1/2 -translate-y-1/2 opacity-0 group-hover:opacity-100 transition-opacity cursor-grab active:cursor-grabbing p-1 text-gray-300">
+                <ArrowsUpDownIcon className="h-4 w-4" />
             </div>
+
+            {/* Block floating toolbar */}
+            <div className={`absolute -top-4 right-4 flex items-center gap-1.5 z-30 transition-all duration-200 ${isSelected ? 'opacity-100 translate-y-0' : 'opacity-0 -translate-y-2 pointer-events-none group-hover:opacity-100 group-hover:translate-y-0 group-hover:pointer-events-auto'}`}>
+                <div className="flex items-center bg-white rounded-xl shadow-xl border border-gray-100 overflow-hidden p-1 gap-1">
+                    <button onClick={(e) => { e.stopPropagation(); onDelete(); }} className="p-2 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-all" title="Odstranit blok">
+                        <TrashIcon className="h-4 w-4" />
+                    </button>
+                </div>
+            </div>
+
+            {renderContent()}
         </div>
     );
 }
