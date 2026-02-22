@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, Suspense } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { authorizedFetch } from '../../../lib/api';
 import { useToast } from '../../components/ToastProvider';
@@ -28,7 +28,7 @@ const FEATURES = [
     { text: 'Export dat a reporty', icon: DocumentArrowDownIcon },
 ];
 
-export default function SubscriptionPage() {
+function SubscriptionContent() {
     const searchParams = useSearchParams();
     const [status, setStatus] = useState(null);
     const [loading, setLoading] = useState(true);
@@ -742,5 +742,13 @@ export default function SubscriptionPage() {
                 )}
             </div>
         </div>
+    );
+}
+
+export default function SubscriptionPage() {
+    return (
+        <Suspense fallback={<div className="flex items-center justify-center min-h-[60vh]"><div className="w-10 h-10 border-4 border-visualy-accent-4/20 border-t-visualy-accent-4 rounded-full animate-spin"></div></div>}>
+            <SubscriptionContent />
+        </Suspense>
     );
 }

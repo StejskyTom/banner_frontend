@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, Suspense } from 'react';
 import { useSession } from 'next-auth/react';
 import { useSearchParams } from 'next/navigation';
 import {
@@ -17,7 +17,7 @@ import { authorizedFetch } from '../../../../lib/api';
 import { useToast } from '../../../components/ToastProvider';
 import Link from 'next/link';
 
-export default function SettingsSubscriptionPage() {
+function SettingsSubscriptionContent() {
     const { data: session } = useSession();
     const searchParams = useSearchParams();
 
@@ -426,5 +426,13 @@ export default function SettingsSubscriptionPage() {
                 </div>
             )}
         </div>
+    );
+}
+
+export default function SettingsSubscriptionPage() {
+    return (
+        <Suspense fallback={<div className="flex items-center justify-center min-h-[60vh]"><div className="w-10 h-10 border-4 border-gray-200 border-t-gray-600 rounded-full animate-spin"></div></div>}>
+            <SettingsSubscriptionContent />
+        </Suspense>
     );
 }
