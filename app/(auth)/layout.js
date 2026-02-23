@@ -1,5 +1,3 @@
-'use client';
-
 import { Geist, Geist_Mono } from "next/font/google";
 import "../globals.css";
 import { ToastProvider } from "../components/ToastProvider";
@@ -13,6 +11,16 @@ const geistMono = Geist_Mono({
   variable: "--font-geist-mono",
   subsets: ["latin"],
 });
+
+export const metadata = {
+  title: "Přihlášení | Visualy",
+  description: "Přihlaste se do Visualy a začněte tvořit widgety.",
+  openGraph: {
+    title: "Přihlášení | Visualy",
+    description: "Přihlaste se do Visualy a začněte tvořit widgety.",
+    images: [{ url: "/visualy_logo.png" }],
+  },
+};
 
 export default function AuthLayout({ children }) {
   return (
