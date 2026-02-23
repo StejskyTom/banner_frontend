@@ -6,12 +6,16 @@ import { unauthorizedFetch } from "../../../lib/api";
 import { signIn, useSession } from "next-auth/react";
 import Link from 'next/link';
 import { useToast } from "../../components/ToastProvider";
+import { Turnstile } from '@marsidev/react-turnstile';
+import { useRef } from 'react';
 
 export default function RegisterPage() {
   const { data: session, status } = useSession();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [turnstileToken, setTurnstileToken] = useState(null);
+  const turnstileRef = useRef();
   const router = useRouter();
   const showNotification = useToast();
 
@@ -29,19 +33,23 @@ export default function RegisterPage() {
       // 1️⃣ registrace
       const registerRes = await unauthorizedFetch("/register", {
         method: "POST",
-        body: JSON.stringify({ email, password })
+        body: JSON.stringify({ email, password, turnstileToken })
       });
 
       if (!registerRes.ok) {
         const errorData = await registerRes.json().catch(() => ({}));
         showNotification(errorData.message || "Registrace selhala", 'error');
+        turnstileRef.current?.reset();
         return;
       }
+
+      const registerData = await registerRes.json();
 
       // 2️⃣ login po registraci
       const loginRes = await signIn("credentials", {
         email,
         password,
+        serverToken: registerData.token,
         redirect: false
       });
 
@@ -52,6 +60,7 @@ export default function RegisterPage() {
       }
     } catch (error) {
       showNotification("Došlo k chybě", 'error');
+      turnstileRef.current?.reset();
     } finally {
       setIsSubmitting(false);
     }
@@ -104,9 +113,18 @@ export default function RegisterPage() {
             </div>
           </div>
 
+          <div className="flex justify-center mt-4">
+            <Turnstile
+              ref={turnstileRef}
+              siteKey={process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY}
+              onSuccess={(token) => setTurnstileToken(token)}
+              options={{ size: 'invisible' }}
+            />
+          </div>
+
           <div>
             <button
-              disabled={isSubmitting}
+              disabled={isSubmitting || !turnstileToken}
               type="submit"
               className="cursor-pointer flex w-full justify-center rounded-md bg-visualy-accent-4 px-3 py-1.5 text-sm/6 font-bold text-white shadow-xs hover:bg-visualy-accent-1 hover:text-visualy-dark focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-visualy-accent-4 disabled:opacity-70 disabled:cursor-not-allowed transition-all"
             >

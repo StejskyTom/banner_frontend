@@ -5,6 +5,7 @@ import { signIn, useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import Link from 'next/link';
 import { useToast } from "../../components/ToastProvider";
+import { Turnstile } from '@marsidev/react-turnstile';
 
 export default function LoginPage() {
   const { data: session, status } = useSession();
@@ -12,6 +13,7 @@ export default function LoginPage() {
   const [password, setPassword] = useState('');
   const [rememberMe, setRememberMe] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [turnstileToken, setTurnstileToken] = useState(null);
   const router = useRouter();
   const showNotification = useToast();
 
@@ -30,6 +32,7 @@ export default function LoginPage() {
         email,
         password,
         rememberMe,
+        turnstileToken,
         redirect: false
       });
 
@@ -142,10 +145,18 @@ export default function LoginPage() {
             </label>
           </div>
 
+          <div className="flex justify-center">
+            <Turnstile
+              siteKey={process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY}
+              onSuccess={(token) => setTurnstileToken(token)}
+              options={{ size: 'invisible' }}
+            />
+          </div>
+
           <div>
             <button
               type="submit"
-              disabled={loading}
+              disabled={loading || !turnstileToken}
               className="cursor-pointer flex w-full justify-center rounded-md bg-visualy-accent-4 px-3 py-1.5 text-sm/6 font-semibold text-white shadow-sm hover:bg-visualy-accent-4/90 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-visualy-accent-4 transition-all disabled:opacity-70 disabled:cursor-not-allowed"
             >
               {loading ? 'Přihlašování...' : 'Přihlásit se'}

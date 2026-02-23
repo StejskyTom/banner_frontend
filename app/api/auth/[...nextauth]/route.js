@@ -7,17 +7,29 @@ const providers = [
     name: "Credentials",
     credentials: {
       email: { label: "Email", type: "text" },
-      password: { label: "Heslo", type: "password" }
+      password: { label: "Heslo", type: "password" },
+      turnstileToken: { label: "Turnstile Token", type: "text" },
+      serverToken: { label: "Server Token", type: "text" }
     },
     async authorize(credentials) {
       try {
+        if (credentials.serverToken) {
+          return {
+            id: credentials.email,
+            email: credentials.email,
+            name: credentials.email.split('@')[0],
+            accessToken: credentials.serverToken,
+          };
+        }
+
         const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/auth/login`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
             username: credentials.email,
             password: credentials.password,
-            rememberMe: credentials.rememberMe === 'true' // Credentials values are strings
+            rememberMe: credentials.rememberMe === 'true',
+            turnstileToken: credentials.turnstileToken
           })
         });
 
