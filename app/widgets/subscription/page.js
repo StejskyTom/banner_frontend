@@ -395,9 +395,9 @@ function SubscriptionContent() {
 
     // ─── CHECKOUT FLOW (Inactive subscription) ────────────────────
     return (
-        <div className="p-8 max-w-5xl mx-auto">
+        <div className="p-6 max-w-5xl mx-auto min-h-[calc(100vh-4rem)] flex flex-col">
             {/* Header */}
-            <div className="text-center mb-10">
+            <div className="text-center mb-6">
                 <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-3">Aktivujte Profi tarif</h1>
                 <p className="text-gray-500 dark:text-gray-400 max-w-md mx-auto">
                     Odemkněte všechny funkce a získejte přístup bez omezení.
@@ -405,7 +405,7 @@ function SubscriptionContent() {
             </div>
 
             {/* Progress Steps */}
-            <div className="flex items-center justify-center gap-0 mb-12">
+            <div className="flex items-center justify-center gap-0 mb-8">
                 {[
                     { num: 1, label: 'Přehled' },
                     { num: 2, label: 'Fakturační údaje' },
@@ -445,7 +445,7 @@ function SubscriptionContent() {
             </div>
 
             {/* Step Content */}
-            <div className="transition-all duration-300">
+            <div className="transition-all duration-300 flex-1">
 
                 {/* ─── STEP 1: Plan Overview ─── */}
                 {step === 1 && (
@@ -544,8 +544,9 @@ function SubscriptionContent() {
 
                 {/* ─── STEP 2: Billing Details ─── */}
                 {step === 2 && (
-                    <div className="max-w-2xl mx-auto animate-fade-in">
-                        <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700 p-8">
+                    <div className="grid grid-cols-1 lg:grid-cols-5 gap-8 animate-fade-in">
+                        {/* Billing Form */}
+                        <div className="lg:col-span-3 bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700 p-8">
                             <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-1">Fakturační údaje</h2>
                             <p className="text-sm text-gray-400 mb-8">Tyto údaje budou uvedeny na faktuře.</p>
 
@@ -650,13 +651,63 @@ function SubscriptionContent() {
                                 </button>
                             </div>
                         </div>
+
+                        {/* Sidebar — order summary + info */}
+                        <div className="lg:col-span-2 space-y-4">
+                            {/* Order summary */}
+                            <div className="bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 rounded-2xl p-6 text-white relative overflow-hidden">
+                                <div className="absolute -top-16 -right-16 w-40 h-40 bg-visualy-accent-4/15 rounded-full blur-3xl"></div>
+                                <h3 className="text-sm font-semibold text-gray-400 uppercase tracking-wider mb-4">Vaše objednávka</h3>
+                                <div className="flex items-center justify-between py-3 border-b border-white/10">
+                                    <span className="text-gray-300 text-sm">Profi tarif</span>
+                                    <span className="font-bold text-lg">550 Kč</span>
+                                </div>
+                                <div className="flex items-center justify-between py-3 text-sm">
+                                    <span className="text-gray-400">Perioda</span>
+                                    <span className="text-gray-300">Měsíčně</span>
+                                </div>
+                            </div>
+
+                            {/* Security info */}
+                            <div className="bg-white dark:bg-gray-800 rounded-2xl border border-gray-100 dark:border-gray-700 p-6">
+                                <div className="flex items-center gap-3 mb-3">
+                                    <div className="w-10 h-10 rounded-xl bg-blue-50 dark:bg-blue-900/20 flex items-center justify-center">
+                                        <LockClosedIcon className="w-5 h-5 text-blue-500" />
+                                    </div>
+                                    <div>
+                                        <h4 className="font-semibold text-gray-900 dark:text-white text-sm">Zabezpečená data</h4>
+                                        <p className="text-xs text-gray-400">Vaše údaje jsou v bezpečí</p>
+                                    </div>
+                                </div>
+                                <p className="text-xs text-gray-500 dark:text-gray-400 leading-relaxed">
+                                    Fakturační údaje jsou bezpečně uloženy a použity výhradně pro vystavení daňových dokladů.
+                                </p>
+                            </div>
+
+                            {/* Cancellation info */}
+                            <div className="bg-white dark:bg-gray-800 rounded-2xl border border-gray-100 dark:border-gray-700 p-6">
+                                <div className="flex items-center gap-3 mb-3">
+                                    <div className="w-10 h-10 rounded-xl bg-green-50 dark:bg-green-900/20 flex items-center justify-center">
+                                        <ArrowPathIcon className="w-5 h-5 text-green-500" />
+                                    </div>
+                                    <div>
+                                        <h4 className="font-semibold text-gray-900 dark:text-white text-sm">Kdykoliv zrušíte</h4>
+                                        <p className="text-xs text-gray-400">Bez závazků</p>
+                                    </div>
+                                </div>
+                                <p className="text-xs text-gray-500 dark:text-gray-400 leading-relaxed">
+                                    Předplatné můžete zrušit jedním kliknutím. Služba zůstane aktivní do konce zaplaceného období.
+                                </p>
+                            </div>
+                        </div>
                     </div>
                 )}
 
                 {/* ─── STEP 3: Confirmation ─── */}
                 {step === 3 && (
-                    <div className="max-w-2xl mx-auto animate-fade-in">
-                        <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700 overflow-hidden">
+                    <div className="grid grid-cols-1 lg:grid-cols-5 gap-8 animate-fade-in">
+                        {/* Main confirmation card */}
+                        <div className="lg:col-span-3 bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700 overflow-hidden">
                             {/* Order summary header */}
                             <div className="bg-gradient-to-r from-gray-900 to-gray-800 p-8 text-white">
                                 <h2 className="text-xl font-bold mb-4">Shrnutí objednávky</h2>
@@ -694,6 +745,14 @@ function SubscriptionContent() {
                                     </div>
                                 </div>
 
+                                {/* Consent note */}
+                                <p className="text-xs text-gray-500 dark:text-gray-400 text-center mb-6 leading-relaxed">
+                                    Pokračováním souhlasíte s{' '}
+                                    <a href="https://visualy.cz/obchodni-podminky/" target="_blank" rel="noopener noreferrer" className="underline decoration-gray-400 dark:decoration-gray-500 underline-offset-2 hover:text-gray-700 dark:hover:text-gray-200 transition-colors">obchodními podmínkami</a>
+                                    {' '}a{' '}
+                                    <a href="https://visualy.cz/zasady-ochrany-osobnich-udaju/" target="_blank" rel="noopener noreferrer" className="underline decoration-gray-400 dark:decoration-gray-500 underline-offset-2 hover:text-gray-700 dark:hover:text-gray-200 transition-colors">zásadami ochrany osobních údajů</a>.
+                                </p>
+
                                 {/* Actions */}
                                 <div className="flex items-center justify-between">
                                     <button
@@ -723,23 +782,62 @@ function SubscriptionContent() {
                             </div>
                         </div>
 
-                        {/* Trust badges */}
-                        <div className="flex items-center justify-center gap-6 mt-8 text-xs text-gray-400">
-                            <div className="flex items-center gap-1.5">
-                                <LockClosedIcon className="w-4 h-4" />
-                                Šifrované spojení
+                        {/* Sidebar — trust & security */}
+                        <div className="lg:col-span-2 space-y-4">
+                            <div className="bg-white dark:bg-gray-800 rounded-2xl border border-gray-100 dark:border-gray-700 p-6">
+                                <div className="flex items-center gap-3 mb-3">
+                                    <div className="w-10 h-10 rounded-xl bg-blue-50 dark:bg-blue-900/20 flex items-center justify-center">
+                                        <LockClosedIcon className="w-5 h-5 text-blue-500" />
+                                    </div>
+                                    <div>
+                                        <h4 className="font-semibold text-gray-900 dark:text-white text-sm">Šifrované spojení</h4>
+                                        <p className="text-xs text-gray-400">SSL / TLS zabezpečení</p>
+                                    </div>
+                                </div>
+                                <p className="text-xs text-gray-500 dark:text-gray-400 leading-relaxed">
+                                    Veškerá komunikace je šifrována a vaše platební údaje nikdy neukládáme.
+                                </p>
                             </div>
-                            <div className="flex items-center gap-1.5">
-                                <ShieldCheckIcon className="w-4 h-4" />
-                                PCI DSS certifikace
+
+                            <div className="bg-white dark:bg-gray-800 rounded-2xl border border-gray-100 dark:border-gray-700 p-6">
+                                <div className="flex items-center gap-3 mb-3">
+                                    <div className="w-10 h-10 rounded-xl bg-green-50 dark:bg-green-900/20 flex items-center justify-center">
+                                        <ShieldCheckIcon className="w-5 h-5 text-green-500" />
+                                    </div>
+                                    <div>
+                                        <h4 className="font-semibold text-gray-900 dark:text-white text-sm">PCI DSS certifikace</h4>
+                                        <p className="text-xs text-gray-400">Nejvyšší standard</p>
+                                    </div>
+                                </div>
+                                <p className="text-xs text-gray-500 dark:text-gray-400 leading-relaxed">
+                                    Platební brána Comgate splňuje nejvyšší bezpečnostní standardy pro zpracování plateb.
+                                </p>
                             </div>
-                            <div className="flex items-center gap-1.5">
-                                <CreditCardIcon className="w-4 h-4" />
-                                Comgate Payment Gateway
+
+                            <div className="bg-white dark:bg-gray-800 rounded-2xl border border-gray-100 dark:border-gray-700 p-6">
+                                <div className="flex items-center gap-3 mb-3">
+                                    <div className="w-10 h-10 rounded-xl bg-purple-50 dark:bg-purple-900/20 flex items-center justify-center">
+                                        <CreditCardIcon className="w-5 h-5 text-purple-500" />
+                                    </div>
+                                    <div>
+                                        <h4 className="font-semibold text-gray-900 dark:text-white text-sm">Comgate Gateway</h4>
+                                        <p className="text-xs text-gray-400">Ověřená platební brána</p>
+                                    </div>
+                                </div>
+                                <p className="text-xs text-gray-500 dark:text-gray-400 leading-relaxed">
+                                    Platby zpracovává licencovaná česká platební brána s certifikací ČNB.
+                                </p>
                             </div>
                         </div>
                     </div>
                 )}
+            </div>
+
+            {/* Legal footer */}
+            <div className="flex items-center justify-center gap-2 mt-auto pt-6 text-xs text-gray-400 dark:text-gray-500">
+                <a href="https://visualy.cz/obchodni-podminky/" target="_blank" rel="noopener noreferrer" className="hover:text-gray-600 dark:hover:text-gray-300 transition-colors">Obchodní podmínky</a>
+                <span>·</span>
+                <a href="https://visualy.cz/zasady-ochrany-osobnich-udaju/" target="_blank" rel="noopener noreferrer" className="hover:text-gray-600 dark:hover:text-gray-300 transition-colors">Ochrana osobních údajů</a>
             </div>
         </div>
     );
