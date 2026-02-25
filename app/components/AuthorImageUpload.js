@@ -13,6 +13,12 @@ export default function AuthorImageUpload({ widgetId, onUploadComplete }) {
     const onDrop = useCallback(async (acceptedFiles) => {
         if (!acceptedFiles.length) return;
         const file = acceptedFiles[0];
+        
+        if (file.size > 100 * 1024) {
+            showNotification('Soubor je příliš velký (max 100KB)', 'error');
+            return;
+        }
+        
         setUploading(true);
         try {
             const fd = new FormData();
@@ -74,7 +80,7 @@ export default function AuthorImageUpload({ widgetId, onUploadComplete }) {
                             Klikněte nebo přetáhněte obrázek
                         </p>
                         <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
-                            PNG, JPG, WEBP (max. 5MB)
+                            PNG, JPG, WEBP, SVG (max. 100KB)
                         </p>
                     </div>
                 </>
