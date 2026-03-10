@@ -15,7 +15,16 @@ const isBlockOrChildSelected = (block, selectedId) => {
     return false;
 };
 
-export default function ArticlePreview({ blocks, selectedBlockId, onSelectBlock, onUpdateBlock, onFormatChange, onDeleteBlock, savedBlocks = [] }) {
+export default function ArticlePreview({ blocks, selectedBlockId, onSelectBlock, onUpdateBlock, onFormatChange, onDeleteBlock, savedBlocks = [], settings = {} }) {
+
+    const getCanvasStyle = () => {
+        const w = settings?.canvasWidth;
+        const unit = settings?.canvasWidthUnit || 'px';
+        if (!w) return {};
+        if (unit === '%') return { width: `${w}%`, maxWidth: '100%' };
+        return { maxWidth: `${w}px`, width: '100%' };
+    };
+
     const { setNodeRef } = useDroppable({
         id: 'preview-area',
     });
@@ -29,10 +38,14 @@ export default function ArticlePreview({ blocks, selectedBlockId, onSelectBlock,
     // Show append indicator when over container OR over the dedicated append zone
     const showAppendIndicator = isPaletteItem && (over?.id === 'preview-area' || over?.id === 'append-zone');
 
+    const canvasStyle = getCanvasStyle();
+    const hasCustomWidth = !!(settings?.canvasWidth);
+
     return (
         <div
             ref={setNodeRef}
-            className="w-full max-w-3xl mx-auto bg-white min-h-[800px] shadow-sm rounded-xl p-12 relative flex flex-col"
+            className={`mx-auto bg-white min-h-[800px] shadow-sm rounded-xl p-12 relative flex flex-col ${hasCustomWidth ? 'w-full' : 'w-full max-w-3xl'}`}
+            style={canvasStyle}
             onClick={() => onSelectBlock(null)}
         >
             <SortableContext items={blocks.map(b => b.id)} strategy={verticalListSortingStrategy}>

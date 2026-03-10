@@ -131,6 +131,7 @@ export default function ArticleEditPage() {
                 body: JSON.stringify({
                     name: widget.name,
                     content: widget.blocks,
+                    settings: widget.settings || {},
                 }),
             });
 
@@ -507,6 +508,7 @@ export default function ArticleEditPage() {
                                 onFormatChange={setActiveFormats}
                                 onDeleteBlock={handleDeleteBlock}
                                 savedBlocks={savedBlocks}
+                                settings={widget.settings || {}}
                             />
                         </div>
                     </div>

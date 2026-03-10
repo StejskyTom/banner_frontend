@@ -362,6 +362,15 @@ export default function ArticleEditSidebar({
     if (!activeTab) return null;
 
     if (activeTab === 'settings') {
+        const settings = widget.settings || {};
+
+        const updateSettings = (key, value) => {
+            setWidget(prev => ({
+                ...prev,
+                settings: { ...(prev.settings || {}), [key]: value }
+            }));
+        };
+
         return (
             <div className="dark w-80 bg-gray-900 border-r border-gray-800 text-white flex flex-col h-full overflow-hidden">
                 {selectedBlock ? (
@@ -382,8 +391,63 @@ export default function ArticleEditSidebar({
                         </div>
                     )
                 ) : (
-                    <div className="p-4 text-gray-500 text-sm text-center">
-                        Vyberte blok pro zobrazení nastavení.
+                    /* Widget-level settings – shown when no block is selected */
+                    <div className="flex flex-col h-full overflow-hidden">
+                        <div className="p-4 border-b border-gray-800">
+                            <h2 className="font-semibold text-white">Nastavení widgetu</h2>
+                            <p className="text-xs text-gray-500 mt-1">Globální nastavení celého widgetu</p>
+                        </div>
+                        <div className="flex-1 overflow-y-auto p-4 space-y-6 custom-scrollbar">
+
+                            {/* Canvas Width */}
+                            <div>
+                                <label className="block text-xs font-semibold text-gray-400 uppercase tracking-wider mb-3">
+                                    Šířka plátna
+                                </label>
+                                <p className="text-xs text-gray-500 mb-3">
+                                    Definuje maximální šířku obsahu widgetu. Bez hodnoty se použije výchozí šířka.
+                                </p>
+                                <div className="flex gap-2 items-center">
+                                    <input
+                                        type="number"
+                                        min="1"
+                                        max="9999"
+                                        placeholder="Výchozí"
+                                        value={settings.canvasWidth || ''}
+                                        onChange={e => {
+                                            const v = e.target.value;
+                                            updateSettings('canvasWidth', v ? parseInt(v, 10) : null);
+                                        }}
+                                        className="flex-1 bg-gray-800 border border-gray-700 text-white text-sm px-3 py-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-visualy-accent-4 placeholder-gray-600"
+                                    />
+                                    <div className="flex rounded-lg overflow-hidden border border-gray-700">
+                                        {['px', '%'].map(unit => (
+                                            <button
+                                                key={unit}
+                                                onClick={() => updateSettings('canvasWidthUnit', unit)}
+                                                className={`px-3 py-2 text-sm font-medium transition-colors ${(settings.canvasWidthUnit || 'px') === unit
+                                                        ? 'bg-visualy-accent-4 text-white'
+                                                        : 'bg-gray-800 text-gray-400 hover:bg-gray-700 hover:text-white'
+                                                    }`}
+                                            >
+                                                {unit}
+                                            </button>
+                                        ))}
+                                    </div>
+                                </div>
+                                {settings.canvasWidth && (
+                                    <button
+                                        onClick={() => {
+                                            updateSettings('canvasWidth', null);
+                                        }}
+                                        className="mt-2 text-xs text-gray-500 hover:text-red-400 transition-colors"
+                                    >
+                                        Resetovat na výchozí
+                                    </button>
+                                )}
+                            </div>
+
+                        </div>
                     </div>
                 )}
             </div>
