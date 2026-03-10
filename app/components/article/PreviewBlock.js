@@ -17,7 +17,8 @@ import {
     XMarkIcon,
     BookmarkIcon,
     ViewColumnsIcon,
-    ImageIcon
+    ImageIcon,
+    VideoCameraIcon
 } from '@heroicons/react/24/solid';
 import ContentEditable from './ContentEditable';
 
@@ -28,6 +29,7 @@ const CHILD_BLOCK_TYPES = [
     { type: 'banner', label: 'Banner', icon: MegaphoneIcon },
     { type: 'product', label: 'Produkt', icon: ShoppingBagIcon },
     { type: 'author', label: 'Autor', icon: UserCircleIcon },
+    { type: 'video', label: 'Video', icon: VideoCameraIcon },
 ];
 
 const SAVED_BLOCK_ICONS = {
@@ -45,11 +47,20 @@ function createChildBlock(type) {
     const newBlock = { id: crypto.randomUUID(), type, margin: 12 };
     if (type === 'text') { newBlock.content = 'Nový text'; newBlock.tag = 'p'; }
     if (type === 'image') { newBlock.url = ''; newBlock.width = 100; newBlock.align = 'center'; }
+    if (type === 'video') { newBlock.url = ''; newBlock.width = 100; newBlock.ratio = '16/9'; newBlock.align = 'center'; newBlock.autoPlay = false; }
     if (type === 'banner') { newBlock.content = 'NADPIS'; newBlock.bgColor = '#f3f4f6'; newBlock.textColor = '#111827'; }
     if (type === 'product') { newBlock.name = 'Produkt'; newBlock.link = ''; newBlock.imgUrl = ''; newBlock.price = ''; newBlock.btnText = 'Koupit'; }
     if (type === 'table') { newBlock.header = ['Sloupec 1', 'Sloupec 2']; newBlock.data = [['', '']]; newBlock.width = 100; newBlock.borderStyle = 'full'; newBlock.headerBgColor = '#f3f4f6'; newBlock.headerTextColor = '#111827'; }
     if (type === 'author') { newBlock.authorName = ''; newBlock.authorTitle = ''; newBlock.authorBio = ''; newBlock.authorPhotoUrl = ''; }
-    return newBlock;
+}
+
+function resolveVideoUrl(url, autoPlay) {
+    if (!url) return '';
+    const m = url.match(/(?:youtube\.com\/(?:[^\/]+\/.+\/|(?:v|e(?:mbed)?)\/|.*[?&]v=)|youtu\.be\/)([^"&?\/\s]{11})/i);
+    if (m && m[1]) {
+        return `https://www.youtube.com/embed/${m[1]}${autoPlay ? '?autoplay=1&mute=1' : ''}`;
+    }
+    return url;
 }
 
 function AddBlockMenu({ onAdd, isEmptyState = false, savedBlocks = [], onAddSaved }) {
@@ -177,16 +188,48 @@ function DroppableColumn({ columnId, children }) {
 function LayoutChildBlock({ childBlock, isSelected, onClick, onChange, onFormatChange, onDelete, onMoveUp, onMoveDown, isFirst, isLast, renderProduct, resolveImageUrl }) {
     const renderChildContent = () => {
         if (childBlock.type === 'text') {
-            return (
+            const getBorder = () => {
+                const bStyle = childBlock.borderStyle || 'none';
+                if (bStyle === 'none') return {};
+                const borderStr = `${childBlock.borderWidth || 2}px solid ${childBlock.borderColor || '#000000'}`;
+                if (bStyle === 'all') return { border: borderStr };
+                if (bStyle === 'left') return { borderLeft: borderStr };
+                if (bStyle === 'top') return { borderTop: borderStr };
+                if (bStyle === 'bottom') return { borderBottom: borderStr };
+                return {};
+            };
+
+            const contentNode = (
                 <ContentEditable
                     tagName="div"
                     html={childBlock.content || ''}
                     onChange={(html) => onChange({ ...childBlock, content: html })}
                     onFormatChange={onFormatChange}
-                    style={{ textAlign: childBlock.align || 'left', width: '100%', background: 'transparent', border: 'none', outline: 'none', lineHeight: 1.5, minHeight: '1.5em', fontSize: '14px' }}
+                    style={{ flex: 1, minWidth: 0, textAlign: childBlock.align || 'left', background: 'transparent', border: 'none', outline: 'none', lineHeight: 1.5, minHeight: '1.5em', fontSize: '14px' }}
                     className="focus:outline-none empty:before:content-[attr(placeholder)] empty:before:text-gray-400 [&>h1]:text-xl [&>h1]:font-bold [&>h2]:text-lg [&>h2]:font-bold [&>h3]:text-base [&>h3]:font-bold [&>p]:mb-1"
                     placeholder="Klikněte a pište..."
                 />
+            );
+
+            return (
+                <div style={{
+                    width: '100%',
+                    background: childBlock.bgColor === 'transparent' ? 'transparent' : (childBlock.bgColor || 'transparent'),
+                    padding: `${childBlock.paddingY || 0}px ${childBlock.paddingX || 0}px`,
+                    borderRadius: `${childBlock.borderRadius || 0}px`,
+                    ...getBorder(),
+                    display: childBlock.iconUrl ? 'flex' : 'block',
+                    flexDirection: childBlock.iconUrl ? (childBlock.iconPosition || 'flex-row') : 'column',
+                    alignItems: childBlock.iconUrl ? (childBlock.iconAlignItems || 'flex-start') : 'stretch',
+                    gap: childBlock.iconUrl ? '16px' : '0'
+                }}>
+                    {childBlock.iconUrl && (
+                        <div style={{ flexShrink: 0 }}>
+                            <img src={resolveImageUrl(childBlock.iconUrl)} style={{ width: `${childBlock.iconSize || 24}px`, height: 'auto', display: 'block' }} alt="" />
+                        </div>
+                    )}
+                    {contentNode}
+                </div>
             );
         }
         if (childBlock.type === 'image') {
@@ -200,6 +243,28 @@ function LayoutChildBlock({ childBlock, isSelected, onClick, onChange, onFormatC
                             Vyberte obrázek
                         </div>
                     )}
+                </div>
+            );
+        }
+        if (childBlock.type === 'video') {
+            const paddingBottom = childBlock.ratio === '4/3' ? '75%' : childBlock.ratio === '1/1' ? '100%' : '56.25%';
+            return (
+                <div style={{ textAlign: childBlock.align || 'center', width: '100%' }}>
+                    <div style={{ width: `${childBlock.width || 100}%`, display: 'inline-block', position: 'relative', overflow: 'hidden', paddingBottom, height: 0, borderRadius: '8px' }}>
+                        {childBlock.url ? (
+                            <iframe
+                                src={resolveVideoUrl(childBlock.url, childBlock.autoPlay)}
+                                style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', border: 0 }}
+                                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                                allowFullScreen
+                            />
+                        ) : (
+                            <div style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center' }} className="bg-gray-100/50 border border-dashed border-gray-200 text-gray-400 text-xs flex-col">
+                                <VideoCameraIcon className="h-6 w-6 mb-1 text-gray-300" />
+                                Vložte URL videa
+                            </div>
+                        )}
+                    </div>
                 </div>
             );
         }
@@ -488,16 +553,49 @@ export default function PreviewBlock({ block, isSelected, selectedBlockId, onCli
         const margin = { marginBottom: 0 };
 
         if (block.type === 'text') {
-            return (
+            const getBorder = () => {
+                const bStyle = block.borderStyle || 'none';
+                if (bStyle === 'none') return {};
+                const borderStr = `${block.borderWidth || 2}px solid ${block.borderColor || '#000000'}`;
+                if (bStyle === 'all') return { border: borderStr };
+                if (bStyle === 'left') return { borderLeft: borderStr };
+                if (bStyle === 'top') return { borderTop: borderStr };
+                if (bStyle === 'bottom') return { borderBottom: borderStr };
+                return {};
+            };
+
+            const contentNode = (
                 <ContentEditable
                     tagName="div"
                     html={block.content || ''}
                     onChange={(html) => onChange({ ...block, content: html })}
                     onFormatChange={onFormatChange}
-                    style={{ textAlign: block.align || 'left', ...margin, width: '100%', background: 'transparent', border: 'none', outline: 'none', lineHeight: 1.5, minHeight: '1.5em', fontSize: '16px' }}
+                    style={{ flex: 1, minWidth: 0, textAlign: block.align || 'left', ...margin, background: 'transparent', border: 'none', outline: 'none', lineHeight: 1.5, minHeight: '1.5em', fontSize: '16px' }}
                     className="focus:outline-none empty:before:content-[attr(placeholder)] empty:before:text-gray-400 [&>h1]:text-2xl [&>h1]:font-bold [&>h2]:text-xl [&>h2]:font-bold [&>h3]:text-lg [&>h3]:font-bold [&>p]:mb-2"
                     placeholder="Klikněte a pište..."
                 />
+            );
+
+            return (
+                <div style={{
+                    ...margin,
+                    width: '100%',
+                    background: block.bgColor === 'transparent' ? 'transparent' : (block.bgColor || 'transparent'),
+                    padding: `${block.paddingY || 0}px ${block.paddingX || 0}px`,
+                    borderRadius: `${block.borderRadius || 0}px`,
+                    ...getBorder(),
+                    display: block.iconUrl ? 'flex' : 'block',
+                    flexDirection: block.iconUrl ? (block.iconPosition || 'flex-row') : 'column',
+                    alignItems: block.iconUrl ? (block.iconAlignItems || 'flex-start') : 'stretch',
+                    gap: block.iconUrl ? '16px' : '0'
+                }}>
+                    {block.iconUrl && (
+                        <div style={{ flexShrink: 0 }}>
+                            <img src={resolveImageUrl(block.iconUrl)} style={{ width: `${block.iconSize || 24}px`, height: 'auto', display: 'block' }} alt="" />
+                        </div>
+                    )}
+                    {contentNode}
+                </div>
             );
         }
         if (block.type === 'image') {
@@ -508,6 +606,28 @@ export default function PreviewBlock({ block, isSelected, selectedBlockId, onCli
                     ) : (
                         <div className="bg-gray-100 rounded-lg p-8 text-center text-gray-400">Vyberte obrázek v nastavení</div>
                     )}
+                </div>
+            );
+        }
+        if (block.type === 'video') {
+            const paddingBottom = block.ratio === '4/3' ? '75%' : block.ratio === '1/1' ? '100%' : '56.25%';
+            return (
+                <div style={{ textAlign: block.align || 'center', width: '100%', ...margin }}>
+                    <div style={{ width: `${block.width || 100}%`, display: 'inline-block', position: 'relative', overflow: 'hidden', paddingBottom, height: 0, borderRadius: '12px' }}>
+                        {block.url ? (
+                            <iframe
+                                src={resolveVideoUrl(block.url, block.autoPlay)}
+                                style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', border: 0 }}
+                                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                                allowFullScreen
+                            />
+                        ) : (
+                            <div style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center' }} className="bg-gray-50 border-2 border-dashed border-gray-200 text-gray-400 flex-col">
+                                <VideoCameraIcon className="h-10 w-10 mb-2 text-gray-300" />
+                                Vložte URL videa v nastavení panelu
+                            </div>
+                        )}
+                    </div>
                 </div>
             );
         }

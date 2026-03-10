@@ -33,7 +33,8 @@ import {
     MegaphoneIcon,
     ShoppingBagIcon,
     UserCircleIcon,
-    ViewColumnsIcon
+    ViewColumnsIcon,
+    VideoCameraIcon
 } from '@heroicons/react/24/solid';
 
 export default function ArticleEditPage() {
@@ -205,6 +206,13 @@ export default function ArticleEditPage() {
 
         if (type === 'text') { newBlock.content = 'Nový textový blok'; newBlock.tag = 'p'; }
         if (type === 'image') { newBlock.url = ''; newBlock.width = 100; newBlock.align = 'center'; }
+        if (type === 'video') {
+            newBlock.url = '';
+            newBlock.width = 100;
+            newBlock.ratio = '16/9';
+            newBlock.align = 'center';
+            newBlock.autoPlay = false;
+        }
         if (type === 'wrap') { newBlock.content = 'Text s obtékáním'; newBlock.imgUrl = ''; newBlock.imgWidth = 40; newBlock.imgPos = 'right'; }
         if (type === 'banner') { newBlock.content = 'NADPIS SEKCE'; newBlock.bgColor = '#f3f4f6'; newBlock.textColor = '#111827'; }
         if (type === 'product') {
@@ -511,6 +519,7 @@ export default function ArticleEditPage() {
                             <div className="p-2 rounded-md bg-gray-700 text-white">
                                 {activeDragItem.data.current?.type === 'text' && <Bars3BottomLeftIcon className="h-5 w-5" />}
                                 {activeDragItem.data.current?.type === 'image' && <PhotoIcon className="h-5 w-5" />}
+                                {activeDragItem.data.current?.type === 'video' && <VideoCameraIcon className="h-5 w-5" />}
                                 {activeDragItem.data.current?.type === 'wrap' && <PhotoIcon className="h-5 w-5" />}
                                 {activeDragItem.data.current?.type === 'table' && <TableCellsIcon className="h-5 w-5" />}
                                 {activeDragItem.data.current?.type === 'banner' && <MegaphoneIcon className="h-5 w-5" />}
@@ -521,6 +530,7 @@ export default function ArticleEditPage() {
                             <span className="font-medium">
                                 {activeDragItem.data.current?.type === 'text' && 'Text'}
                                 {activeDragItem.data.current?.type === 'image' && 'Obrázek'}
+                                {activeDragItem.data.current?.type === 'video' && 'Video'}
                                 {activeDragItem.data.current?.type === 'wrap' && 'Text a obrázek'}
                                 {activeDragItem.data.current?.type === 'table' && 'Tabulka'}
                                 {activeDragItem.data.current?.type === 'banner' && 'Banner'}

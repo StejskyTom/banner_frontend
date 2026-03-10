@@ -217,16 +217,131 @@ const TypographyControls = ({
     );
 };
 
-export function TextProperties({ block, onChange, activeFormats = {} }) {
-    return (
-        <>
-            <RichTextToolbar
-                activeFormats={activeFormats}
-                alignment={block.align || 'left'}
-                onAlignmentChange={(val) => onChange({ ...block, align: val })}
-            />
-        </>
-    );
+export function TextProperties({ block, onChange, activeFormats = {}, widgetId, tab = 'content' }) {
+    const [openSections, setOpenSections] = useState({ icon: true, styling: true });
+
+    if (tab === 'content') {
+        return (
+            <>
+                <RichTextToolbar
+                    activeFormats={activeFormats}
+                    alignment={block.align || 'left'}
+                    onAlignmentChange={(val) => onChange({ ...block, align: val })}
+                />
+            </>
+        );
+    }
+
+    const toggleSection = (id) => setOpenSections(prev => ({ ...prev, [id]: !prev[id] }));
+
+    if (tab === 'settings') {
+        return (
+            <div className="flex flex-col h-full">
+                <div className="flex-1 overflow-y-auto p-4 space-y-0 custom-scrollbar">
+                    <CollapsibleSection title="Ikona u textu" isOpen={!!openSections.icon} onToggle={() => toggleSection('icon')}>
+                        <div className="space-y-4">
+                            <ImageUpload url={block.iconUrl} onChange={(url) => onChange({ ...block, iconUrl: url })} widgetId={widgetId} />
+                            {block.iconUrl && (
+                                <>
+                                    <RangeControl
+                                        label="Velikost ikony"
+                                        value={block.iconSize || 24}
+                                        onChange={(val) => onChange({ ...block, iconSize: val })}
+                                        min={16} max={128} unit="px"
+                                    />
+                                    <Select
+                                        label="Pozice ikony"
+                                        value={block.iconPosition || 'flex-row'}
+                                        onChange={(val) => onChange({ ...block, iconPosition: val })}
+                                        options={[
+                                            { value: 'flex-row', label: 'Vlevo od textu (Vedle)' },
+                                            { value: 'flex-col', label: 'Nad textem' },
+                                            { value: 'flex-row-reverse', label: 'Vpravo od textu' }
+                                        ]}
+                                    />
+                                    <Select
+                                        label="Vertikální zarovnání textu"
+                                        value={block.iconAlignItems || 'flex-start'}
+                                        onChange={(val) => onChange({ ...block, iconAlignItems: val })}
+                                        options={[
+                                            { value: 'flex-start', label: 'Nahoře' },
+                                            { value: 'center', label: 'Na střed' },
+                                            { value: 'flex-end', label: 'Dole' },
+                                        ]}
+                                    />
+                                </>
+                            )}
+                        </div>
+                    </CollapsibleSection>
+
+                    <Separator />
+
+                    <CollapsibleSection title="Styling boxu (Pozadí, Rámeček, Odsazení)" isOpen={!!openSections.styling} onToggle={() => toggleSection('styling')}>
+                        <div className="space-y-4">
+                            <ColorInput
+                                label="Barva pozadí"
+                                value={block.bgColor || 'transparent'}
+                                onChange={(val) => onChange({ ...block, bgColor: val })}
+                            />
+                            <div className="grid grid-cols-2 gap-2">
+                                <RangeControl
+                                    label="Padding X"
+                                    value={block.paddingX !== undefined ? block.paddingX : 0}
+                                    onChange={(val) => onChange({ ...block, paddingX: val })}
+                                    min={0} max={128} step={4} unit="px"
+                                />
+                                <RangeControl
+                                    label="Padding Y"
+                                    value={block.paddingY !== undefined ? block.paddingY : 0}
+                                    onChange={(val) => onChange({ ...block, paddingY: val })}
+                                    min={0} max={128} step={4} unit="px"
+                                />
+                            </div>
+                            <RangeControl
+                                label="Zaoblení rohů"
+                                value={block.borderRadius !== undefined ? block.borderRadius : 0}
+                                onChange={(val) => onChange({ ...block, borderRadius: val })}
+                                min={0} max={64} unit="px"
+                            />
+
+                            <div className="h-px bg-gray-800 my-2" />
+
+                            <Select
+                                label="Ohraničení (Rámeček)"
+                                value={block.borderStyle || 'none'}
+                                onChange={(val) => onChange({ ...block, borderStyle: val })}
+                                options={[
+                                    { value: 'none', label: 'Žádné' },
+                                    { value: 'all', label: 'Ze všech stran' },
+                                    { value: 'left', label: 'Pouze vlevo' },
+                                    { value: 'top', label: 'Pouze nahoře' },
+                                    { value: 'bottom', label: 'Pouze dole' }
+                                ]}
+                            />
+
+                            {block.borderStyle && block.borderStyle !== 'none' && (
+                                <>
+                                    <ColorInput
+                                        label="Barva rámečku"
+                                        value={block.borderColor || '#000000'}
+                                        onChange={(val) => onChange({ ...block, borderColor: val })}
+                                    />
+                                    <RangeControl
+                                        label="Tloušťka rámečku"
+                                        value={block.borderWidth !== undefined ? block.borderWidth : 2}
+                                        onChange={(val) => onChange({ ...block, borderWidth: val })}
+                                        min={1} max={20} unit="px"
+                                    />
+                                </>
+                            )}
+                        </div>
+                    </CollapsibleSection>
+                </div>
+            </div>
+        );
+    }
+
+    return null;
 }
 
 export function ImageProperties({ block, onChange, widgetId }) {
@@ -1343,5 +1458,59 @@ export function AuthorProperties({ block, onChange, widgetId, tab = 'content' })
                 </>
             )}
         </>
+    );
+}
+
+export function VideoProperties({ block, onChange, widgetId }) {
+    return (
+        <div className="flex flex-col h-full">
+            <div className="flex-1 overflow-y-auto p-4 space-y-4 custom-scrollbar">
+                <Input
+                    label="URL Videa (YouTube nebo MP4)"
+                    value={block.url || ''}
+                    onChange={(val) => onChange({ ...block, url: val })}
+                    placeholder="https://www.youtube.com/watch?v=..."
+                />
+
+                <Select
+                    label="Zarovnání"
+                    value={block.align || 'center'}
+                    onChange={(val) => onChange({ ...block, align: val })}
+                    options={[
+                        { value: 'left', label: 'Vlevo' },
+                        { value: 'center', label: 'Na střed' },
+                        { value: 'right', label: 'Vpravo' }
+                    ]}
+                />
+
+                <Select
+                    label="Poměr stran"
+                    value={block.ratio || '16/9'}
+                    onChange={(val) => onChange({ ...block, ratio: val })}
+                    options={[
+                        { value: '16/9', label: 'Širokoúhlý (16:9)' },
+                        { value: '4/3', label: 'Klasický (4:3)' },
+                        { value: '1/1', label: 'Čtverec (1:1)' }
+                    ]}
+                />
+
+                <RangeControl
+                    label="Šířka videa (%)"
+                    value={block.width || 100}
+                    onChange={(val) => onChange({ ...block, width: val })}
+                    min={20} max={100} unit="%"
+                />
+
+                <Toggle
+                    label="Přehrávat automaticky (Mute)"
+                    checked={block.autoPlay || false}
+                    onChange={(val) => onChange({ ...block, autoPlay: val })}
+                />
+
+                <div className="text-xs text-gray-500 mt-2 bg-gray-800 p-3 rounded">
+                    Podporujeme odkazy na YouTube videa (běžné watch URL nebo youtu.be) a přímé odkazy na MP4 soubory.
+                </div>
+            </div>
+        </div>
     );
 }
