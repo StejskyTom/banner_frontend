@@ -995,10 +995,10 @@ export default function PreviewBlock({ block, isSelected, selectedBlockId, onCli
     };
 
     return (
-        <div ref={setNodeRef} style={style} {...attributes} {...listeners} onClick={onClick} className={`relative group p-4 rounded-2xl transition-all duration-200 ${isSelected ? 'ring-2 ring-visualy-accent-4 bg-visualy-accent-4/[0.03] shadow-lg shadow-visualy-accent-4/5 z-40' : 'hover:bg-gray-50/80 hover:ring-1 hover:ring-gray-200 hover:z-30'} ${isDragging ? 'z-50' : 'z-10'} ${showDropIndicator ? 'ring-2 ring-visualy-accent-4 ring-dashed bg-visualy-accent-4/10' : ''}`}>
+        <div ref={setNodeRef} style={style} onClick={onClick} className={`relative group p-4 rounded-2xl transition-all duration-200 ${isSelected ? 'ring-2 ring-visualy-accent-4 bg-visualy-accent-4/[0.03] shadow-lg shadow-visualy-accent-4/5 z-40' : 'hover:bg-gray-50/80 hover:ring-1 hover:ring-gray-200 hover:z-30'} ${isDragging ? 'z-50' : 'z-10'} ${showDropIndicator ? 'ring-2 ring-visualy-accent-4 ring-dashed bg-visualy-accent-4/10' : ''}`}>
             {/* Simple handle indicator on hover */}
-            <div className="absolute -left-2 top-1/2 -translate-y-1/2 opacity-0 group-hover:opacity-100 transition-opacity cursor-grab active:cursor-grabbing p-1 text-gray-300">
-                <ArrowsUpDownIcon className="h-4 w-4" />
+            <div {...attributes} {...listeners} className="absolute -left-3 md:-left-6 top-1/2 -translate-y-1/2 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity cursor-grab active:cursor-grabbing p-2 text-gray-400 hover:text-visualy-accent-4 hover:bg-visualy-accent-4/10 rounded-lg z-50 shadow-sm border border-transparent hover:border-visualy-accent-4/20 bg-white dark:bg-gray-800">
+                <ArrowsUpDownIcon className="h-5 w-5" />
             </div>
 
             {/* Block floating toolbar */}
