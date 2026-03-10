@@ -52,6 +52,7 @@ function createChildBlock(type) {
     if (type === 'product') { newBlock.name = 'Produkt'; newBlock.link = ''; newBlock.imgUrl = ''; newBlock.price = ''; newBlock.btnText = 'Koupit'; }
     if (type === 'table') { newBlock.header = ['Sloupec 1', 'Sloupec 2']; newBlock.data = [['', '']]; newBlock.width = 100; newBlock.borderStyle = 'full'; newBlock.headerBgColor = '#f3f4f6'; newBlock.headerTextColor = '#111827'; }
     if (type === 'author') { newBlock.authorName = ''; newBlock.authorTitle = ''; newBlock.authorBio = ''; newBlock.authorPhotoUrl = ''; }
+    return newBlock;
 }
 
 function resolveVideoUrl(url, autoPlay) {
@@ -66,7 +67,7 @@ function resolveVideoUrl(url, autoPlay) {
 function AddBlockMenu({ onAdd, isEmptyState = false, savedBlocks = [], onAddSaved }) {
     const [open, setOpen] = useState(false);
     return (
-        <div className={`relative group/add ${isEmptyState ? 'h-full flex-1 min-h-[140px]' : 'pt-2'}`}>
+        <div className={`relative group/add ${isEmptyState ? 'h-full flex-1 min-h-[140px]' : 'pt-2'} ${open ? 'z-50' : 'z-10'}`}>
             {isEmptyState ? (
                 <button
                     onClick={(e) => { e.stopPropagation(); setOpen(!open); }}
@@ -236,7 +237,7 @@ function LayoutChildBlock({ childBlock, isSelected, onClick, onChange, onFormatC
             return (
                 <div style={{ textAlign: childBlock.align || 'center' }}>
                     {childBlock.url ? (
-                        <img src={resolveImageUrl(childBlock.url)} style={{ width: `${childBlock.width}%`, maxWidth: '100%', borderRadius: '6px', display: 'inline-block' }} alt="" />
+                        <img src={resolveImageUrl(childBlock.url)} style={{ width: `${childBlock.width}%`, maxWidth: '100%', borderRadius: childBlock.rounded === false ? '0' : '6px', display: 'inline-block' }} alt="" />
                     ) : (
                         <div className="bg-gray-50 border border-dashed border-gray-200 rounded-lg p-4 text-center text-gray-400 text-xs">
                             <PhotoIcon className="h-6 w-6 mx-auto mb-1 text-gray-300" />
@@ -269,14 +270,44 @@ function LayoutChildBlock({ childBlock, isSelected, onClick, onChange, onFormatC
             );
         }
         if (childBlock.type === 'banner') {
+            const bgOverlay = childBlock.bgOverlay !== undefined ? childBlock.bgOverlay : 50;
             return (
-                <div style={{ background: childBlock.bgColor || '#f3f4f6', padding: '16px', borderRadius: '8px', textAlign: 'center', borderLeft: '3px solid #26AD80' }}>
-                    <input
-                        value={childBlock.content || ''}
-                        onChange={(e) => onChange({ ...childBlock, content: e.target.value })}
-                        style={{ color: childBlock.textColor || '#111827', textTransform: 'uppercase', fontSize: '14px', fontWeight: 700, background: 'transparent', border: 'none', textAlign: 'center', width: '100%', outline: 'none' }}
-                        placeholder="NADPIS"
-                    />
+                <div style={{
+                    background: childBlock.bgImageUrl ? `url(${resolveImageUrl(childBlock.bgImageUrl)}) center/cover no-repeat` : (childBlock.bgColor || '#f3f4f6'),
+                    padding: `${childBlock.paddingY || 16}px 16px`,
+                    borderRadius: '8px',
+                    textAlign: childBlock.align || 'center',
+                    borderLeft: childBlock.bgImageUrl ? 'none' : '3px solid #26AD80',
+                    position: 'relative',
+                    overflow: 'hidden'
+                }}>
+                    {childBlock.bgImageUrl && (
+                        <div style={{ position: 'absolute', inset: 0, backgroundColor: `rgba(0,0,0,${bgOverlay / 100})`, zIndex: 1 }}></div>
+                    )}
+                    <div style={{ position: 'relative', zIndex: 2 }}>
+                        <input
+                            value={childBlock.content || ''}
+                            onChange={(e) => onChange({ ...childBlock, content: e.target.value })}
+                            style={{ color: childBlock.textColor || (childBlock.bgImageUrl ? '#ffffff' : '#111827'), textTransform: 'uppercase', fontSize: '14px', fontWeight: 700, background: 'transparent', border: 'none', textAlign: childBlock.align || 'center', width: '100%', outline: 'none' }}
+                            placeholder="NADPIS"
+                        />
+                        {childBlock.subtitle && (
+                            <input
+                                value={childBlock.subtitle || ''}
+                                onChange={(e) => onChange({ ...childBlock, subtitle: e.target.value })}
+                                style={{ color: childBlock.textColor || (childBlock.bgImageUrl ? '#f3f4f6' : '#4b5563'), fontSize: '12px', background: 'transparent', border: 'none', textAlign: childBlock.align || 'center', width: '100%', outline: 'none', marginTop: '4px' }}
+                                placeholder="Podnadpis"
+                            />
+                        )}
+                        {childBlock.btnText && (
+                            <button
+                                style={{ background: childBlock.btnColor || '#4f46e5', color: '#ffffff', padding: '6px 12px', borderRadius: '6px', fontSize: '12px', fontWeight: 500, marginTop: '12px', border: 'none', cursor: 'pointer' }}
+                                onClick={(e) => e.preventDefault()}
+                            >
+                                {childBlock.btnText}
+                            </button>
+                        )}
+                    </div>
                 </div>
             );
         }
@@ -600,9 +631,9 @@ export default function PreviewBlock({ block, isSelected, selectedBlockId, onCli
         }
         if (block.type === 'image') {
             return (
-                <div style={{ textAlign: block.align || 'center', ...margin }}>
+                <div style={{ textAlign: block.align || 'center', marginBottom: `${block.margin !== undefined ? block.margin : 24}px` }}>
                     {block.url ? (
-                        <img src={resolveImageUrl(block.url)} style={{ width: `${block.width}%`, maxWidth: '100%', borderRadius: '8px', display: 'inline-block' }} alt="" />
+                        <img src={resolveImageUrl(block.url)} style={{ width: `${block.width}%`, maxWidth: '100%', borderRadius: block.rounded === false ? '0' : '8px', display: 'inline-block' }} alt="" />
                     ) : (
                         <div className="bg-gray-100 rounded-lg p-8 text-center text-gray-400">Vyberte obrázek v nastavení</div>
                     )}
@@ -739,14 +770,45 @@ export default function PreviewBlock({ block, isSelected, selectedBlockId, onCli
             );
         }
         if (block.type === 'banner') {
+            const bgOverlay = block.bgOverlay !== undefined ? block.bgOverlay : 50;
             return (
-                <div style={{ background: block.bgColor || '#f3f4f6', padding: '24px', borderRadius: '12px', textAlign: 'center', borderLeft: '4px solid #26AD80', ...margin }}>
-                    <input
-                        value={block.content || ''}
-                        onChange={(e) => onChange({ ...block, content: e.target.value })}
-                        style={{ color: block.textColor || '#111827', textTransform: 'uppercase', fontSize: '18px', fontWeight: 700, background: 'transparent', border: 'none', textAlign: 'center', width: '100%', outline: 'none' }}
-                        placeholder="NADPIS SEKCE"
-                    />
+                <div style={{
+                    background: block.bgImageUrl ? `url(${resolveImageUrl(block.bgImageUrl)}) center/cover no-repeat` : (block.bgColor || '#f3f4f6'),
+                    padding: `${block.paddingY || 24}px 24px`,
+                    borderRadius: '12px',
+                    textAlign: block.align || 'center',
+                    borderLeft: block.bgImageUrl ? 'none' : '4px solid #26AD80',
+                    ...margin,
+                    position: 'relative',
+                    overflow: 'hidden'
+                }}>
+                    {block.bgImageUrl && (
+                        <div style={{ position: 'absolute', inset: 0, backgroundColor: `rgba(0,0,0,${bgOverlay / 100})`, zIndex: 1 }}></div>
+                    )}
+                    <div style={{ position: 'relative', zIndex: 2 }}>
+                        <input
+                            value={block.content || ''}
+                            onChange={(e) => onChange({ ...block, content: e.target.value })}
+                            style={{ color: block.textColor || (block.bgImageUrl ? '#ffffff' : '#111827'), textTransform: 'uppercase', fontSize: '18px', fontWeight: 700, background: 'transparent', border: 'none', textAlign: block.align || 'center', width: '100%', outline: 'none' }}
+                            placeholder="NADPIS SEKCE"
+                        />
+                        {block.subtitle && (
+                            <input
+                                value={block.subtitle || ''}
+                                onChange={(e) => onChange({ ...block, subtitle: e.target.value })}
+                                style={{ color: block.textColor || (block.bgImageUrl ? '#f3f4f6' : '#4b5563'), fontSize: '14px', background: 'transparent', border: 'none', textAlign: block.align || 'center', width: '100%', outline: 'none', marginTop: '8px' }}
+                                placeholder="Podnadpis"
+                            />
+                        )}
+                        {block.btnText && (
+                            <button
+                                style={{ background: block.btnColor || '#4f46e5', color: '#ffffff', padding: '10px 24px', borderRadius: '8px', fontSize: '14px', fontWeight: 500, marginTop: '16px', border: 'none', cursor: 'pointer' }}
+                                onClick={(e) => e.preventDefault()}
+                            >
+                                {block.btnText}
+                            </button>
+                        )}
+                    </div>
                 </div>
             );
         }
@@ -892,7 +954,7 @@ export default function PreviewBlock({ block, isSelected, selectedBlockId, onCli
             return (
                 <div style={{ display: 'flex', gap: `${gap}px`, ...margin }}>
                     {block.columns.map((col, colIndex) => (
-                        <div key={col.id} style={{ width: `${col.width}%`, minHeight: '120px' }} className="group/col relative flex flex-col border border-dashed border-gray-200 rounded-xl p-3 hover:bg-gray-50/50 hover:border-visualy-accent-4/40 transition-all duration-200">
+                        <div key={col.id} style={{ width: `${col.width}%`, minHeight: '120px' }} className="group/col relative flex flex-col border border-dashed border-gray-200 rounded-xl p-3 hover:bg-gray-50/50 hover:border-visualy-accent-4/40 hover:z-20 transition-all duration-200">
                             <div className="absolute -top-3 left-3 opacity-0 group-hover/col:opacity-100 transition-opacity z-10">
                                 <span className="bg-white border border-gray-200 text-[10px] text-gray-500 font-semibold px-2 py-0.5 rounded-full shadow-sm whitespace-nowrap">
                                     {Math.round(col.width)}%
@@ -933,7 +995,7 @@ export default function PreviewBlock({ block, isSelected, selectedBlockId, onCli
     };
 
     return (
-        <div ref={setNodeRef} style={style} {...attributes} {...listeners} onClick={onClick} className={`relative group p-4 rounded-2xl transition-all duration-200 ${isSelected ? 'ring-2 ring-visualy-accent-4 bg-visualy-accent-4/[0.03] shadow-lg shadow-visualy-accent-4/5' : 'hover:bg-gray-50/80 hover:ring-1 hover:ring-gray-200'} ${isDragging ? 'z-50' : 'z-10'} ${showDropIndicator ? 'ring-2 ring-visualy-accent-4 ring-dashed bg-visualy-accent-4/10' : ''}`}>
+        <div ref={setNodeRef} style={style} {...attributes} {...listeners} onClick={onClick} className={`relative group p-4 rounded-2xl transition-all duration-200 ${isSelected ? 'ring-2 ring-visualy-accent-4 bg-visualy-accent-4/[0.03] shadow-lg shadow-visualy-accent-4/5 z-40' : 'hover:bg-gray-50/80 hover:ring-1 hover:ring-gray-200 hover:z-30'} ${isDragging ? 'z-50' : 'z-10'} ${showDropIndicator ? 'ring-2 ring-visualy-accent-4 ring-dashed bg-visualy-accent-4/10' : ''}`}>
             {/* Simple handle indicator on hover */}
             <div className="absolute -left-2 top-1/2 -translate-y-1/2 opacity-0 group-hover:opacity-100 transition-opacity cursor-grab active:cursor-grabbing p-1 text-gray-300">
                 <ArrowsUpDownIcon className="h-4 w-4" />

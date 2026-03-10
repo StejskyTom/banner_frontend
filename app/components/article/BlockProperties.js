@@ -346,7 +346,7 @@ export function TextProperties({ block, onChange, activeFormats = {}, widgetId, 
 
 export function ImageProperties({ block, onChange, widgetId }) {
     return (
-        <>
+        <div className="space-y-4">
             <ImageUpload url={block.url} onChange={(url) => onChange({ ...block, url })} widgetId={widgetId} />
             <RangeControl
                 label="Šířka obrázku"
@@ -365,7 +365,22 @@ export function ImageProperties({ block, onChange, widgetId }) {
                     { value: 'right', label: 'Vpravo' },
                 ]}
             />
-        </>
+            <div className="h-px bg-gray-800 my-4" />
+            <Toggle
+                label="Zaoblené rohy"
+                checked={block.rounded !== false}
+                onChange={(val) => onChange({ ...block, rounded: val })}
+            />
+            <RangeControl
+                label="Spodní odsazení"
+                value={block.margin !== undefined ? block.margin : 24}
+                onChange={(val) => onChange({ ...block, margin: val })}
+                min={0}
+                max={128}
+                step={4}
+                unit="px"
+            />
+        </div>
     );
 }
 
@@ -460,7 +475,19 @@ export function TableProperties({ block, onChange }) {
                 ]}
             />
 
-            <div className="mb-4">
+            <div className="mb-4 space-y-4">
+                <div>
+                    <Toggle
+                        checked={block.comparisonMode || false}
+                        onChange={(val) => onChange({ ...block, comparisonMode: val })}
+                        label="Porovnávací režim (ikony místo 'v' a 'x')"
+                    />
+                    {block.comparisonMode && (
+                        <p className="text-xs text-gray-500 mt-2 ml-12">
+                            Když zapnete tento režim, napište do buňky přesně <strong>[v]</strong> pro zelené zaškrtnutí nebo <strong>[x]</strong> pro červený křížek. V náhledu panelu uvidíte text, ale na webu se zobrazí ikony.
+                        </p>
+                    )}
+                </div>
                 <Toggle
                     checked={block.outerBorder !== false}
                     onChange={(val) => onChange({ ...block, outerBorder: val })}
@@ -513,14 +540,20 @@ export function TableProperties({ block, onChange }) {
     );
 }
 
-export function BannerProperties({ block, onChange }) {
+export function BannerProperties({ block, onChange, widgetId }) {
     return (
-        <>
+        <div className="space-y-4">
             <Input
-                label="Text banneru"
+                label="Hlavní nadpis"
                 value={block.content}
                 onChange={(val) => onChange({ ...block, content: val })}
                 placeholder="NADPIS SEKCE"
+            />
+            <Input
+                label="Podnadpis (volitelné)"
+                value={block.subtitle || ''}
+                onChange={(val) => onChange({ ...block, subtitle: val })}
+                placeholder="Krátký popis..."
             />
             <div className="grid grid-cols-2 gap-3">
                 <ColorInput
@@ -534,7 +567,73 @@ export function BannerProperties({ block, onChange }) {
                     onChange={(val) => onChange({ ...block, textColor: val })}
                 />
             </div>
-        </>
+
+            <div className="h-px bg-gray-800 my-2" />
+
+            <ImageUpload
+                url={block.bgImageUrl}
+                onChange={(url) => onChange({ ...block, bgImageUrl: url })}
+                widgetId={widgetId}
+                label="Obrázek na pozadí (volitelné)"
+            />
+
+            {block.bgImageUrl && (
+                <RangeControl
+                    label="Ztmavení obrázku (Overlay)"
+                    value={block.bgOverlay !== undefined ? block.bgOverlay : 50}
+                    onChange={(val) => onChange({ ...block, bgOverlay: val })}
+                    min={0}
+                    max={100}
+                    unit="%"
+                />
+            )}
+
+            <div className="h-px bg-gray-800 my-2" />
+
+            <Input
+                label="Text tlačítka (volitelné)"
+                value={block.btnText || ''}
+                onChange={(val) => onChange({ ...block, btnText: val })}
+                placeholder="Zjistit více"
+            />
+
+            {block.btnText && (
+                <>
+                    <Input
+                        label="Odkaz tlačítka"
+                        value={block.btnLink || ''}
+                        onChange={(val) => onChange({ ...block, btnLink: val })}
+                        placeholder="https://..."
+                    />
+                    <ColorInput
+                        label="Barva tlačítka"
+                        value={block.btnColor || '#4f46e5'}
+                        onChange={(val) => onChange({ ...block, btnColor: val })}
+                    />
+                </>
+            )}
+
+            <div className="h-px bg-gray-800 my-2" />
+
+            <Select
+                label="Zarovnání obsahu"
+                value={block.align || 'center'}
+                onChange={(val) => onChange({ ...block, align: val })}
+                options={[
+                    { value: 'left', label: 'Vlevo' },
+                    { value: 'center', label: 'Na střed' },
+                    { value: 'right', label: 'Vpravo' },
+                ]}
+            />
+            <RangeControl
+                label="Vertikální odsazení (Padding)"
+                value={block.paddingY !== undefined ? block.paddingY : 24}
+                onChange={(val) => onChange({ ...block, paddingY: val })}
+                min={16}
+                max={128}
+                unit="px"
+            />
+        </div>
     );
 }
 

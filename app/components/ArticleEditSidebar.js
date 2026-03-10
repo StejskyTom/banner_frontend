@@ -419,7 +419,7 @@ export default function ArticleEditSidebar({
                                 <TableProperties block={selectedBlock} onChange={handleUpdateBlock} tab="content" />
                             )}
                             {selectedBlock.type === 'banner' && (
-                                <BannerProperties block={selectedBlock} onChange={handleUpdateBlock} tab="content" />
+                                <BannerProperties block={selectedBlock} onChange={handleUpdateBlock} tab="content" widgetId={widget.id} />
                             )}
                             {selectedBlock.type === 'product' && (
                                 <ProductProperties block={selectedBlock} onChange={handleUpdateBlock} widgetId={widget.id} tab="content" />
