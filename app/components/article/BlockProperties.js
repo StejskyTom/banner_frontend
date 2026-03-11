@@ -7,7 +7,7 @@ import ImageUpload from './ImageUpload';
 import RichTextToolbar from './RichTextToolbar';
 import Toggle from '../Toggle';
 import { SwatchIcon, TrashIcon, PlusIcon, BoldIcon, ItalicIcon } from '@heroicons/react/24/outline';
-import { ChevronDownIcon } from '@heroicons/react/24/solid';
+import { ChevronDownIcon, CheckIcon } from '@heroicons/react/24/solid';
 
 const Separator = () => (
     <hr className="border-0 h-[2px] bg-gradient-to-r from-transparent via-gray-600 to-transparent my-2" />
@@ -812,7 +812,7 @@ export function ProductProperties({ block, onChange, widgetId, tab = 'content' }
                                 )}
 
                                 {showResults && searchResults.length > 0 && (
-                                    <div className="absolute z-10 left-0 right-0 mt-1 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-xl max-h-60 overflow-y-auto">
+                                    <div className="absolute z-10 left-0 right-0 mt-1 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-xl max-h-96 overflow-y-auto">
                                         {searchResults.map(product => (
                                             <div
                                                 key={product.id}
@@ -1773,7 +1773,7 @@ export function ProductsGridProperties({ block, onChange, widgetId, tab }) {
         const products = block.selectedProducts || [];
         return (
             <>
-                <CollapsibleSection title="Vybrané produkty" isOpen={true} onToggle={() => {}}>
+                <CollapsibleSection title="Vybrané produkty" isOpen={true} onToggle={() => { }}>
                     <div className="mb-4">
                         <div className="relative">
                             <input
@@ -1790,7 +1790,7 @@ export function ProductsGridProperties({ block, onChange, widgetId, tab }) {
                             )}
 
                             {showResults && searchResults.length > 0 && (
-                                <div className="absolute z-10 left-0 right-0 mt-1 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-xl max-h-60 overflow-y-auto">
+                                <div className="absolute z-10 left-0 right-0 mt-1 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-xl max-h-96 overflow-y-auto">
                                     {searchResults.map(product => {
                                         const isSelected = products.some(p => p.id === product.id);
                                         return (
@@ -1813,7 +1813,7 @@ export function ProductsGridProperties({ block, onChange, widgetId, tab }) {
                         </div>
                     </div>
 
-                    <div className="space-y-2 max-h-64 overflow-y-auto pr-1 custom-scrollbar">
+                    <div className="space-y-2 max-h-96 overflow-y-auto pr-1 custom-scrollbar">
                         {products.map((p, index) => (
                             <div key={p.id} className="flex items-center gap-2 bg-gray-50 dark:bg-gray-800 p-2 rounded-lg border border-gray-200 dark:border-gray-700">
                                 <div className="flex flex-col gap-1 shrink-0">
