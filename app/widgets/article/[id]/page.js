@@ -24,8 +24,6 @@ import {
 import {
     ArrowLeftIcon,
     CodeBracketIcon,
-    ClipboardDocumentIcon,
-    XMarkIcon,
     TableCellsIcon,
     Cog6ToothIcon,
     Bars3BottomLeftIcon,
@@ -36,6 +34,7 @@ import {
     ViewColumnsIcon,
     VideoCameraIcon
 } from '@heroicons/react/24/solid';
+import { WidgetEmbedGenerator } from '../../../components/WidgetEmbedGenerator';
 
 export default function ArticleEditPage() {
     const { id } = useParams();
@@ -394,15 +393,7 @@ export default function ArticleEditPage() {
         }
     };
 
-    const generateEmbedCode = () => {
-        const embedUrl = `${process.env.NEXT_PUBLIC_API_URL}/article-widgets/${id}/embed.js`;
-        return `<script src="${embedUrl}" async></script>`;
-    };
 
-    const copyEmbedCode = () => {
-        navigator.clipboard.writeText(generateEmbedCode());
-        showNotification('Kód zkopírován do schránky', 'success');
-    };
 
     if (loading) return <Loader />;
     if (!widget) return <div className="p-8 text-center text-red-500">Widget nenalezen</div>;
@@ -545,47 +536,12 @@ export default function ArticleEditPage() {
                 </DragOverlay>
 
                 {/* Embed Code Modal */}
-                {showEmbedModal && (
-                    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
-                        <div className="bg-white dark:bg-gray-800 rounded-xl shadow-2xl p-6 w-full max-w-lg transform transition-all scale-100">
-                            <div className="flex justify-between items-center mb-4">
-                                <h2 className="text-xl font-bold text-gray-900 dark:text-white">Publikovat widget</h2>
-                                <button onClick={() => setShowEmbedModal(false)} className="text-gray-400 hover:text-gray-500 cursor-pointer">
-                                    <XMarkIcon className="h-6 w-6" />
-                                </button>
-                            </div>
-
-                            <p className="text-sm text-gray-600 dark:text-gray-400 mb-4">
-                                Vložte tento kód do vašich stránek tam, kde chcete zobrazit článek. <br />
-                            </p>
-
-                            <div className="relative">
-                                <pre className="bg-gray-100 dark:bg-gray-900 p-4 rounded-lg text-sm font-mono text-gray-800 dark:text-gray-200 overflow-x-auto whitespace-pre-wrap break-all">
-                                    {generateEmbedCode()}
-                                </pre>
-                                <button
-                                    onClick={copyEmbedCode}
-                                    className="absolute top-2 right-2 p-2 bg-white dark:bg-gray-800 rounded-md shadow-sm border border-gray-200 dark:border-gray-700 text-gray-500 hover:text-indigo-600 transition cursor-pointer"
-                                    title="Zkopírovat"
-                                >
-                                    <ClipboardDocumentIcon className="h-5 w-5" />
-                                </button>
-                            </div>
-                            <p className="text-sm text-gray-600 dark:text-gray-400 mb-4 mt-2">
-                                <em>Před zkopírováním kódu nezapomeňte uložit změny.</em>
-                            </p>
-
-                            <div className="mt-6 flex justify-end">
-                                <button
-                                    onClick={() => setShowEmbedModal(false)}
-                                    className="px-4 py-2 rounded-lg bg-indigo-600 text-white hover:bg-indigo-700 transition cursor-pointer"
-                                >
-                                    Zavřít
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-                )}
+                <WidgetEmbedGenerator
+                    open={showEmbedModal}
+                    onClose={() => setShowEmbedModal(false)}
+                    widgetId={id}
+                    widgetType="Article"
+                />
             </div>
         </DndContext>
     );

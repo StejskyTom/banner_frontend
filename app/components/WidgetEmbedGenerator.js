@@ -1,202 +1,127 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { CodeBracketIcon, ClipboardDocumentIcon, CheckIcon, XMarkIcon } from '@heroicons/react/24/outline';
+import { ClipboardDocumentIcon, CheckIcon, XMarkIcon, CodeBracketIcon } from '@heroicons/react/24/solid';
+import { authorizedFetch } from '../../lib/api';
+
+// Map widgetType → API embed URL pattern
+const getEmbedUrl = (widgetType, widgetId) => {
+    const base = process.env.NEXT_PUBLIC_API_URL || '';
+    switch (widgetType) {
+        case 'Article': return `${base}/article-widgets/${widgetId}/embed.js`;
+        case 'Author': return `${base}/author-widgets/${widgetId}/embed.js`;
+        case 'FAQ': return `${base}/faq-widgets/${widgetId}/embed.js`;
+        case 'Product': return `${base}/heureka/feed/${widgetId}/embed.js`;
+        case 'Logo': return `${base}/widget/${widgetId}/embed.js`;
+        default: return `${base}/widget/${widgetId}/embed.js`;
+    }
+};
 
 export function WidgetEmbedGenerator({ widgetId, widgetType, open, onClose }) {
-    const [isPopupOpen, setIsPopupOpen] = useState(false);
-    const [isAnimating, setIsAnimating] = useState(false);
     const [copied, setCopied] = useState(false);
 
-    const embedCode = `<script src="${process.env.NEXT_PUBLIC_API_URL || 'https://yourapp.com'}/widget/${widgetId}/embed.js" defer></script>`;
-
-    const copyToClipboard = async (e) => {
-        e?.stopPropagation();
-
-        try {
-            await navigator.clipboard.writeText(embedCode);
-            setCopied(true);
-            setTimeout(() => setCopied(false), 2000);
-        } catch (err) {
-            // Fallback pro starší prohlížeče
-            try {
-                const textArea = document.createElement('textarea');
-                textArea.value = embedCode;
-                document.body.appendChild(textArea);
-                textArea.select();
-                document.execCommand('copy');
-                document.body.removeChild(textArea);
-                setCopied(true);
-                setTimeout(() => setCopied(false), 2000);
-            } catch (fallbackErr) {
-                // Pokud ani fallback nefunguje, nic neděláme
-            }
-        }
-    };
-
-    // Určení módu: controlled (řízený rodičem) vs uncontrolled (vlastní stav)
-    const isControlled = typeof open !== 'undefined';
-    const showPopup = isControlled ? open : isPopupOpen;
-
-    // Funkce pro otevření s animací (jen pro uncontrolled)
-    const openPopup = () => {
-        if (!isControlled) {
-            setIsPopupOpen(true);
-            setTimeout(() => setIsAnimating(true), 10);
-        }
-    };
-
-    // Funkce pro zavření s animací
-    const closePopup = () => {
-        setIsAnimating(false);
-        setTimeout(() => {
-            if (isControlled) {
-                onClose && onClose();
-            } else {
-                setIsPopupOpen(false);
-            }
-        }, 200);
-    };
-
-    // Synchronizace animace při změně externího propu 'open'
-    useEffect(() => {
-        if (isControlled) {
-            if (open) {
-                // Otevření
-                setTimeout(() => setIsAnimating(true), 10);
-            } else {
-                // Zavření - animaci řešíme v closePopup nebo při změně na false? 
-                // Pokud se open změní na false "zvenku" bez volání closePopup, musíme jen zajistit, že animace doběhne?
-                // Pro jednoduchost v controlled mode předpokládáme, že pokud je open=true, má se zobrazit. 
-                // Animace odchodu je složitější při externím řízení, ale zkusíme to.
-                setIsAnimating(false);
-            }
-        }
-    }, [open, isControlled]);
-
-    // Funkce pro zavření při kliku na overlay
-    const handleOverlayClick = (e) => {
-        if (e.target === e.currentTarget) {
-            closePopup();
-        }
-    };
+    const embedUrl = getEmbedUrl(widgetType, widgetId);
+    const embedCode = `<script src="${embedUrl}" defer></script>`;
 
     // ESC klávesa pro zavření
     useEffect(() => {
         const handleEsc = (e) => {
-            if (e.key === 'Escape' && showPopup) {
-                closePopup();
-            }
+            if (e.key === 'Escape' && open) onClose?.();
         };
-
         document.addEventListener('keydown', handleEsc);
         return () => document.removeEventListener('keydown', handleEsc);
-    }, [showPopup]);
+    }, [open, onClose]);
+
+    const copyToClipboard = async (e) => {
+        e?.stopPropagation();
+        try {
+            await navigator.clipboard.writeText(embedCode);
+        } catch {
+            // fallback
+            const ta = document.createElement('textarea');
+            ta.value = embedCode;
+            document.body.appendChild(ta);
+            ta.select();
+            document.execCommand('copy');
+            document.body.removeChild(ta);
+        }
+        setCopied(true);
+        setTimeout(() => setCopied(false), 2000);
+    };
+
+    if (!open) return null;
 
     return (
-        <>
-            {!isControlled && (
-                <button
-                    onClick={openPopup}
-                    className="text-blue-500 hover:text-blue-700 p-1 transition-colors duration-200"
-                    title="Získat embed kód"
-                >
-                    <CodeBracketIcon className="h-5 w-5" />
-                </button>
-            )}
-
-            {/* Popup Modal s animacemi */}
-            {showPopup && (
-                <div
-                    className={`fixed inset-0 flex items-center justify-center z-50 text-left transition-all duration-200 ease-out ${isAnimating
-                        ? 'bg-gray-800/50 backdrop-blur-sm'
-                        : 'bg-gray-800/0'
-                        }`}
-                    onClick={handleOverlayClick}
-                >
-                    <div className={`bg-white rounded-lg shadow-xl max-w-md w-full mx-4 transition-all duration-200 ease-out ${isAnimating
-                        ? 'scale-100 opacity-100 translate-y-0'
-                        : 'scale-95 opacity-0 translate-y-4'
-                        }`}>
-                        <div className="flex justify-between items-center p-6 border-b">
-                            <h3 className="text-lg font-semibold">
-                                Embed kód pro {widgetType}
-                            </h3>
-                            <button
-                                onClick={closePopup}
-                                className="text-gray-400 hover:text-gray-600 transition-colors duration-150 hover:scale-110"
-                            >
-                                <XMarkIcon className="h-6 w-6" />
-                            </button>
-                        </div>
-
-                        <div className="p-6">
-                            <p className="text-sm text-gray-600 mb-4">
-                                Zkopírujte tento kód a vložte ho do HTML vaší stránky na místo, kde chcete zobrazit widget.
-                            </p>
-
-                            {/* Kód s možností výběru */}
-                            <div className="bg-gray-900 text-green-400 p-4 rounded font-mono text-sm mb-4 relative group">
-                                <code className="block overflow-x-auto">
-                                    {embedCode}
-                                </code>
-
-                                {/* Kopírovat ikonka v pravém horním rohu */}
-                                <button
-                                    onClick={async (e) => await copyToClipboard(e)}
-                                    className={`absolute top-2 right-2 p-2 rounded transition-all duration-200 hover:scale-105 ${copied
-                                        ? 'bg-green-500 text-white scale-110'
-                                        : 'bg-gray-700 text-gray-300 hover:bg-gray-600'
-                                        }`}
-                                    title={copied ? 'Zkopírováno!' : 'Kopírovat kód'}
-                                >
-                                    {copied ? (
-                                        <CheckIcon className="h-4 w-4" />
-                                    ) : (
-                                        <ClipboardDocumentIcon className="h-4 w-4" />
-                                    )}
-                                </button>
-                            </div>
-
-                            <div className="flex gap-3">
-                                <button
-                                    onClick={async () => await copyToClipboard()}
-                                    className={`flex-1 px-4 py-2 rounded font-medium transition-all duration-200 hover:scale-105 active:scale-95 ${copied
-                                        ? 'bg-green-500 text-white scale-105'
-                                        : 'bg-blue-500 text-white hover:bg-blue-600'
-                                        }`}
-                                >
-                                    {copied ? (
-                                        <>
-                                            <CheckIcon className="h-4 w-4 inline mr-2" />
-                                            Zkopírováno!
-                                        </>
-                                    ) : (
-                                        <>
-                                            <ClipboardDocumentIcon className="h-4 w-4 inline mr-2" />
-                                            Kopírovat kód
-                                        </>
-                                    )}
-                                </button>
-
-                                <a
-                                    href={`${process.env.NEXT_PUBLIC_API_URL || 'https://yourapp.com'}/widget/${widgetId}/embed.js`}
-                                    target="_blank"
-                                    rel="noopener noreferrer"
-                                    className="px-4 py-2 bg-gray-200 text-gray-700 rounded hover:bg-gray-300 font-medium transition-all duration-200 hover:scale-105 active:scale-95"
-                                >
-                                    Zobrazit JS
-                                </a>
-                            </div>
-
-                            <div className="mt-4 text-xs text-gray-500 bg-gray-50 p-3 rounded">
-                                <strong>Tip:</strong> Widget se automaticky zobrazí na místě, kde vložíte script tag.
-                                Žádné další nastavení není potřeba.
-                            </div>
-                        </div>
-                    </div>
+        <div
+            className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4"
+            onClick={(e) => { if (e.target === e.currentTarget) onClose?.(); }}
+        >
+            <div className="bg-white dark:bg-gray-800 rounded-xl shadow-2xl p-6 w-full max-w-lg transform transition-all scale-100">
+                {/* Header */}
+                <div className="flex justify-between items-center mb-4">
+                    <h2 className="text-xl font-bold text-gray-900 dark:text-white flex items-center gap-2">
+                        <CodeBracketIcon className="h-5 w-5 text-visualy-accent-4" />
+                        Publikovat widget
+                    </h2>
+                    <button
+                        onClick={onClose}
+                        className="text-gray-400 hover:text-gray-500 dark:hover:text-gray-300 cursor-pointer transition-colors"
+                    >
+                        <XMarkIcon className="h-6 w-6" />
+                    </button>
                 </div>
-            )}
-        </>
+
+                {/* Description */}
+                <p className="text-sm text-gray-600 dark:text-gray-400 mb-4">
+                    Vložte tento kód do vašich stránek tam, kde chcete zobrazit widget.
+                </p>
+
+                {/* Code block */}
+                <div className="relative mb-2">
+                    <pre className="bg-gray-100 dark:bg-gray-900 p-4 rounded-lg text-sm font-mono text-gray-800 dark:text-gray-200 overflow-x-auto whitespace-pre-wrap break-all">
+                        {embedCode}
+                    </pre>
+                    <button
+                        onClick={copyToClipboard}
+                        className={`absolute top-2 right-2 p-2 rounded-md shadow-sm border transition-all cursor-pointer ${copied
+                                ? 'bg-visualy-accent-4 border-visualy-accent-4 text-white'
+                                : 'bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700 text-gray-500 hover:text-visualy-accent-4 dark:hover:text-visualy-accent-4'
+                            }`}
+                        title={copied ? 'Zkopírováno!' : 'Zkopírovat'}
+                    >
+                        {copied
+                            ? <CheckIcon className="h-5 w-5" />
+                            : <ClipboardDocumentIcon className="h-5 w-5" />
+                        }
+                    </button>
+                </div>
+
+                <p className="text-sm text-gray-500 dark:text-gray-500 mb-6 italic">
+                    Před zkopírováním kódu nezapomeňte uložit změny.
+                </p>
+
+                {/* Footer */}
+                <div className="flex justify-end gap-3">
+                    <button
+                        onClick={copyToClipboard}
+                        className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-colors cursor-pointer ${copied
+                                ? 'bg-visualy-accent-4/10 text-visualy-accent-4 border border-visualy-accent-4/30'
+                                : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600'
+                            }`}
+                    >
+                        {copied
+                            ? <><CheckIcon className="h-4 w-4" /> Zkopírováno!</>
+                            : <><ClipboardDocumentIcon className="h-4 w-4" /> Kopírovat kód</>
+                        }
+                    </button>
+                    <button
+                        onClick={onClose}
+                        className="px-4 py-2 rounded-lg bg-visualy-accent-4 text-white hover:bg-visualy-accent-4/90 transition-colors text-sm font-medium cursor-pointer"
+                    >
+                        Zavřít
+                    </button>
+                </div>
+            </div>
+        </div>
     );
 }
