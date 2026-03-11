@@ -6,8 +6,8 @@ import { RangeControl, Input, TextArea, Select } from './Helpers';
 import ImageUpload from './ImageUpload';
 import RichTextToolbar from './RichTextToolbar';
 import Toggle from '../Toggle';
-import { SwatchIcon, TrashIcon, PlusIcon, BoldIcon, ItalicIcon } from '@heroicons/react/24/outline';
-import { ChevronDownIcon, CheckIcon } from '@heroicons/react/24/solid';
+import { SwatchIcon, TrashIcon, PlusIcon, BoldIcon, ItalicIcon, MagnifyingGlassIcon } from '@heroicons/react/24/outline';
+import { ChevronDownIcon, CheckIcon, ChevronUpIcon, XMarkIcon } from '@heroicons/react/24/solid';
 
 const Separator = () => (
     <hr className="border-0 h-[2px] bg-gradient-to-r from-transparent via-gray-600 to-transparent my-2" />
@@ -1774,37 +1774,47 @@ export function ProductsGridProperties({ block, onChange, widgetId, tab }) {
         return (
             <>
                 <CollapsibleSection title="Vybrané produkty" isOpen={true} onToggle={() => { }}>
-                    <div className="mb-4">
+                    <div className="mb-6">
                         <div className="relative">
+                            <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                <MagnifyingGlassIcon className="h-5 w-5 text-gray-400" />
+                            </div>
                             <input
                                 type="text"
                                 value={searchTerm}
                                 onChange={(e) => handleSearch(e.target.value)}
-                                placeholder="Vyhledat produkt..."
-                                className="w-full p-2 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg text-sm text-gray-900 dark:text-white"
+                                placeholder="Hledat produkt..."
+                                className="w-full pl-10 pr-10 py-2.5 bg-gray-50 hover:bg-white dark:bg-gray-800 dark:hover:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-xl text-sm text-gray-900 dark:text-white transition-colors focus:outline-none focus:ring-2 focus:ring-visualy-accent-4 focus:bg-white dark:focus:bg-gray-700 shadow-sm"
                             />
-                            {isSearching && (
-                                <div className="absolute right-3 top-2.5">
+                            {isSearching ? (
+                                <div className="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
                                     <div className="animate-spin h-4 w-4 border-2 border-visualy-accent-4 rounded-full border-t-transparent"></div>
                                 </div>
-                            )}
+                            ) : searchTerm ? (
+                                <button
+                                    onClick={() => { setSearchTerm(''); setSearchResults([]); setShowResults(false); }}
+                                    className="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
+                                >
+                                    <XMarkIcon className="h-5 w-5" />
+                                </button>
+                            ) : null}
 
                             {showResults && searchResults.length > 0 && (
-                                <div className="absolute z-10 left-0 right-0 mt-1 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-xl max-h-96 overflow-y-auto">
+                                <div className="absolute z-10 left-0 right-0 mt-2 bg-white dark:bg-gray-800 border border-gray-100 dark:border-gray-700 rounded-xl shadow-2xl max-h-96 overflow-y-auto overflow-x-hidden custom-scrollbar">
                                     {searchResults.map(product => {
                                         const isSelected = products.some(p => p.id === product.id);
                                         return (
                                             <div
                                                 key={product.id}
                                                 onClick={() => !isSelected && addProduct(product)}
-                                                className={`p-2 flex items-center gap-3 border-b border-gray-100 dark:border-gray-700 last:border-0 ${isSelected ? 'opacity-50 cursor-not-allowed bg-gray-50 dark:bg-gray-900' : 'cursor-pointer hover:bg-visualy-accent-4/10 dark:hover:bg-visualy-accent-4/20'}`}
+                                                className={`p-3 flex items-center gap-3 border-b border-gray-100 dark:border-gray-700 last:border-0 transition-colors ${isSelected ? 'opacity-50 cursor-not-allowed bg-gray-50 dark:bg-gray-900/50' : 'cursor-pointer hover:bg-visualy-accent-4/5 dark:hover:bg-visualy-accent-4/10'}`}
                                             >
-                                                {product.imgUrl && <img src={product.imgUrl} className="w-8 h-8 object-contain rounded bg-white shrink-0" alt="" />}
+                                                {product.imgUrl && <img src={product.imgUrl} className="w-10 h-10 object-contain rounded-md bg-white border border-gray-100 dark:border-gray-700 shrink-0 p-0.5" alt="" />}
                                                 <div className="flex-1 min-w-0">
                                                     <div className="text-sm font-medium text-gray-900 dark:text-white truncate">{product.productName}</div>
-                                                    <div className="text-xs text-visualy-accent-4 font-bold">{product.priceVat} Kč</div>
+                                                    <div className="text-xs text-visualy-accent-4 font-bold mt-0.5">{product.priceVat} Kč</div>
                                                 </div>
-                                                {isSelected && <CheckIcon className="w-5 h-5 text-green-500 shrink-0" />}
+                                                {isSelected && <CheckIcon className="w-5 h-5 text-visualy-accent-4 shrink-0" />}
                                             </div>
                                         );
                                     })}
@@ -1813,19 +1823,23 @@ export function ProductsGridProperties({ block, onChange, widgetId, tab }) {
                         </div>
                     </div>
 
-                    <div className="space-y-2 max-h-96 overflow-y-auto pr-1 custom-scrollbar">
+                    {products.length > 0 && (
+                        <div className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-3 ml-1">Vybrané položky ({products.length})</div>
+                    )}
+                    <div className="space-y-2.5 max-h-96 overflow-y-auto pr-1 custom-scrollbar mb-2">
                         {products.map((p, index) => (
-                            <div key={p.id} className="flex items-center gap-2 bg-gray-50 dark:bg-gray-800 p-2 rounded-lg border border-gray-200 dark:border-gray-700">
-                                <div className="flex flex-col gap-1 shrink-0">
-                                    <button onClick={() => moveProduct(p.id, 'up')} disabled={index === 0} className="p-0.5 text-gray-400 hover:text-gray-700 disabled:opacity-30">▲</button>
-                                    <button onClick={() => moveProduct(p.id, 'down')} disabled={index === products.length - 1} className="p-0.5 text-gray-400 hover:text-gray-700 disabled:opacity-30">▼</button>
+                            <div key={p.id} className="flex items-center gap-3 bg-white dark:bg-gray-800 p-2.5 rounded-xl border border-gray-200 dark:border-gray-700 shadow-sm transition-shadow hover:shadow-md group">
+                                <div className="flex flex-col gap-0.5 shrink-0 opacity-40 group-hover:opacity-100 transition-opacity">
+                                    <button onClick={() => moveProduct(p.id, 'up')} disabled={index === 0} className="p-0.5 text-gray-400 hover:text-gray-900 dark:hover:text-white disabled:opacity-20 cursor-pointer transition-colors"><ChevronUpIcon className="w-4 h-4" /></button>
+                                    <button onClick={() => moveProduct(p.id, 'down')} disabled={index === products.length - 1} className="p-0.5 text-gray-400 hover:text-gray-900 dark:hover:text-white disabled:opacity-20 cursor-pointer transition-colors"><ChevronDownIcon className="w-4 h-4" /></button>
                                 </div>
-                                {p.imgUrl && <img src={p.imgUrl} className="w-8 h-8 object-contain bg-white rounded shrink-0" alt="" />}
+                                {p.imgUrl && <img src={p.imgUrl} className="w-10 h-10 object-contain bg-white rounded-md border border-gray-100 dark:border-gray-700 p-0.5 shrink-0" alt="" />}
                                 <div className="flex-1 min-w-0">
-                                    <div className="text-xs font-semibold truncate dark:text-gray-200">{p.productName}</div>
+                                    <div className="text-sm font-semibold truncate text-gray-900 dark:text-gray-100">{p.productName}</div>
+                                    <div className="text-xs text-visualy-accent-4/80 font-medium truncate mt-0.5">{p.priceVat} Kč</div>
                                 </div>
-                                <button onClick={() => removeProduct(p.id)} className="p-1.5 text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 rounded">
-                                    <TrashIcon className="w-4 h-4" />
+                                <button onClick={() => removeProduct(p.id)} className="p-2 text-gray-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors">
+                                    <TrashIcon className="w-5 h-5" />
                                 </button>
                             </div>
                         ))}
