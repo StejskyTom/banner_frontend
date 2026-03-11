@@ -149,7 +149,7 @@ export default function LoginPage() {
           <div className="space-y-3">
             <button
               type="submit"
-              disabled={loading || !turnstileToken}
+              disabled={loading}
               className="cursor-pointer flex w-full justify-center rounded-md bg-visualy-accent-4 px-3 py-1.5 text-sm/6 font-semibold text-white shadow-sm hover:bg-visualy-accent-4/90 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-visualy-accent-4 transition-all disabled:opacity-70 disabled:cursor-not-allowed"
             >
               {loading ? 'Přihlašování...' : 'Přihlásit se'}

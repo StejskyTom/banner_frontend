@@ -594,6 +594,7 @@ export default function ArticleEditSidebar({
                                 <DraggablePaletteItem type="banner" label="Banner" icon={MegaphoneIcon} />
                                 <DraggablePaletteItem type="video" label="Video" icon={VideoCameraIcon} />
                                 <DraggablePaletteItem type="product" label="Produkt" icon={ShoppingBagIcon} />
+                                <DraggablePaletteItem type="products_grid" label="Produktový grid" icon={ShoppingBagIcon} />
                                 <DraggablePaletteItem type="author" label="Autor" icon={UserCircleIcon} />
                             </div>
 
