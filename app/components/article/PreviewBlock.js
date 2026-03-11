@@ -514,10 +514,16 @@ export default function PreviewBlock({ block, isSelected, selectedBlockId, onCli
             borderRadius: productBlock.cardBorderRadius !== undefined ? `${productBlock.cardBorderRadius}px` : (isNested ? '8px' : '12px'),
             textAlign: 'center',
             boxShadow: productBlock.cardShadowEnabled
-                ? `0 ${productBlock.cardShadowBlur ? productBlock.cardShadowBlur / 4 : 4}px ${productBlock.cardShadowBlur || 10}px ${hexToRgba(productBlock.cardShadowColor || '#000000', (productBlock.cardShadowOpacity || 10) / 100)}`
-                : (isNested ? 'none' : '0 4px 6px -1px rgba(0, 0, 0, 0.1)'),
+                ? `0 ${productBlock.cardShadowBlur ? productBlock.cardShadowBlur / 4 : 4}px ${productBlock.cardShadowBlur || 10}px ${productBlock.cardShadowColor ? hexToRgba(productBlock.cardShadowColor, (productBlock.cardShadowOpacity || 10) / 100) : 'rgba(0,0,0,0.1)'}`
+                : '0 4px 6px -1px rgba(0, 0, 0, 0.1)',
             maxWidth: isNested ? 'none' : '400px',
-            margin: isNested ? '0' : `0 auto ${productBlock.margin !== undefined ? productBlock.margin : 24}px`
+            margin: isNested ? '0' : `0 auto ${productBlock.margin !== undefined ? productBlock.margin : 24}px`,
+            position: 'relative',
+            display: 'flex',
+            flexDirection: 'column',
+            height: '100%',
+            boxSizing: 'border-box',
+            overflow: 'hidden'
         };
 
         const imageStyle = {
@@ -879,7 +885,19 @@ export default function PreviewBlock({ block, isSelected, selectedBlockId, onCli
                     btnText: block.buttonText || 'Koupit'
                 };
                 return (
-                    <div key={p.id} style={isCarousel ? { minWidth: `calc((100% - (${gridCols} - 1) * 24px) / ${gridCols})`, flexShrink: 0 } : {}}>
+                    <div
+                        key={p.id}
+                        style={isCarousel ? {
+                            minWidth: `calc((100% - (${gridCols} - 1) * 24px) / ${gridCols})`,
+                            maxWidth: `calc((100% - (${gridCols} - 1) * 24px) / ${gridCols})`,
+                            flexShrink: 0,
+                            display: 'flex',
+                            flexDirection: 'column'
+                        } : {
+                            display: 'flex',
+                            flexDirection: 'column'
+                        }}
+                    >
                         {renderProduct(mergedBlock, true)}
                     </div>
                 );
@@ -887,7 +905,7 @@ export default function PreviewBlock({ block, isSelected, selectedBlockId, onCli
 
             return (
                 <div style={{ ...margin, }}>
-                    <div style={isCarousel ? { display: 'flex', gap: '24px', overflowX: 'auto', paddingBottom: '16px', snapType: 'x mandatory' } : { display: 'grid', gridTemplateColumns: `repeat(${gridCols}, minmax(0, 1fr))`, gap: '24px' }}>
+                    <div style={isCarousel ? { display: 'flex', gap: '24px', overflowX: 'auto', paddingBottom: '16px', snapType: 'x mandatory', alignItems: 'stretch' } : { display: 'grid', gridTemplateColumns: `repeat(${gridCols}, minmax(0, 1fr))`, gap: '24px', alignItems: 'stretch' }}>
                         {products.map(renderItem)}
                     </div>
                 </div>
