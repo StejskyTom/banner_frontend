@@ -30,6 +30,7 @@ import {
     TableProperties,
     BannerProperties,
     ProductProperties,
+    ProductsGridProperties,
     AuthorProperties,
     LayoutProperties,
     VideoProperties
@@ -42,6 +43,7 @@ const BLOCK_TYPE_ICONS = {
     table: TableCellsIcon,
     banner: MegaphoneIcon,
     product: ShoppingBagIcon,
+    products_grid: ShoppingBagIcon,
     author: UserCircleIcon,
     layout: ViewColumnsIcon,
     video: VideoCameraIcon,
@@ -54,6 +56,7 @@ const BLOCK_TYPE_LABELS = {
     table: 'Tabulka',
     banner: 'Banner',
     product: 'Produkt',
+    products_grid: 'Produktový grid',
     author: 'Autor',
     layout: 'Layout',
     video: 'Video',
@@ -426,8 +429,8 @@ export default function ArticleEditSidebar({
                                                 key={unit}
                                                 onClick={() => updateSettings('canvasWidthUnit', unit)}
                                                 className={`px-3 py-2 text-sm font-medium transition-colors ${(settings.canvasWidthUnit || 'px') === unit
-                                                        ? 'bg-visualy-accent-4 text-white'
-                                                        : 'bg-gray-800 text-gray-400 hover:bg-gray-700 hover:text-white'
+                                                    ? 'bg-visualy-accent-4 text-white'
+                                                    : 'bg-gray-800 text-gray-400 hover:bg-gray-700 hover:text-white'
                                                     }`}
                                             >
                                                 {unit}
@@ -493,6 +496,9 @@ export default function ArticleEditSidebar({
                             )}
                             {selectedBlock.type === 'layout' && (
                                 <LayoutProperties block={selectedBlock} onChange={handleUpdateBlock} tab="content" />
+                            )}
+                            {selectedBlock.type === 'products_grid' && (
+                                <ProductsGridProperties block={selectedBlock} onChange={handleUpdateBlock} widgetId={widget.id} tab="content" />
                             )}
                             {selectedBlock.type === 'video' && (
                                 <VideoProperties block={selectedBlock} onChange={handleUpdateBlock} widgetId={widget.id} />

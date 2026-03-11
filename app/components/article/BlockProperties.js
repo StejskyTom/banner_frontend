@@ -1694,3 +1694,435 @@ export function VideoProperties({ block, onChange, widgetId }) {
         </div>
     );
 }
+
+export function ProductsGridProperties({ block, onChange, widgetId, tab }) {
+    const [searchTerm, setSearchTerm] = useState('');
+    const [searchResults, setSearchResults] = useState([]);
+    const [isSearching, setIsSearching] = useState(false);
+    const [showResults, setShowResults] = useState(false);
+    const [autoClose, setAutoClose] = useState(true);
+    const [openSections, setOpenSections] = useState({});
+
+    const toggleSection = (id) => {
+        setOpenSections(prev => {
+            const isCurrentlyOpen = !!prev[id];
+            if (autoClose) {
+                return isCurrentlyOpen ? {} : { [id]: true };
+            } else {
+                return { ...prev, [id]: !isCurrentlyOpen };
+            }
+        });
+    };
+
+    const handleSearch = async (term) => {
+        setSearchTerm(term);
+        if (!term || term.length < 3) {
+            setSearchResults([]);
+            return;
+        }
+
+        setIsSearching(true);
+        try {
+            const res = await authorizedFetch(`/heureka/products/search?search=${encodeURIComponent(term)}&limit=10`);
+            if (res.ok) {
+                const data = await res.json();
+                setSearchResults(data.products || []);
+                setShowResults(true);
+            }
+        } catch (error) {
+            console.error('Search error:', error);
+        } finally {
+            setIsSearching(false);
+        }
+    };
+
+    const addProduct = (product) => {
+        const currentProducts = block.selectedProducts || [];
+        if (currentProducts.find(p => p.id === product.id)) return;
+        onChange({
+            ...block,
+            selectedProducts: [...currentProducts, product]
+        });
+    };
+
+    const removeProduct = (id) => {
+        const currentProducts = block.selectedProducts || [];
+        onChange({
+            ...block,
+            selectedProducts: currentProducts.filter(p => p.id !== id)
+        });
+    };
+
+    const moveProduct = (id, direction) => {
+        const currentProducts = [...(block.selectedProducts || [])];
+        const index = currentProducts.findIndex(p => p.id === id);
+        if (index < 0) return;
+        if (direction === 'up' && index > 0) {
+            const temp = currentProducts[index];
+            currentProducts[index] = currentProducts[index - 1];
+            currentProducts[index - 1] = temp;
+        } else if (direction === 'down' && index < currentProducts.length - 1) {
+            const temp = currentProducts[index];
+            currentProducts[index] = currentProducts[index + 1];
+            currentProducts[index + 1] = temp;
+        }
+        onChange({ ...block, selectedProducts: currentProducts });
+    };
+
+    if (tab === 'content') {
+        const products = block.selectedProducts || [];
+        return (
+            <>
+                <CollapsibleSection title="Vybrané produkty" isOpen={true} onToggle={() => {}}>
+                    <div className="mb-4">
+                        <div className="relative">
+                            <input
+                                type="text"
+                                value={searchTerm}
+                                onChange={(e) => handleSearch(e.target.value)}
+                                placeholder="Vyhledat produkt..."
+                                className="w-full p-2 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg text-sm text-gray-900 dark:text-white"
+                            />
+                            {isSearching && (
+                                <div className="absolute right-3 top-2.5">
+                                    <div className="animate-spin h-4 w-4 border-2 border-visualy-accent-4 rounded-full border-t-transparent"></div>
+                                </div>
+                            )}
+
+                            {showResults && searchResults.length > 0 && (
+                                <div className="absolute z-10 left-0 right-0 mt-1 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-xl max-h-60 overflow-y-auto">
+                                    {searchResults.map(product => {
+                                        const isSelected = products.some(p => p.id === product.id);
+                                        return (
+                                            <div
+                                                key={product.id}
+                                                onClick={() => !isSelected && addProduct(product)}
+                                                className={`p-2 flex items-center gap-3 border-b border-gray-100 dark:border-gray-700 last:border-0 ${isSelected ? 'opacity-50 cursor-not-allowed bg-gray-50 dark:bg-gray-900' : 'cursor-pointer hover:bg-visualy-accent-4/10 dark:hover:bg-visualy-accent-4/20'}`}
+                                            >
+                                                {product.imgUrl && <img src={product.imgUrl} className="w-8 h-8 object-contain rounded bg-white shrink-0" alt="" />}
+                                                <div className="flex-1 min-w-0">
+                                                    <div className="text-sm font-medium text-gray-900 dark:text-white truncate">{product.productName}</div>
+                                                    <div className="text-xs text-visualy-accent-4 font-bold">{product.priceVat} Kč</div>
+                                                </div>
+                                                {isSelected && <CheckIcon className="w-5 h-5 text-green-500 shrink-0" />}
+                                            </div>
+                                        );
+                                    })}
+                                </div>
+                            )}
+                        </div>
+                    </div>
+
+                    <div className="space-y-2 max-h-64 overflow-y-auto pr-1 custom-scrollbar">
+                        {products.map((p, index) => (
+                            <div key={p.id} className="flex items-center gap-2 bg-gray-50 dark:bg-gray-800 p-2 rounded-lg border border-gray-200 dark:border-gray-700">
+                                <div className="flex flex-col gap-1 shrink-0">
+                                    <button onClick={() => moveProduct(p.id, 'up')} disabled={index === 0} className="p-0.5 text-gray-400 hover:text-gray-700 disabled:opacity-30">▲</button>
+                                    <button onClick={() => moveProduct(p.id, 'down')} disabled={index === products.length - 1} className="p-0.5 text-gray-400 hover:text-gray-700 disabled:opacity-30">▼</button>
+                                </div>
+                                {p.imgUrl && <img src={p.imgUrl} className="w-8 h-8 object-contain bg-white rounded shrink-0" alt="" />}
+                                <div className="flex-1 min-w-0">
+                                    <div className="text-xs font-semibold truncate dark:text-gray-200">{p.productName}</div>
+                                </div>
+                                <button onClick={() => removeProduct(p.id)} className="p-1.5 text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 rounded">
+                                    <TrashIcon className="w-4 h-4" />
+                                </button>
+                            </div>
+                        ))}
+                    </div>
+                </CollapsibleSection>
+
+                <Separator />
+
+                <CollapsibleSection title="Rozložení" isOpen={!!openSections['layout']} onToggle={() => toggleSection('layout')}>
+                    <Select
+                        label="Zobrazení"
+                        value={block.layout || 'grid'}
+                        onChange={(val) => onChange({ ...block, layout: val })}
+                        options={[
+                            { value: 'grid', label: 'Grid (mřížka)' },
+                            { value: 'carousel', label: 'Carousel (posouvání)' }
+                        ]}
+                    />
+                    <Select
+                        label="Počet sloupců"
+                        value={block.gridColumns || 3}
+                        onChange={(val) => onChange({ ...block, gridColumns: parseInt(val, 10) })}
+                        options={[
+                            { value: 1, label: '1 sloupec' },
+                            { value: 2, label: '2 sloupce' },
+                            { value: 3, label: '3 sloupce' },
+                            { value: 4, label: '4 sloupce' },
+                            { value: 5, label: '5 sloupců' }
+                        ]}
+                    />
+                </CollapsibleSection>
+
+                <Separator />
+
+                {/* --- Copied styling properties from ProductProperties --- */}
+
+                <CollapsibleSection title="Obrázek" isOpen={!!openSections['image']} onToggle={() => toggleSection('image')}>
+                    <RangeControl
+                        label="Výška obrázku"
+                        value={block.imageHeight !== undefined ? block.imageHeight : 160}
+                        onChange={(val) => onChange({ ...block, imageHeight: val })}
+                        min={50} max={400} unit="px"
+                    />
+                    <Select
+                        label="Uspořádání (object-fit)"
+                        value={block.imageObjectFit || 'contain'}
+                        onChange={(val) => onChange({ ...block, imageObjectFit: val })}
+                        options={[
+                            { value: 'contain', label: 'Přizpůsobit celistvě (Zobrazí celý obrázek, může vytvořit pruhy)' },
+                            { value: 'cover', label: 'Vyplnit celý prostor (Ořízne přesahující části)' },
+                            { value: 'fill', label: 'Deformovat (Roztáhne přesně do boxu)' },
+                        ]}
+                    />
+                    <RangeControl
+                        label="Zaoblení obrázku"
+                        value={block.imageBorderRadius !== undefined ? block.imageBorderRadius : 8}
+                        onChange={(val) => onChange({ ...block, imageBorderRadius: val })}
+                        min={0} max={64} unit="px"
+                    />
+                    <RangeControl
+                        label="Vnitřní okraj (padding)"
+                        value={block.imagePadding !== undefined ? block.imagePadding : 8}
+                        onChange={(val) => onChange({ ...block, imagePadding: val })}
+                        min={0} max={64} unit="px"
+                    />
+                    <RangeControl
+                        label="Spodní okraj (margin)"
+                        value={block.imageMarginBottom !== undefined ? block.imageMarginBottom : 16}
+                        onChange={(val) => onChange({ ...block, imageMarginBottom: val })}
+                        min={0} max={64} unit="px"
+                    />
+                </CollapsibleSection>
+
+                <Separator />
+
+                <CollapsibleSection title="Název produktu" isOpen={!!openSections['product-name']} onToggle={() => toggleSection('product-name')}>
+                    <TypographyControls
+                        color={block.productNameColor || '#111827'}
+                        setColor={(val) => onChange({ ...block, productNameColor: val })}
+                        size={block.productNameSize || '16px'}
+                        setSize={(val) => onChange({ ...block, productNameSize: val })}
+                        font={block.productNameFont}
+                        setFont={(val) => onChange({ ...block, productNameFont: val })}
+                        bold={block.productNameBold}
+                        setBold={(val) => onChange({ ...block, productNameBold: val })}
+                        italic={block.productNameItalic}
+                        setItalic={(val) => onChange({ ...block, productNameItalic: val })}
+                        align={block.productNameAlign}
+                        setAlign={(val) => onChange({ ...block, productNameAlign: val })}
+                        tag={block.productNameTag || 'h3'}
+                        setTag={(val) => onChange({ ...block, productNameTag: val })}
+                        marginTop={block.productNameMarginTop}
+                        setMarginTop={(val) => onChange({ ...block, productNameMarginTop: val })}
+                        marginBottom={block.productNameMarginBottom !== undefined ? block.productNameMarginBottom : 12}
+                        setMarginBottom={(val) => onChange({ ...block, productNameMarginBottom: val })}
+                    />
+                    <div className="pt-2 border-t border-gray-100 dark:border-gray-800 mt-2">
+                        <Toggle checked={block.productNameFull} onChange={(val) => onChange({ ...block, productNameFull: val })} label="Zobrazit celý název" />
+                    </div>
+                </CollapsibleSection>
+
+                <Separator />
+
+                <CollapsibleSection title="Popis produktu" isOpen={!!openSections['description']} onToggle={() => toggleSection('description')}>
+                    <div className="mb-4">
+                        <Toggle checked={block.descriptionEnabled} onChange={(val) => onChange({ ...block, descriptionEnabled: val })} label="Zobrazit popis" />
+                    </div>
+                    {block.descriptionEnabled && (
+                        <TypographyControls
+                            color={block.descriptionColor || '#4b5563'}
+                            setColor={(val) => onChange({ ...block, descriptionColor: val })}
+                            size={block.descriptionSize || '14px'}
+                            setSize={(val) => onChange({ ...block, descriptionSize: val })}
+                            font={block.descriptionFont}
+                            setFont={(val) => onChange({ ...block, descriptionFont: val })}
+                            bold={block.descriptionBold}
+                            setBold={(val) => onChange({ ...block, descriptionBold: val })}
+                            italic={block.descriptionItalic}
+                            setItalic={(val) => onChange({ ...block, descriptionItalic: val })}
+                            align={block.descriptionAlign}
+                            setAlign={(val) => onChange({ ...block, descriptionAlign: val })}
+                            tag={block.descriptionTag || 'p'}
+                            setTag={(val) => onChange({ ...block, descriptionTag: val })}
+                            marginTop={block.descriptionMarginTop}
+                            setMarginTop={(val) => onChange({ ...block, descriptionMarginTop: val })}
+                            marginBottom={block.descriptionMarginBottom || 16}
+                            setMarginBottom={(val) => onChange({ ...block, descriptionMarginBottom: val })}
+                        />
+                    )}
+                </CollapsibleSection>
+
+                <Separator />
+
+                <CollapsibleSection title="Cena produktu" isOpen={!!openSections['price']} onToggle={() => toggleSection('price')}>
+                    <TypographyControls
+                        color={block.priceColor || '#059669'}
+                        setColor={(val) => onChange({ ...block, priceColor: val })}
+                        size={block.priceSize || '20px'}
+                        setSize={(val) => onChange({ ...block, priceSize: val })}
+                        font={block.priceFont}
+                        setFont={(val) => onChange({ ...block, priceFont: val })}
+                        bold={block.priceBold}
+                        setBold={(val) => onChange({ ...block, priceBold: val })}
+                        italic={block.priceItalic}
+                        setItalic={(val) => onChange({ ...block, priceItalic: val })}
+                        align={block.priceAlign}
+                        setAlign={(val) => onChange({ ...block, priceAlign: val })}
+                        marginTop={block.priceMarginTop}
+                        setMarginTop={(val) => onChange({ ...block, priceMarginTop: val })}
+                        marginBottom={block.priceMarginBottom !== undefined ? block.priceMarginBottom : 16}
+                        setMarginBottom={(val) => onChange({ ...block, priceMarginBottom: val })}
+                    />
+                </CollapsibleSection>
+
+                <Separator />
+
+                <CollapsibleSection title="Tlačítko" isOpen={!!openSections['button']} onToggle={() => toggleSection('button')}>
+                    <Input
+                        label="Text tlačítka"
+                        value={block.btnText || 'Koupit'}
+                        onChange={(val) => onChange({ ...block, btnText: val })}
+                        placeholder="Koupit"
+                    />
+                    <TypographyControls
+                        color={block.btnTextColor || '#ffffff'}
+                        setColor={(val) => onChange({ ...block, btnTextColor: val })}
+                        size={block.btnFontSize || '14px'}
+                        setSize={(val) => onChange({ ...block, btnFontSize: val })}
+                        font={block.btnFont}
+                        setFont={(val) => onChange({ ...block, btnFont: val })}
+                        bold={block.btnBold}
+                        setBold={(val) => onChange({ ...block, btnBold: val })}
+                        italic={block.btnItalic}
+                        setItalic={(val) => onChange({ ...block, btnItalic: val })}
+                    />
+                    <div className="pt-2 border-t border-gray-800 space-y-4">
+                        <ColorInput
+                            label="Barva tlačítka"
+                            value={block.btnColor || '#26AD80'}
+                            onChange={(val) => onChange({ ...block, btnColor: val })}
+                        />
+                        <RangeControl
+                            label="Zaoblení tlačítka"
+                            value={block.btnBorderRadius !== undefined ? block.btnBorderRadius : 8}
+                            onChange={(val) => onChange({ ...block, btnBorderRadius: val })}
+                            min={0} max={32} unit="px"
+                        />
+                        <RangeControl
+                            label="Horní odsazení"
+                            value={block.buttonMarginTop || 8}
+                            onChange={(val) => onChange({ ...block, buttonMarginTop: val })}
+                            min={0} max={64} unit="px"
+                        />
+                        <RangeControl
+                            label="Spodní odsazení"
+                            value={block.buttonMarginBottom || 0}
+                            onChange={(val) => onChange({ ...block, buttonMarginBottom: val })}
+                            min={0} max={64} unit="px"
+                        />
+                    </div>
+                </CollapsibleSection>
+
+                <Separator />
+
+                <CollapsibleSection title="Karta produktu" isOpen={!!openSections['card']} onToggle={() => toggleSection('card')}>
+                    <div className="space-y-4">
+                        <Toggle checked={block.cardBorderEnabled} onChange={(val) => onChange({ ...block, cardBorderEnabled: val })} label="Zobrazit rámeček" />
+                        {block.cardBorderEnabled && (
+                            <>
+                                <ColorInput
+                                    label="Barva rámečku"
+                                    value={block.cardBorderColor || '#e5e7eb'}
+                                    onChange={(val) => onChange({ ...block, cardBorderColor: val })}
+                                />
+                                <RangeControl
+                                    label="Šířka rámečku"
+                                    value={block.cardBorderWidth || 1}
+                                    onChange={(val) => onChange({ ...block, cardBorderWidth: val })}
+                                    min={1} max={10} unit="px"
+                                />
+                            </>
+                        )}
+                        <ColorInput
+                            label="Barva pozadí karty"
+                            value={block.cardBackgroundColor || '#ffffff'}
+                            onChange={(val) => onChange({ ...block, cardBackgroundColor: val })}
+                        />
+                        <div className="grid grid-cols-2 gap-2">
+                            <RangeControl
+                                label="Padding X"
+                                value={block.cardPaddingX !== undefined ? block.cardPaddingX : 16}
+                                onChange={(val) => onChange({ ...block, cardPaddingX: val })}
+                                min={0} max={64} step={4} unit="px"
+                            />
+                            <RangeControl
+                                label="Padding Y"
+                                value={block.cardPaddingY !== undefined ? block.cardPaddingY : 16}
+                                onChange={(val) => onChange({ ...block, cardPaddingY: val })}
+                                min={0} max={64} step={4} unit="px"
+                            />
+                        </div>
+                        <RangeControl
+                            label="Zaoblení karty"
+                            value={block.cardBorderRadius !== undefined ? block.cardBorderRadius : 12}
+                            onChange={(val) => onChange({ ...block, cardBorderRadius: val })}
+                            min={0} max={32} unit="px"
+                        />
+
+                        <Toggle checked={block.cardShadowEnabled} onChange={(val) => onChange({ ...block, cardShadowEnabled: val })} label="Stín pod kartou" />
+                        {block.cardShadowEnabled && (
+                            <div className="space-y-4">
+                                <ColorInput
+                                    label="Barva stínu"
+                                    value={block.cardShadowColor || '#000000'}
+                                    onChange={(val) => onChange({ ...block, cardShadowColor: val })}
+                                />
+                                <RangeControl
+                                    label="Rozmazání (Blur)"
+                                    value={block.cardShadowBlur !== undefined ? block.cardShadowBlur : 10}
+                                    onChange={(val) => onChange({ ...block, cardShadowBlur: val })}
+                                    min={0} max={50} unit="px"
+                                />
+                                <RangeControl
+                                    label="Průhlednost (%)"
+                                    value={block.cardShadowOpacity || 10}
+                                    onChange={(val) => onChange({ ...block, cardShadowOpacity: val })}
+                                    min={0} max={100}
+                                />
+                            </div>
+                        )}
+                    </div>
+                </CollapsibleSection>
+            </>
+        );
+    }
+
+    if (tab === 'settings') {
+        return (
+            <div className="flex flex-col h-full overflow-hidden">
+                <div className="p-4 border-b border-gray-800">
+                    <h2 className="font-semibold text-white">Pokročilé nastavení bloku</h2>
+                </div>
+                <div className="flex-1 overflow-y-auto p-4 space-y-6 custom-scrollbar">
+                    <div className="space-y-3 p-4 bg-gray-800/50 border border-gray-700 rounded-xl">
+                        <label className="text-xs uppercase tracking-wider text-gray-500 font-bold block">CSS Třídy (nepovinné)</label>
+                        <input
+                            type="text"
+                            value={block.customClass || ''}
+                            onChange={(e) => onChange({ ...block, customClass: e.target.value })}
+                            placeholder="např. hidden md:block"
+                            className="w-full bg-gray-900 border border-gray-700 text-white px-3 py-2 rounded focus:outline-none focus:border-visualy-accent-4"
+                        />
+                        <p className="text-xs text-gray-500">Můžete přidat vlastní CSS třídy (např. Tailwind) pro dodatečné stylování tohoto konkrétního bloku.</p>
+                    </div>
+                </div>
+            </div>
+        );
+    }
+    return null;
+}

@@ -28,6 +28,7 @@ const CHILD_BLOCK_TYPES = [
     { type: 'table', label: 'Tabulka', icon: TableCellsIcon },
     { type: 'banner', label: 'Banner', icon: MegaphoneIcon },
     { type: 'product', label: 'Produkt', icon: ShoppingBagIcon },
+    { type: 'products_grid', label: 'Produktový grid', icon: ShoppingBagIcon },
     { type: 'author', label: 'Autor', icon: UserCircleIcon },
     { type: 'video', label: 'Video', icon: VideoCameraIcon },
 ];
@@ -37,6 +38,7 @@ const SAVED_BLOCK_ICONS = {
     image: PhotoIcon,
     banner: MegaphoneIcon,
     product: ShoppingBagIcon,
+    products_grid: ShoppingBagIcon,
     table: TableCellsIcon,
     wrap: PhotoIcon,
     author: UserCircleIcon,
@@ -52,6 +54,43 @@ function createChildBlock(type) {
     if (type === 'product') { newBlock.name = 'Produkt'; newBlock.link = ''; newBlock.imgUrl = ''; newBlock.price = ''; newBlock.btnText = 'Koupit'; }
     if (type === 'table') { newBlock.header = ['Sloupec 1', 'Sloupec 2', 'Sloupec 3']; newBlock.data = [['', '', ''], ['', '', ''], ['', '', '']]; newBlock.rows = 3; newBlock.cols = 3; newBlock.width = 100; newBlock.borderStyle = 'full'; newBlock.borderColor = '#e5e7eb'; newBlock.headerBgColor = '#f3f4f6'; newBlock.headerTextColor = '#111827'; newBlock.stripedRows = false; newBlock.stripedColor = '#f9fafb'; newBlock.cellPadding = 12; newBlock.fontSize = 14; }
     if (type === 'author') { newBlock.authorName = ''; newBlock.authorTitle = ''; newBlock.authorBio = ''; newBlock.authorPhotoUrl = ''; }
+    if (type === 'products_grid') {
+        newBlock.selectedProducts = [];
+        newBlock.layout = 'grid';
+        newBlock.gridColumns = 3;
+        newBlock.buttonText = 'Koupit';
+        newBlock.buttonColor = '#26AD80';
+        newBlock.buttonTextColor = '#ffffff';
+        newBlock.buttonFontSize = '14px';
+        newBlock.buttonBorderRadius = 8;
+        newBlock.cardBackgroundColor = '#ffffff';
+        newBlock.cardBorderRadius = 12;
+        newBlock.cardBorderEnabled = true;
+        newBlock.cardBorderColor = '#e5e7eb';
+        newBlock.cardBorderWidth = 1;
+        newBlock.cardShadowEnabled = false;
+        newBlock.cardShadowColor = '#000000';
+        newBlock.cardShadowBlur = 10;
+        newBlock.cardShadowOpacity = 10;
+        newBlock.cardPaddingX = 16;
+        newBlock.cardPaddingY = 16;
+        newBlock.productNameColor = '#111827';
+        newBlock.productNameSize = '14px';
+        newBlock.productNameBold = true;
+        newBlock.priceColor = '#059669';
+        newBlock.priceSize = '18px';
+        newBlock.priceBold = true;
+        newBlock.priceFormat = 'no_decimals';
+        newBlock.imageHeight = 160;
+        newBlock.imageObjectFit = 'contain';
+        newBlock.imagePadding = 8;
+        newBlock.imageMarginBottom = 12;
+        newBlock.imageBorderRadius = 8;
+        newBlock.descriptionEnabled = false;
+        newBlock.descriptionColor = '#4b5563';
+        newBlock.descriptionSize = '13px';
+        newBlock.descriptionTruncateLength = 100;
+    }
     return newBlock;
 }
 
@@ -814,6 +853,45 @@ export default function PreviewBlock({ block, isSelected, selectedBlockId, onCli
         }
         if (block.type === 'product') {
             return renderProduct(block, false);
+        }
+        if (block.type === 'products_grid') {
+            const products = block.selectedProducts || [];
+            if (products.length === 0) {
+                return (
+                    <div style={{ ...margin, textAlign: 'center', padding: '32px', border: '2px dashed #e5e7eb', borderRadius: '12px', color: '#9ca3af', background: '#f9fafb' }}>
+                        <ShoppingBagIcon style={{ width: 40, height: 40, margin: '0 auto 8px', display: 'block' }} />
+                        Zatím nebyly vybrány žádné produkty (upravte v nastavení bloku)
+                    </div>
+                );
+            }
+
+            const isCarousel = block.layout === 'carousel';
+            const gridCols = block.gridColumns || 3;
+
+            const renderItem = (p) => {
+                const mergedBlock = {
+                    ...block,
+                    name: p.productName,
+                    price: p.priceVat ? `${p.priceVat} Kč` : '',
+                    imgUrl: p.imgUrl,
+                    description: p.description,
+                    link: p.url,
+                    btnText: block.buttonText || 'Koupit'
+                };
+                return (
+                    <div key={p.id} style={isCarousel ? { minWidth: `calc((100% - (${gridCols} - 1) * 24px) / ${gridCols})`, flexShrink: 0 } : {}}>
+                        {renderProduct(mergedBlock, true)}
+                    </div>
+                );
+            };
+
+            return (
+                <div style={{ ...margin, }}>
+                    <div style={isCarousel ? { display: 'flex', gap: '24px', overflowX: 'auto', paddingBottom: '16px', snapType: 'x mandatory' } : { display: 'grid', gridTemplateColumns: `repeat(${gridCols}, minmax(0, 1fr))`, gap: '24px' }}>
+                        {products.map(renderItem)}
+                    </div>
+                </div>
+            );
         }
         if (block.type === 'author') {
             return (
