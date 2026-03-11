@@ -13,10 +13,12 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata = {
-  title: "Přihlášení | Visualy",
+  title: {
+    default: 'Přihlášení | Visualy',
+    template: '%s | Visualy',
+  },
   description: "Přihlaste se do Visualy a začněte tvořit widgety.",
   openGraph: {
-    title: "Přihlášení | Visualy",
     description: "Přihlaste se do Visualy a začněte tvořit widgety.",
     images: [{ url: "/visualy_logo.png" }],
   },
