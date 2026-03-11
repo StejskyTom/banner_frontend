@@ -1870,6 +1870,44 @@ export function ProductsGridProperties({ block, onChange, widgetId, tab }) {
                             { value: 5, label: '5 sloupců' }
                         ]}
                     />
+
+                    {block.layout === 'carousel' && (
+                        <div className="pt-4 border-t border-gray-100 dark:border-gray-800 space-y-4">
+                            <Toggle
+                                checked={block.carouselArrows !== false} // default true in heureka, so true here
+                                onChange={(val) => onChange({ ...block, carouselArrows: val })}
+                                label="Zobrazit šipky"
+                            />
+                            {block.carouselArrows !== false && (
+                                <>
+                                    <div className="pt-2">
+                                        <label className="text-xs font-medium text-gray-500 mb-2 block">Barva pozadí šipky</label>
+                                        <input
+                                            type="color"
+                                            value={block.carouselArrowsBackground || '#ffffff'}
+                                            onChange={(e) => onChange({ ...block, carouselArrowsBackground: e.target.value })}
+                                            className="w-full h-8 cursor-pointer rounded bg-transparent"
+                                        />
+                                    </div>
+                                    <div className="pt-2">
+                                        <label className="text-xs font-medium text-gray-500 mb-2 block">Barva ikony šipky</label>
+                                        <input
+                                            type="color"
+                                            value={block.carouselArrowsColor || '#374151'}
+                                            onChange={(e) => onChange({ ...block, carouselArrowsColor: e.target.value })}
+                                            className="w-full h-8 cursor-pointer rounded bg-transparent"
+                                        />
+                                    </div>
+                                    <RangeControl
+                                        label="Zakulacení šipek"
+                                        value={block.carouselArrowsBorderRadius !== undefined ? block.carouselArrowsBorderRadius : 50}
+                                        onChange={(val) => onChange({ ...block, carouselArrowsBorderRadius: val })}
+                                        min={0} max={50} unit="%"
+                                    />
+                                </>
+                            )}
+                        </div>
+                    )}
                 </CollapsibleSection>
 
                 <Separator />

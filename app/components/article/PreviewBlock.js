@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import { useSortable } from '@dnd-kit/sortable';
 import { useDroppable, useDndContext } from '@dnd-kit/core';
 import { CSS } from '@dnd-kit/utilities';
@@ -14,6 +14,8 @@ import {
     ShoppingBagIcon,
     ChevronUpIcon,
     ChevronDownIcon,
+    ChevronLeftIcon,
+    ChevronRightIcon,
     XMarkIcon,
     BookmarkIcon,
     ViewColumnsIcon,
@@ -478,6 +480,7 @@ export default function PreviewBlock({ block, isSelected, selectedBlockId, onCli
         isDragging,
         isOver
     } = useSortable({ id: block.id });
+    const scrollContainerRef = useRef(null);
 
     const { active } = useDndContext();
     const isPaletteItem = active?.data?.current?.isPaletteItem;
@@ -903,9 +906,55 @@ export default function PreviewBlock({ block, isSelected, selectedBlockId, onCli
                 );
             };
 
+            const scrollLeft = () => {
+                if (scrollContainerRef.current) {
+                    const item = scrollContainerRef.current.firstElementChild;
+                    const scrollAmount = item ? (item.clientWidth + 24) : 300;
+                    scrollContainerRef.current.scrollBy({ left: -scrollAmount, behavior: 'smooth' });
+                }
+            };
+
+            const scrollRight = () => {
+                if (scrollContainerRef.current) {
+                    const item = scrollContainerRef.current.firstElementChild;
+                    const scrollAmount = item ? (item.clientWidth + 24) : 300;
+                    scrollContainerRef.current.scrollBy({ left: scrollAmount, behavior: 'smooth' });
+                }
+            };
+
             return (
-                <div style={{ ...margin, }}>
-                    <div style={isCarousel ? { display: 'flex', gap: '24px', overflowX: 'auto', paddingBottom: '16px', snapType: 'x mandatory', alignItems: 'stretch' } : { display: 'grid', gridTemplateColumns: `repeat(${gridCols}, minmax(0, 1fr))`, gap: '24px', alignItems: 'stretch' }}>
+                <div style={{ ...margin, position: 'relative' }} className="group">
+                    {isCarousel && block.carouselArrows !== false && (
+                        <>
+                            <button
+                                onClick={scrollLeft}
+                                className="absolute left-0 top-1/2 -translate-y-1/2 -translate-x-4 z-10 shadow-lg p-2 hover:brightness-95 opacity-0 group-hover:opacity-100 transition-all cursor-pointer"
+                                aria-label="Scroll left"
+                                style={{
+                                    backgroundColor: block.carouselArrowsBackground || '#ffffff',
+                                    color: block.carouselArrowsColor || '#374151',
+                                    borderRadius: `${block.carouselArrowsBorderRadius !== undefined ? block.carouselArrowsBorderRadius : 50}%`,
+                                    border: '1px solid #e5e7eb'
+                                }}
+                            >
+                                <ChevronLeftIcon className="w-5 h-5" />
+                            </button>
+                            <button
+                                onClick={scrollRight}
+                                className="absolute right-0 top-1/2 -translate-y-1/2 translate-x-4 z-10 shadow-lg p-2 hover:brightness-95 opacity-0 group-hover:opacity-100 transition-all cursor-pointer"
+                                aria-label="Scroll right"
+                                style={{
+                                    backgroundColor: block.carouselArrowsBackground || '#ffffff',
+                                    color: block.carouselArrowsColor || '#374151',
+                                    borderRadius: `${block.carouselArrowsBorderRadius !== undefined ? block.carouselArrowsBorderRadius : 50}%`,
+                                    border: '1px solid #e5e7eb'
+                                }}
+                            >
+                                <ChevronRightIcon className="w-5 h-5" />
+                            </button>
+                        </>
+                    )}
+                    <div ref={isCarousel ? scrollContainerRef : null} style={isCarousel ? { display: 'flex', gap: '24px', overflowX: 'auto', paddingBottom: '16px', snapType: 'x mandatory', alignItems: 'stretch', scrollbarWidth: 'none', msOverflowStyle: 'none' } : { display: 'grid', gridTemplateColumns: `repeat(${gridCols}, minmax(0, 1fr))`, gap: '24px', alignItems: 'stretch' }} className={isCarousel ? "[&::-webkit-scrollbar]:hidden" : ""}>
                         {products.map(renderItem)}
                     </div>
                 </div>
