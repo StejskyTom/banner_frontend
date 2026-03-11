@@ -412,14 +412,12 @@ export function WrapProperties({ block, onChange, widgetId, activeFormats = {} }
 export function TableProperties({ block, onChange }) {
     const updateDimensions = (rows, cols) => {
         const newHeader = [...(block.header || [])];
-        const newData = [...(block.data || [])];
+        const newData = [...(block.data || [])].map(r => [...r]);
 
         // Adjust columns
         if (cols > newHeader.length) {
             for (let i = newHeader.length; i < cols; i++) newHeader.push('Sloupec ' + (i + 1));
-            newData.forEach(row => {
-                for (let i = row.length; i < cols; i++) row.push('');
-            });
+            newData.forEach(row => { for (let i = row.length; i < cols; i++) row.push(''); });
         } else if (cols < newHeader.length) {
             newHeader.length = cols;
             newData.forEach(row => row.length = cols);
@@ -427,9 +425,7 @@ export function TableProperties({ block, onChange }) {
 
         // Adjust rows
         if (rows > newData.length) {
-            for (let i = newData.length; i < rows; i++) {
-                newData.push(new Array(cols).fill(''));
-            }
+            for (let i = newData.length; i < rows; i++) newData.push(new Array(cols).fill(''));
         } else if (rows < newData.length) {
             newData.length = rows;
         }
@@ -437,32 +433,51 @@ export function TableProperties({ block, onChange }) {
         onChange({ ...block, rows, cols, header: newHeader, data: newData });
     };
 
+    const currentRows = block.rows || (block.data || []).length || 3;
+    const currentCols = block.cols || (block.header || []).length || 3;
+
     return (
         <>
-            <div className="flex gap-4 mb-4">
-                <div className="flex-1">
-                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Řádky</label>
-                    <input
-                        type="number"
-                        min="1"
-                        max="20"
-                        value={block.rows || 3}
-                        onChange={(e) => updateDimensions(parseInt(e.target.value) || 1, block.cols || 3)}
-                        className="w-full p-2 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg text-gray-900 dark:text-white"
-                    />
+            {/* Dimensions */}
+            <div className="mb-4">
+                <p className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide mb-3">Rozměry tabulky</p>
+                <div className="grid grid-cols-2 gap-3">
+                    <div>
+                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Řádky</label>
+                        <div className="flex items-center border border-gray-300 dark:border-gray-600 rounded-lg overflow-hidden bg-white dark:bg-gray-700">
+                            <button
+                                onClick={() => updateDimensions(Math.max(1, currentRows - 1), currentCols)}
+                                className="px-3 py-2 text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-600 font-bold text-lg leading-none cursor-pointer transition-colors"
+                            >−</button>
+                            <span className="flex-1 text-center text-sm font-semibold text-gray-900 dark:text-white">{currentRows}</span>
+                            <button
+                                onClick={() => updateDimensions(Math.min(30, currentRows + 1), currentCols)}
+                                className="px-3 py-2 text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-600 font-bold text-lg leading-none cursor-pointer transition-colors"
+                            >+</button>
+                        </div>
+                    </div>
+                    <div>
+                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Sloupce</label>
+                        <div className="flex items-center border border-gray-300 dark:border-gray-600 rounded-lg overflow-hidden bg-white dark:bg-gray-700">
+                            <button
+                                onClick={() => updateDimensions(currentRows, Math.max(1, currentCols - 1))}
+                                className="px-3 py-2 text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-600 font-bold text-lg leading-none cursor-pointer transition-colors"
+                            >−</button>
+                            <span className="flex-1 text-center text-sm font-semibold text-gray-900 dark:text-white">{currentCols}</span>
+                            <button
+                                onClick={() => updateDimensions(currentRows, Math.min(10, currentCols + 1))}
+                                className="px-3 py-2 text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-600 font-bold text-lg leading-none cursor-pointer transition-colors"
+                            >+</button>
+                        </div>
+                    </div>
                 </div>
-                <div className="flex-1">
-                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Sloupce</label>
-                    <input
-                        type="number"
-                        min="1"
-                        max="10"
-                        value={block.cols || 3}
-                        onChange={(e) => updateDimensions(block.rows || 3, parseInt(e.target.value) || 1)}
-                        className="w-full p-2 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg text-gray-900 dark:text-white"
-                    />
-                </div>
+                <p className="text-xs text-gray-400 dark:text-gray-500 mt-2">Nebo přidávejte řádky/sloupce přímo v náhledu tlačítky +/−</p>
             </div>
+
+            <div className="h-px bg-gray-200 dark:bg-gray-700 my-3" />
+
+            {/* Appearance */}
+            <p className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide mb-3">Vzhled</p>
 
             <Select
                 label="Styl ohraničení"
@@ -475,33 +490,97 @@ export function TableProperties({ block, onChange }) {
                 ]}
             />
 
-            <div className="mb-4 space-y-4">
-                <div>
-                    <Toggle
-                        checked={block.comparisonMode || false}
-                        onChange={(val) => onChange({ ...block, comparisonMode: val })}
-                        label="Porovnávací režim (ikony místo 'v' a 'x')"
-                    />
-                    {block.comparisonMode && (
-                        <p className="text-xs text-gray-500 mt-2 ml-12">
-                            Když zapnete tento režim, napište do buňky přesně <strong>[v]</strong> pro zelené zaškrtnutí nebo <strong>[x]</strong> pro červený křížek. V náhledu panelu uvidíte text, ale na webu se zobrazí ikony.
-                        </p>
-                    )}
-                </div>
+            <div className="grid grid-cols-2 gap-3 mb-4">
+                <ColorInput
+                    label="Barva ohraničení"
+                    value={block.borderColor || '#e5e7eb'}
+                    onChange={(val) => onChange({ ...block, borderColor: val })}
+                />
+                <div />
+            </div>
+
+            <div className="mb-4 space-y-3">
                 <Toggle
                     checked={block.outerBorder !== false}
                     onChange={(val) => onChange({ ...block, outerBorder: val })}
                     label="Vnější ohraničení"
                 />
+                <Toggle
+                    checked={block.stripedRows || false}
+                    onChange={(val) => onChange({ ...block, stripedRows: val })}
+                    label="Střídavé řádky"
+                />
+                {block.stripedRows && (
+                    <div className="ml-12">
+                        <ColorInput
+                            label="Barva střídavých řádků"
+                            value={block.stripedColor || '#f9fafb'}
+                            onChange={(val) => onChange({ ...block, stripedColor: val })}
+                        />
+                    </div>
+                )}
             </div>
 
+            <div className="h-px bg-gray-200 dark:bg-gray-700 my-3" />
+
+            {/* Header styling */}
+            <p className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide mb-3">Záhlaví</p>
+
+            <div className="grid grid-cols-2 gap-3 mb-4">
+                <ColorInput
+                    label="Barva pozadí"
+                    value={block.headerBgColor || '#f3f4f6'}
+                    onChange={(val) => onChange({ ...block, headerBgColor: val })}
+                />
+                <ColorInput
+                    label="Barva textu"
+                    value={block.headerTextColor || '#111827'}
+                    onChange={(val) => onChange({ ...block, headerTextColor: val })}
+                />
+            </div>
+
+            <div className="h-px bg-gray-200 dark:bg-gray-700 my-3" />
+
+            {/* Comparison mode */}
+            <p className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide mb-3">Porovnávací režim</p>
+
+            <div className="mb-4 space-y-3">
+                <Toggle
+                    checked={block.comparisonMode || false}
+                    onChange={(val) => onChange({ ...block, comparisonMode: val })}
+                    label="Porovnávací režim (ikony ✓ / ✗)"
+                />
+                {block.comparisonMode && (
+                    <div className="ml-12 p-3 bg-blue-50 dark:bg-blue-900/20 rounded-lg border border-blue-100 dark:border-blue-800">
+                        <p className="text-xs text-blue-700 dark:text-blue-300">
+                            Napiš do buňky <strong>[v]</strong> → zobrazí se zelené ✓<br />
+                            Napiš do buňky <strong>[x]</strong> → zobrazí se červené ✗
+                        </p>
+                    </div>
+                )}
+            </div>
+
+            <div className="h-px bg-gray-200 dark:bg-gray-700 my-3" />
+
+            {/* Typography & spacing */}
+            <p className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide mb-3">Typografie a rozestupy</p>
+
             <RangeControl
-                label="Šířka tabulky"
-                value={block.width || 100}
-                onChange={(val) => onChange({ ...block, width: val })}
-                min={20}
-                max={100}
-                unit="%"
+                label="Velikost písma"
+                value={block.fontSize !== undefined ? block.fontSize : 14}
+                onChange={(val) => onChange({ ...block, fontSize: val })}
+                min={10}
+                max={24}
+                unit="px"
+            />
+
+            <RangeControl
+                label="Vnitřní odsazení buněk"
+                value={block.cellPadding !== undefined ? block.cellPadding : 12}
+                onChange={(val) => onChange({ ...block, cellPadding: val })}
+                min={4}
+                max={32}
+                unit="px"
             />
 
             <Select
@@ -515,6 +594,20 @@ export function TableProperties({ block, onChange }) {
                 ]}
             />
 
+            <div className="h-px bg-gray-200 dark:bg-gray-700 my-3" />
+
+            {/* Layout */}
+            <p className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide mb-3">Rozložení</p>
+
+            <RangeControl
+                label="Šířka tabulky"
+                value={block.width || 100}
+                onChange={(val) => onChange({ ...block, width: val })}
+                min={20}
+                max={100}
+                unit="%"
+            />
+
             <RangeControl
                 label="Zaoblení rohů"
                 value={block.borderRadius !== undefined ? block.borderRadius : 8}
@@ -523,22 +616,10 @@ export function TableProperties({ block, onChange }) {
                 max={24}
                 unit="px"
             />
-
-            <div className="grid grid-cols-2 gap-3 mb-4">
-                <ColorInput
-                    label="Barva záhlaví"
-                    value={block.headerBgColor || '#f3f4f6'}
-                    onChange={(val) => onChange({ ...block, headerBgColor: val })}
-                />
-                <ColorInput
-                    label="Barva textu"
-                    value={block.headerTextColor || '#111827'}
-                    onChange={(val) => onChange({ ...block, headerTextColor: val })}
-                />
-            </div>
         </>
     );
 }
+
 
 export function BannerProperties({ block, onChange, widgetId }) {
     return (

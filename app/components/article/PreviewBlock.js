@@ -50,7 +50,7 @@ function createChildBlock(type) {
     if (type === 'video') { newBlock.url = ''; newBlock.width = 100; newBlock.ratio = '16/9'; newBlock.align = 'center'; newBlock.autoPlay = false; }
     if (type === 'banner') { newBlock.content = 'NADPIS'; newBlock.bgColor = '#f3f4f6'; newBlock.textColor = '#111827'; }
     if (type === 'product') { newBlock.name = 'Produkt'; newBlock.link = ''; newBlock.imgUrl = ''; newBlock.price = ''; newBlock.btnText = 'Koupit'; }
-    if (type === 'table') { newBlock.header = ['Sloupec 1', 'Sloupec 2']; newBlock.data = [['', '']]; newBlock.width = 100; newBlock.borderStyle = 'full'; newBlock.headerBgColor = '#f3f4f6'; newBlock.headerTextColor = '#111827'; }
+    if (type === 'table') { newBlock.header = ['Sloupec 1', 'Sloupec 2', 'Sloupec 3']; newBlock.data = [['', '', ''], ['', '', ''], ['', '', '']]; newBlock.rows = 3; newBlock.cols = 3; newBlock.width = 100; newBlock.borderStyle = 'full'; newBlock.borderColor = '#e5e7eb'; newBlock.headerBgColor = '#f3f4f6'; newBlock.headerTextColor = '#111827'; newBlock.stripedRows = false; newBlock.stripedColor = '#f9fafb'; newBlock.cellPadding = 12; newBlock.fontSize = 14; }
     if (type === 'author') { newBlock.authorName = ''; newBlock.authorTitle = ''; newBlock.authorBio = ''; newBlock.authorPhotoUrl = ''; }
     return newBlock;
 }
@@ -838,72 +838,134 @@ export default function PreviewBlock({ block, isSelected, selectedBlockId, onCli
             );
         }
         if (block.type === 'table') {
-            const borderColor = '#e5e7eb';
+            const borderColor = block.borderColor || '#e5e7eb';
             const borderStyle = block.borderStyle || 'full';
+            const cellPad = block.cellPadding !== undefined ? block.cellPadding : 12;
+            const fontSize = block.fontSize !== undefined ? block.fontSize : 14;
+            const stripedRows = block.stripedRows || false;
+            const stripedColor = block.stripedColor || '#f9fafb';
+
+            const addCol = () => {
+                const newHeader = [...(block.header || []), `Sloupec ${(block.header || []).length + 1}`];
+                const newData = (block.data || []).map(row => [...row, '']);
+                onChange({ ...block, header: newHeader, data: newData, cols: newHeader.length });
+            };
+            const removeCol = () => {
+                if ((block.header || []).length <= 1) return;
+                const newHeader = block.header.slice(0, -1);
+                const newData = (block.data || []).map(row => row.slice(0, -1));
+                onChange({ ...block, header: newHeader, data: newData, cols: newHeader.length });
+            };
+            const addRow = () => {
+                const cols = (block.header || []).length;
+                const newData = [...(block.data || []), new Array(cols).fill('')];
+                onChange({ ...block, data: newData, rows: newData.length });
+            };
+            const removeRow = () => {
+                if ((block.data || []).length <= 1) return;
+                const newData = block.data.slice(0, -1);
+                onChange({ ...block, data: newData, rows: newData.length });
+            };
+
+            const renderCellContent = (content) => {
+                if (!block.comparisonMode) return content;
+                const t = (content || '').trim().toLowerCase();
+                if (t === '[v]') return <span style={{ color: '#22c55e', fontSize: 18, fontWeight: 700 }}>✓</span>;
+                if (t === '[x]') return <span style={{ color: '#ef4444', fontSize: 18, fontWeight: 700 }}>✗</span>;
+                return content;
+            };
 
             return (
-                <div style={{ overflowX: 'auto', ...margin }}>
-                    <table style={{
-                        width: `${block.width || 100}%`,
-                        borderCollapse: 'separate',
-                        borderSpacing: 0,
-                        border: block.outerBorder !== false ? `1px solid ${borderColor}` : 'none',
-                        borderRadius: `${block.borderRadius !== undefined ? block.borderRadius : 8}px`,
-                        overflow: 'hidden'
-                    }}>
-                        <thead>
-                            <tr>
-                                {(block.header || []).map((head, i) => (
-                                    <th key={i} style={{
-                                        background: block.headerBgColor || '#f3f4f6',
-                                        color: block.headerTextColor || '#111827',
-                                        padding: '12px 16px',
-                                        textAlign: block.textAlign || 'left',
-                                        fontWeight: 600,
-                                        borderBottom: borderStyle !== 'none' ? `1px solid ${borderColor}` : 'none',
-                                        borderRight: borderStyle === 'full' && i < (block.header.length - 1) ? `1px solid ${borderColor}` : 'none'
-                                    }}>
-                                        <ContentEditable
-                                            tagName="div"
-                                            html={head}
-                                            onChange={(val) => {
-                                                const newHeader = [...block.header];
-                                                newHeader[i] = val;
-                                                onChange({ ...block, header: newHeader });
-                                            }}
-                                            style={{ outline: 'none', minWidth: '50px' }}
-                                        />
-                                    </th>
-                                ))}
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {(block.data || []).map((row, rowIndex) => (
-                                <tr key={rowIndex}>
-                                    {row.map((cell, colIndex) => (
-                                        <td key={colIndex} style={{
-                                            padding: '12px 16px',
+                <div style={{ ...margin }}>
+                    <div style={{ overflowX: 'auto', borderRadius: `${block.borderRadius !== undefined ? block.borderRadius : 8}px`, border: block.outerBorder !== false ? `1px solid ${borderColor}` : 'none', overflow: 'hidden' }}>
+                        <table style={{
+                            width: `${block.width || 100}%`,
+                            borderCollapse: 'separate',
+                            borderSpacing: 0,
+                            fontSize: `${fontSize}px`,
+                        }}>
+                            <thead>
+                                <tr>
+                                    {(block.header || []).map((head, i) => (
+                                        <th key={i} style={{
+                                            background: block.headerBgColor || '#f3f4f6',
+                                            color: block.headerTextColor || '#111827',
+                                            padding: `${cellPad}px ${cellPad + 4}px`,
                                             textAlign: block.textAlign || 'left',
-                                            borderBottom: borderStyle !== 'none' && rowIndex < (block.data.length - 1) ? `1px solid ${borderColor}` : 'none',
-                                            borderRight: borderStyle === 'full' && colIndex < (row.length - 1) ? `1px solid ${borderColor}` : 'none'
+                                            fontWeight: 600,
+                                            borderBottom: borderStyle !== 'none' ? `1px solid ${borderColor}` : 'none',
+                                            borderRight: borderStyle === 'full' && i < (block.header.length - 1) ? `1px solid ${borderColor}` : 'none',
+                                            whiteSpace: 'nowrap',
                                         }}>
                                             <ContentEditable
                                                 tagName="div"
-                                                html={cell}
+                                                html={head}
                                                 onChange={(val) => {
-                                                    const newData = [...block.data];
-                                                    newData[rowIndex] = [...newData[rowIndex]]; // Copy row
-                                                    newData[rowIndex][colIndex] = val;
-                                                    onChange({ ...block, data: newData });
+                                                    const newHeader = [...block.header];
+                                                    newHeader[i] = val;
+                                                    onChange({ ...block, header: newHeader });
                                                 }}
-                                                style={{ outline: 'none', minWidth: '50px' }}
+                                                style={{ outline: 'none', minWidth: '60px', cursor: 'text' }}
                                             />
-                                        </td>
+                                        </th>
                                     ))}
+                                    {/* Add/remove column controls */}
+                                    <th style={{ background: block.headerBgColor || '#f3f4f6', borderBottom: borderStyle !== 'none' ? `1px solid ${borderColor}` : 'none', padding: '4px', width: '56px', textAlign: 'center' }}>
+                                        <div style={{ display: 'flex', gap: '2px', justifyContent: 'center' }}>
+                                            <button onClick={removeCol} title="Odebrat sloupec" style={{ width: 22, height: 22, borderRadius: 4, border: '1px solid #d1d5db', background: '#fff', cursor: 'pointer', fontSize: 14, color: '#6b7280', lineHeight: 1, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>−</button>
+                                            <button onClick={addCol} title="Přidat sloupec" style={{ width: 22, height: 22, borderRadius: 4, border: '1px solid #d1d5db', background: '#fff', cursor: 'pointer', fontSize: 14, color: '#22c55e', lineHeight: 1, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>+</button>
+                                        </div>
+                                    </th>
                                 </tr>
-                            ))}
-                        </tbody>
-                    </table>
+                            </thead>
+                            <tbody>
+                                {(block.data || []).map((row, rowIndex) => (
+                                    <tr key={rowIndex} style={{ background: stripedRows && rowIndex % 2 === 1 ? stripedColor : 'transparent' }}>
+                                        {row.map((cell, colIndex) => (
+                                            <td key={colIndex} style={{
+                                                padding: `${cellPad}px ${cellPad + 4}px`,
+                                                textAlign: block.textAlign || 'left',
+                                                borderBottom: borderStyle !== 'none' && rowIndex < (block.data.length - 1) ? `1px solid ${borderColor}` : 'none',
+                                                borderRight: borderStyle === 'full' && colIndex < (row.length - 1) ? `1px solid ${borderColor}` : 'none',
+                                            }}>
+                                                <ContentEditable
+                                                    tagName="div"
+                                                    html={cell}
+                                                    onChange={(val) => {
+                                                        const newData = [...block.data];
+                                                        newData[rowIndex] = [...newData[rowIndex]];
+                                                        newData[rowIndex][colIndex] = val;
+                                                        onChange({ ...block, data: newData });
+                                                    }}
+                                                    style={{ outline: 'none', minWidth: '60px', cursor: 'text' }}
+                                                />
+                                                {block.comparisonMode && (
+                                                    <div style={{ marginTop: 2, fontSize: 11, color: '#9ca3af' }}>
+                                                        {renderCellContent(cell)}
+                                                    </div>
+                                                )}
+                                            </td>
+                                        ))}
+                                        {/* Row control placeholder */}
+                                        <td style={{ padding: '2px 4px', borderBottom: borderStyle !== 'none' && rowIndex < (block.data.length - 1) ? `1px solid ${borderColor}` : 'none', textAlign: 'center', width: '56px' }}>
+                                            {rowIndex === (block.data.length - 1) && (
+                                                <div style={{ display: 'flex', flexDirection: 'column', gap: '2px', alignItems: 'center' }}>
+                                                    <button onClick={removeRow} title="Odebrat řádek" style={{ width: 22, height: 22, borderRadius: 4, border: '1px solid #d1d5db', background: '#fff', cursor: 'pointer', fontSize: 14, color: '#6b7280', lineHeight: 1, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>−</button>
+                                                    <button onClick={addRow} title="Přidat řádek" style={{ width: 22, height: 22, borderRadius: 4, border: '1px solid #d1d5db', background: '#fff', cursor: 'pointer', fontSize: 14, color: '#22c55e', lineHeight: 1, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>+</button>
+                                                </div>
+                                            )}
+                                        </td>
+                                    </tr>
+                                ))}
+                            </tbody>
+                        </table>
+                    </div>
+                    <div style={{ marginTop: 4, display: 'flex', gap: 8, justifyContent: 'flex-end' }}>
+                        <span style={{ fontSize: 11, color: '#9ca3af' }}>
+                            {(block.header || []).length} sloupců × {(block.data || []).length} řádků
+                            {block.comparisonMode && ' · Porovnávací režim'}
+                        </span>
+                    </div>
                 </div>
             );
         }
