@@ -205,3 +205,25 @@
   border: 2px solid #1f2937;
   box-shadow: 0 0 0 2px var(--visualy-accent-4);
 }
+
+/* Custom Scrollbar */
+.custom-scrollbar::-webkit-scrollbar {
+  width: 4px;
+}
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: transparent;
+}
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background: #374151;
+  border-radius: 2px;
+}
+
+/* Article editor – link styles inside ContentEditable */
+[contenteditable] a {
+  color: #2563eb;
+  text-decoration: underline;
+  cursor: text; /* keep text cursor in editor so user can keep typing */
+}
+[contenteditable] a:hover {
+  color: #1d4ed8;
+}
