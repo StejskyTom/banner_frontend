@@ -62,7 +62,7 @@ export default function ArticlePreview({ blocks, selectedBlockId, onSelectBlock,
                         onSelectBlock={onSelectBlock}
                         onChange={onUpdateBlock}
                         onFormatChange={onFormatChange}
-                        onDelete={onDeleteBlock}
+                        onDelete={() => onDeleteBlock(block.id)}
                         savedBlocks={savedBlocks}
                     />
                 ))}

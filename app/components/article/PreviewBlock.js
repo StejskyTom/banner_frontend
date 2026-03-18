@@ -599,6 +599,31 @@ export default function PreviewBlock({ block, isSelected, selectedBlockId, onCli
 
         const TitleTag = productBlock.productNameTag || 'h3';
 
+        const handleNameChange = (val) => {
+            // Strip HTML tags when editing name and description
+            const cleanVal = val.replace(/<[^>]*>?/gm, '');
+            if (productBlock.productId && block.type === 'products_grid') {
+                const newProducts = block.selectedProducts.map(p =>
+                    p.id === productBlock.productId ? { ...p, productName: cleanVal } : p
+                );
+                onChange({ ...block, selectedProducts: newProducts });
+            } else {
+                onChange({ ...block, name: cleanVal });
+            }
+        };
+
+        const handleDescChange = (val) => {
+            const cleanVal = val.replace(/<[^>]*>?/gm, '');
+            if (productBlock.productId && block.type === 'products_grid') {
+                const newProducts = block.selectedProducts.map(p =>
+                    p.id === productBlock.productId ? { ...p, description: cleanVal } : p
+                );
+                onChange({ ...block, selectedProducts: newProducts });
+            } else {
+                onChange({ ...block, description: cleanVal });
+            }
+        };
+
         return (
             <div style={cardStyle}>
                 {productBlock.imgUrl && (
@@ -611,10 +636,20 @@ export default function PreviewBlock({ block, isSelected, selectedBlockId, onCli
                     </div>
                 )}
 
-                <TitleTag style={nameStyle}>{productBlock.name || 'Produkt'}</TitleTag>
+                <ContentEditable
+                    tagName={productBlock.productNameTag || 'h3'}
+                    html={productBlock.name || 'Produkt'}
+                    onChange={handleNameChange}
+                    style={{ ...nameStyle, outline: 'none' }}
+                />
 
-                {productBlock.descriptionEnabled !== false && productBlock.description && (
-                    <div style={descriptionStyle}>{productBlock.description}</div>
+                {productBlock.descriptionEnabled !== false && (
+                    <ContentEditable
+                        tagName="div"
+                        html={productBlock.description || 'Popis produktu...'}
+                        onChange={handleDescChange}
+                        style={{ ...descriptionStyle, outline: 'none' }}
+                    />
                 )}
 
                 {productBlock.price && (
@@ -880,6 +915,7 @@ export default function PreviewBlock({ block, isSelected, selectedBlockId, onCli
             const renderItem = (p) => {
                 const mergedBlock = {
                     ...block,
+                    productId: p.id,
                     name: p.productName,
                     price: p.priceVat ? `${p.priceVat} Kč` : '',
                     imgUrl: p.imgUrl,

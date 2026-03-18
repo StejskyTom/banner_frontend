@@ -5,7 +5,7 @@ import EditSidebar from '../../../components/EditSidebar';
 import CarouselPreview from '../../../components/CarouselPreview';
 import { authorizedFetch } from '../../../../lib/api';
 import { useToast } from "../../../components/ToastProvider";
-import { CodeBracketIcon, ArrowLeftIcon, TableCellsIcon, Cog6ToothIcon } from '@heroicons/react/24/solid';
+import { CodeBracketIcon, HomeIcon, TableCellsIcon, Cog6ToothIcon } from '@heroicons/react/24/solid';
 import { WidgetEmbedGenerator } from '../../../components/WidgetEmbedGenerator';
 import Link from 'next/link';
 
@@ -127,7 +127,7 @@ export default function CarouselEditPage() {
             onClick={handleBack}
             className="p-2 rounded-lg hover:bg-gray-800 text-gray-400 hover:text-white transition-colors cursor-pointer"
           >
-            <ArrowLeftIcon className="h-5 w-5" />
+            <HomeIcon className="h-5 w-5" />
           </button>
           <h1 className="text-lg font-semibold text-white truncate max-w-md">
             {carousel.title}

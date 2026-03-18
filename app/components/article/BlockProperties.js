@@ -93,7 +93,7 @@ const CollapsibleSection = ({ title, children, isOpen, onToggle }) => {
                 className={`flex items-center justify-between cursor-pointer list-none text-xs font-bold uppercase px-3 py-3 select-none leading-none tracking-wider rounded-xl transition-colors ${isOpen ? 'text-white bg-gray-700/50 rounded-b-none' : 'text-gray-300 hover:text-white hover:bg-gray-800/30'}`}
             >
                 <span className="translate-y-[1px]">{title}</span>
-                <ChevronDownIcon className={`w-4 h-4 transition-transform duration-300 ${isOpen ? 'rotate-180' : ''}`} />
+                <ChevronDownIcon className={`w-4 h-4 shrink-0 transition-transform duration-300 will-change-transform ${isOpen ? 'rotate-180' : 'rotate-0'}`} />
             </div>
 
             <div className={`grid transition-[grid-template-rows] duration-300 ease-in-out ${isOpen ? 'grid-rows-[1fr] opacity-100' : 'grid-rows-[0fr] opacity-0'}`}>
@@ -1701,7 +1701,7 @@ export function ProductsGridProperties({ block, onChange, widgetId, tab }) {
     const [isSearching, setIsSearching] = useState(false);
     const [showResults, setShowResults] = useState(false);
     const [autoClose, setAutoClose] = useState(true);
-    const [openSections, setOpenSections] = useState({});
+    const [openSections, setOpenSections] = useState({ search: true, selected: true });
 
     const toggleSection = (id) => {
         setOpenSections(prev => {
@@ -1773,8 +1773,8 @@ export function ProductsGridProperties({ block, onChange, widgetId, tab }) {
         const products = block.selectedProducts || [];
         return (
             <>
-                <CollapsibleSection title="Vybrané produkty" isOpen={true} onToggle={() => { }}>
-                    <div className="mb-6">
+                <CollapsibleSection title="Hledání produktů" isOpen={!!openSections['search']} onToggle={() => toggleSection('search')}>
+                    <div className="mb-2">
                         <div className="relative">
                             <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                                 <MagnifyingGlassIcon className="h-5 w-5 text-gray-400" />
@@ -1798,52 +1798,57 @@ export function ProductsGridProperties({ block, onChange, widgetId, tab }) {
                                     <XMarkIcon className="h-5 w-5" />
                                 </button>
                             ) : null}
-
-                            {showResults && searchResults.length > 0 && (
-                                <div className="absolute z-10 left-0 right-0 mt-2 bg-white dark:bg-gray-800 border border-gray-100 dark:border-gray-700 rounded-xl shadow-2xl max-h-96 overflow-y-auto overflow-x-hidden custom-scrollbar">
-                                    {searchResults.map(product => {
-                                        const isSelected = products.some(p => p.id === product.id);
-                                        return (
-                                            <div
-                                                key={product.id}
-                                                onClick={() => !isSelected && addProduct(product)}
-                                                className={`p-3 flex items-center gap-3 border-b border-gray-100 dark:border-gray-700 last:border-0 transition-colors ${isSelected ? 'opacity-50 cursor-not-allowed bg-gray-50 dark:bg-gray-900/50' : 'cursor-pointer hover:bg-visualy-accent-4/5 dark:hover:bg-visualy-accent-4/10'}`}
-                                            >
-                                                {product.imgUrl && <img src={product.imgUrl} className="w-10 h-10 object-contain rounded-md bg-white border border-gray-100 dark:border-gray-700 shrink-0 p-0.5" alt="" />}
-                                                <div className="flex-1 min-w-0">
-                                                    <div className="text-sm font-medium text-gray-900 dark:text-white truncate">{product.productName}</div>
-                                                    <div className="text-xs text-visualy-accent-4 font-bold mt-0.5">{product.priceVat} Kč</div>
-                                                </div>
-                                                {isSelected && <CheckIcon className="w-5 h-5 text-visualy-accent-4 shrink-0" />}
-                                            </div>
-                                        );
-                                    })}
-                                </div>
-                            )}
                         </div>
-                    </div>
 
-                    {products.length > 0 && (
-                        <div className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-3 ml-1">Vybrané položky ({products.length})</div>
-                    )}
-                    <div className="space-y-2.5 max-h-96 overflow-y-auto pr-1 custom-scrollbar mb-2">
-                        {products.map((p, index) => (
-                            <div key={p.id} className="flex items-center gap-3 bg-white dark:bg-gray-800 p-2.5 rounded-xl border border-gray-200 dark:border-gray-700 shadow-sm transition-shadow hover:shadow-md group">
-                                <div className="flex flex-col gap-0.5 shrink-0 opacity-40 group-hover:opacity-100 transition-opacity">
-                                    <button onClick={() => moveProduct(p.id, 'up')} disabled={index === 0} className="p-0.5 text-gray-400 hover:text-gray-900 dark:hover:text-white disabled:opacity-20 cursor-pointer transition-colors"><ChevronUpIcon className="w-4 h-4" /></button>
-                                    <button onClick={() => moveProduct(p.id, 'down')} disabled={index === products.length - 1} className="p-0.5 text-gray-400 hover:text-gray-900 dark:hover:text-white disabled:opacity-20 cursor-pointer transition-colors"><ChevronDownIcon className="w-4 h-4" /></button>
-                                </div>
-                                {p.imgUrl && <img src={p.imgUrl} className="w-10 h-10 object-contain bg-white rounded-md border border-gray-100 dark:border-gray-700 p-0.5 shrink-0" alt="" />}
-                                <div className="flex-1 min-w-0">
-                                    <div className="text-sm font-semibold truncate text-gray-900 dark:text-gray-100">{p.productName}</div>
-                                    <div className="text-xs text-visualy-accent-4/80 font-medium truncate mt-0.5">{p.priceVat} Kč</div>
-                                </div>
-                                <button onClick={() => removeProduct(p.id)} className="p-2 text-gray-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors">
-                                    <TrashIcon className="w-5 h-5" />
-                                </button>
+                        {showResults && searchResults.length > 0 && (
+                            <div className="mt-2 bg-white dark:bg-gray-800 border border-gray-100 dark:border-gray-700 rounded-xl shadow-lg max-h-96 overflow-y-auto overflow-x-hidden custom-scrollbar">
+                                {searchResults.map(product => {
+                                    const isSelected = products.some(p => p.id === product.id);
+                                    return (
+                                        <div
+                                            key={product.id}
+                                            onClick={() => !isSelected && addProduct(product)}
+                                            className={`p-3 flex items-center gap-3 border-b border-gray-100 dark:border-gray-700 last:border-0 transition-colors ${isSelected ? 'opacity-50 cursor-not-allowed bg-gray-50 dark:bg-gray-900/50' : 'cursor-pointer hover:bg-visualy-accent-4/5 dark:hover:bg-visualy-accent-4/10'}`}
+                                        >
+                                            {product.imgUrl && <img src={product.imgUrl} className="w-10 h-10 object-contain rounded-md bg-white border border-gray-100 dark:border-gray-700 shrink-0 p-0.5" alt="" />}
+                                            <div className="flex-1 min-w-0">
+                                                <div className="text-sm font-medium text-gray-900 dark:text-white truncate">{product.productName}</div>
+                                                <div className="text-xs text-visualy-accent-4 font-bold mt-0.5">{product.priceVat} Kč</div>
+                                            </div>
+                                            {isSelected && <CheckIcon className="w-5 h-5 text-visualy-accent-4 shrink-0" />}
+                                        </div>
+                                    );
+                                })}
                             </div>
-                        ))}
+                        )}
                     </div>
+                </CollapsibleSection>
+
+                <Separator />
+
+                <CollapsibleSection title={`Vybrané produkty (${products.length})`} isOpen={!!openSections['selected']} onToggle={() => toggleSection('selected')}>
+                    {products.length === 0 ? (
+                        <div className="text-sm text-gray-500 text-center py-4 bg-gray-50 dark:bg-gray-800/50 rounded-lg">Zatím nebyly vybrány žádné produkty.</div>
+                    ) : (
+                        <div className="space-y-2.5 max-h-[500px] overflow-y-auto pr-1 custom-scrollbar mb-2">
+                            {products.map((p, index) => (
+                                <div key={p.id} className="flex items-center gap-3 bg-white dark:bg-gray-800 p-2.5 rounded-xl border border-gray-200 dark:border-gray-700 shadow-sm transition-shadow hover:shadow-md group">
+                                    <div className="flex flex-col gap-0.5 shrink-0 opacity-40 group-hover:opacity-100 transition-opacity">
+                                        <button onClick={() => moveProduct(p.id, 'up')} disabled={index === 0} className="p-0.5 text-gray-400 hover:text-gray-900 dark:hover:text-white disabled:opacity-20 cursor-pointer transition-colors"><ChevronUpIcon className="w-4 h-4" /></button>
+                                        <button onClick={() => moveProduct(p.id, 'down')} disabled={index === products.length - 1} className="p-0.5 text-gray-400 hover:text-gray-900 dark:hover:text-white disabled:opacity-20 cursor-pointer transition-colors"><ChevronDownIcon className="w-4 h-4" /></button>
+                                    </div>
+                                    {p.imgUrl && <img src={p.imgUrl} className="w-10 h-10 object-contain bg-white rounded-md border border-gray-100 dark:border-gray-700 p-0.5 shrink-0" alt="" />}
+                                    <div className="flex-1 min-w-0">
+                                        <div className="text-sm font-semibold truncate text-gray-900 dark:text-gray-100">{p.productName}</div>
+                                        <div className="text-xs text-visualy-accent-4/80 font-medium truncate mt-0.5">{p.priceVat} Kč</div>
+                                    </div>
+                                    <button onClick={() => removeProduct(p.id)} className="p-2 text-gray-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors">
+                                        <TrashIcon className="w-5 h-5" />
+                                    </button>
+                                </div>
+                            ))}
+                        </div>
+                    )}
                 </CollapsibleSection>
 
                 <Separator />

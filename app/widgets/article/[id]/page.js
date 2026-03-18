@@ -22,7 +22,7 @@ import {
     sortableKeyboardCoordinates
 } from '@dnd-kit/sortable';
 import {
-    ArrowLeftIcon,
+    HomeIcon,
     CodeBracketIcon,
     TableCellsIcon,
     Cog6ToothIcon,
@@ -408,7 +408,7 @@ export default function ArticleEditPage() {
                             onClick={handleBack}
                             className="p-2 rounded-lg hover:bg-gray-800 text-gray-400 hover:text-white transition-colors cursor-pointer"
                         >
-                            <ArrowLeftIcon className="h-5 w-5" />
+                            <HomeIcon className="h-5 w-5" />
                         </button>
                         <h1 className="text-lg font-semibold text-white truncate max-w-md">
                             {widget.name}

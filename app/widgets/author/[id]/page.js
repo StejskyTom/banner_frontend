@@ -5,7 +5,7 @@ import { useParams, useRouter } from 'next/navigation';
 import { authorizedFetch } from '../../../../lib/api';
 import { useToast } from "../../../components/ToastProvider";
 import {
-    ArrowLeftIcon,
+    HomeIcon,
     CodeBracketIcon,
     CheckIcon,
     PencilSquareIcon,
@@ -132,7 +132,7 @@ export default function AuthorWidgetDetailPage() {
                         onClick={handleBack}
                         className="p-2 rounded-lg hover:bg-gray-800 text-gray-400 hover:text-white transition-colors cursor-pointer"
                     >
-                        <ArrowLeftIcon className="h-5 w-5" />
+                        <HomeIcon className="h-5 w-5" />
                     </button>
                     <h1 className="text-lg font-semibold text-white truncate max-w-md">
                         {widget.name}

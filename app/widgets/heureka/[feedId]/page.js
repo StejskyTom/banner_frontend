@@ -6,7 +6,7 @@ import { authorizedFetch } from '../../../../lib/api';
 import { useToast } from "../../../components/ToastProvider";
 import {
   XMarkIcon,
-  ArrowLeftIcon,
+  HomeIcon,
   TableCellsIcon,
   Cog6ToothIcon,
   CodeBracketIcon
@@ -571,7 +571,7 @@ export default function HeurekaFeedDetailPage() {
               onClick={handleBack}
               className="p-2 rounded-lg hover:bg-gray-800 text-gray-400 hover:text-white transition-colors cursor-pointer"
             >
-              <ArrowLeftIcon className="h-5 w-5" />
+              <HomeIcon className="h-5 w-5" />
             </button>
             <h1 className="text-lg font-semibold text-white truncate max-w-md">
               {feed.name}
