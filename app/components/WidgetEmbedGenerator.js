@@ -8,12 +8,12 @@ import { authorizedFetch } from '../../lib/api';
 const getEmbedUrl = (widgetType, widgetId) => {
     const base = process.env.NEXT_PUBLIC_API_URL || '';
     switch (widgetType) {
-        case 'Article': return `${base}/article-widgets/${widgetId}/embed.js`;
-        case 'Author': return `${base}/author-widgets/${widgetId}/embed.js`;
-        case 'FAQ': return `${base}/faq-widgets/${widgetId}/embed.js`;
-        case 'Product': return `${base}/heureka/feed/${widgetId}/embed.js`;
-        case 'Logo': return `${base}/widget/${widgetId}/embed.js`;
-        default: return `${base}/widget/${widgetId}/embed.js`;
+        case 'Article': return `${base}/article-widgets/${widgetId}/embed`;
+        case 'Author': return `${base}/author-widgets/${widgetId}/embed`;
+        case 'FAQ': return `${base}/faq-widgets/${widgetId}/embed`;
+        case 'Product': return `${base}/heureka/feed/${widgetId}/embed`;
+        case 'Logo': return `${base}/widget/${widgetId}/embed`;
+        default: return `${base}/widget/${widgetId}/embed`;
     }
 };
 
@@ -84,8 +84,8 @@ export function WidgetEmbedGenerator({ widgetId, widgetType, open, onClose }) {
                     <button
                         onClick={copyToClipboard}
                         className={`absolute top-2 right-2 p-2 rounded-md shadow-sm border transition-all cursor-pointer ${copied
-                                ? 'bg-visualy-accent-4 border-visualy-accent-4 text-white'
-                                : 'bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700 text-gray-500 hover:text-visualy-accent-4 dark:hover:text-visualy-accent-4'
+                            ? 'bg-visualy-accent-4 border-visualy-accent-4 text-white'
+                            : 'bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700 text-gray-500 hover:text-visualy-accent-4 dark:hover:text-visualy-accent-4'
                             }`}
                         title={copied ? 'Zkopírováno!' : 'Zkopírovat'}
                     >
@@ -105,8 +105,8 @@ export function WidgetEmbedGenerator({ widgetId, widgetType, open, onClose }) {
                     <button
                         onClick={copyToClipboard}
                         className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-colors cursor-pointer ${copied
-                                ? 'bg-visualy-accent-4/10 text-visualy-accent-4 border border-visualy-accent-4/30'
-                                : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600'
+                            ? 'bg-visualy-accent-4/10 text-visualy-accent-4 border border-visualy-accent-4/30'
+                            : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600'
                             }`}
                     >
                         {copied
