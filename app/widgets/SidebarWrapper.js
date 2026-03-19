@@ -6,6 +6,7 @@ import Link from 'next/link';
 import { authorizedFetch } from '../../lib/api';
 import { ExclamationTriangleIcon } from '@heroicons/react/24/outline';
 import MainSidebar from '../components/MainSidebar';
+import GlobalSearch from '../components/GlobalSearch';
 
 export default function SidebarWrapper({ children }) {
     const pathname = usePathname();
@@ -47,6 +48,7 @@ export default function SidebarWrapper({ children }) {
 
     return (
         <>
+            <GlobalSearch variant="hidden" />
             <MainSidebar
                 isDesktopCollapsed={isDesktopCollapsed}
                 onDesktopToggle={() => setIsDesktopCollapsed(!isDesktopCollapsed)}

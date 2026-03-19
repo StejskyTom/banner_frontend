@@ -6,6 +6,7 @@ import { usePathname } from 'next/navigation';
 import { useSession, signOut } from 'next-auth/react';
 import { Menu, LogOut, ChevronLeft, ChevronRight, LayoutDashboard, CreditCard, Settings, ChevronUp } from 'lucide-react';
 import { Dropdown, DropdownItem } from './Dropdown';
+import GlobalSearch from './GlobalSearch';
 
 export default function MainSidebar({ isDesktopCollapsed, onDesktopToggle }) {
     const { data: session } = useSession();
@@ -135,7 +136,7 @@ export default function MainSidebar({ isDesktopCollapsed, onDesktopToggle }) {
                         <img
                             src="/visualy_logo.png"
                             alt="Visualy"
-                            className="h-10 w-auto object-contain"
+                            className="h-8 w-auto object-contain"
                         />
                     </div>
 
