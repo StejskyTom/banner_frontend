@@ -1695,6 +1695,293 @@ export function VideoProperties({ block, onChange, widgetId }) {
     );
 }
 
+export function FaqProperties({ block, onChange, tab = 'content' }) {
+    const [openSections, setOpenSections] = useState({});
+
+    const toggleSection = (id) => {
+        setOpenSections(prev => {
+            const isOpen = !!prev[id];
+            return isOpen ? {} : { [id]: true };
+        });
+    };
+
+    const updateBlock = (key, value) => {
+        onChange({ ...block, [key]: value });
+    };
+
+    const handleUpdateQuestion = (id, updated) => {
+        onChange({ ...block, questions: block.questions.map(q => q.id === id ? updated : q) });
+    };
+
+    const handleRemoveQuestion = (id) => {
+        onChange({ ...block, questions: block.questions.filter(q => q.id !== id) });
+    };
+
+    const handleAddQuestion = () => {
+        const newQ = { id: crypto.randomUUID(), question: '', answer: '' };
+        onChange({ ...block, questions: [...(block.questions || []), newQ] });
+    };
+
+    const handleMoveQuestion = (index, direction) => {
+        const questions = [...(block.questions || [])];
+        const newIndex = index + direction;
+        if (newIndex < 0 || newIndex >= questions.length) return;
+        [questions[index], questions[newIndex]] = [questions[newIndex], questions[index]];
+        onChange({ ...block, questions });
+    };
+
+    if (tab === 'content') {
+        return (
+            <div className="space-y-4">
+                {/* Questions list */}
+                <div>
+                    <label className="text-xs font-medium text-gray-400 mb-2 block">Otázky a odpovědi</label>
+                    {(block.questions || []).map((q, idx) => (
+                        <div key={q.id} className="bg-gray-800 rounded-lg border border-gray-700 mb-3 overflow-hidden">
+                            <div className="flex items-center p-3 gap-2 bg-gray-800">
+                                <div className="flex flex-col gap-0.5">
+                                    {idx > 0 && (
+                                        <button onClick={() => handleMoveQuestion(idx, -1)} className="text-gray-500 hover:text-white transition p-0.5">
+                                            <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 15l7-7 7 7" /></svg>
+                                        </button>
+                                    )}
+                                    {idx < (block.questions || []).length - 1 && (
+                                        <button onClick={() => handleMoveQuestion(idx, 1)} className="text-gray-500 hover:text-white transition p-0.5">
+                                            <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" /></svg>
+                                        </button>
+                                    )}
+                                </div>
+                                <span className="flex-1 font-medium text-sm text-white truncate">{q.question || 'Nová otázka'}</span>
+                                <button onClick={() => handleRemoveQuestion(q.id)} className="text-gray-500 hover:text-red-500 transition p-1">
+                                    <TrashIcon className="h-4 w-4" />
+                                </button>
+                            </div>
+                            <div className="p-3 border-t border-gray-700 bg-gray-900/50 space-y-3">
+                                <div>
+                                    <label className="text-xs text-gray-500 mb-1 block">Otázka</label>
+                                    <input
+                                        type="text"
+                                        value={q.question}
+                                        onChange={(e) => handleUpdateQuestion(q.id, { ...q, question: e.target.value })}
+                                        className="w-full bg-gray-800 border border-gray-700 text-white text-sm px-3 py-2 rounded focus:outline-none focus:ring-1 focus:ring-visualy-accent-4"
+                                        placeholder="Např. Jaká je otevírací doba?"
+                                    />
+                                </div>
+                                <div>
+                                    <label className="text-xs text-gray-500 mb-1 block">Odpověď</label>
+                                    <textarea
+                                        value={q.answer}
+                                        onChange={(e) => handleUpdateQuestion(q.id, { ...q, answer: e.target.value })}
+                                        rows={3}
+                                        className="w-full bg-gray-800 border border-gray-700 text-white text-sm px-3 py-2 rounded focus:outline-none focus:ring-1 focus:ring-visualy-accent-4 resize-none"
+                                        placeholder="Odpověď na otázku..."
+                                    />
+                                </div>
+                            </div>
+                        </div>
+                    ))}
+
+                    <button
+                        onClick={handleAddQuestion}
+                        className="w-full py-3 border-2 border-dashed border-gray-700 rounded-lg text-gray-400 hover:text-white hover:border-gray-500 hover:bg-gray-800/50 transition flex items-center justify-center gap-2 group mt-2"
+                    >
+                        <PlusIcon className="h-5 w-5 group-hover:scale-110 transition-transform" />
+                        <span className="font-medium">Přidat otázku</span>
+                    </button>
+                </div>
+            </div>
+        );
+    }
+
+    if (tab === 'settings') {
+        return (
+            <div className="flex-1 overflow-y-auto p-4 space-y-2">
+                {/* Question typography */}
+                <CollapsibleSection title="Vzhled otázky" isOpen={!!openSections['question']} onToggle={() => toggleSection('question')}>
+                    <TypographyControls
+                        color={block.questionColor || '#111827'}
+                        setColor={(val) => updateBlock('questionColor', val)}
+                        size={block.questionSize || '18px'}
+                        setSize={(val) => updateBlock('questionSize', val)}
+                        font={block.questionFont || 'sans-serif'}
+                        setFont={(val) => updateBlock('questionFont', val)}
+                        bold={block.questionBold !== false}
+                        setBold={(val) => updateBlock('questionBold', val)}
+                        italic={block.questionItalic || false}
+                        setItalic={(val) => updateBlock('questionItalic', val)}
+                        align={block.questionAlign || 'left'}
+                        setAlign={(val) => updateBlock('questionAlign', val)}
+                        tag={block.questionTag || 'h3'}
+                        setTag={(val) => updateBlock('questionTag', val)}
+                        marginBottom={block.questionMarginBottom ?? 8}
+                        setMarginBottom={(val) => updateBlock('questionMarginBottom', val)}
+                    />
+                </CollapsibleSection>
+
+                <Separator />
+
+                {/* Answer typography */}
+                <CollapsibleSection title="Vzhled odpovědi" isOpen={!!openSections['answer']} onToggle={() => toggleSection('answer')}>
+                    <TypographyControls
+                        color={block.answerColor || '#6B7280'}
+                        setColor={(val) => updateBlock('answerColor', val)}
+                        size={block.answerSize || '14px'}
+                        setSize={(val) => updateBlock('answerSize', val)}
+                        font={block.answerFont || 'sans-serif'}
+                        setFont={(val) => updateBlock('answerFont', val)}
+                        bold={block.answerBold || false}
+                        setBold={(val) => updateBlock('answerBold', val)}
+                        italic={block.answerItalic || false}
+                        setItalic={(val) => updateBlock('answerItalic', val)}
+                        align={block.answerAlign || 'left'}
+                        setAlign={(val) => updateBlock('answerAlign', val)}
+                        tag={block.answerTag || 'p'}
+                        setTag={(val) => updateBlock('answerTag', val)}
+                        marginBottom={block.answerMarginBottom ?? 8}
+                        setMarginBottom={(val) => updateBlock('answerMarginBottom', val)}
+                    />
+                </CollapsibleSection>
+
+                <Separator />
+
+                {/* Arrow settings */}
+                <CollapsibleSection title="Nastavení šipky" isOpen={!!openSections['arrow']} onToggle={() => toggleSection('arrow')}>
+                    <div className="space-y-4">
+                        <div>
+                            <label className="text-xs font-medium text-gray-400 mb-2 block">Pozice šipky</label>
+                            <div className="grid grid-cols-3 gap-2">
+                                {[{ value: 'left', label: 'Vlevo' }, { value: 'after', label: 'Za textem' }, { value: 'right', label: 'Vpravo' }].map(opt => (
+                                    <button
+                                        key={opt.value}
+                                        onClick={() => updateBlock('arrowPosition', opt.value)}
+                                        className={`p-2 rounded-lg border text-xs transition-all ${(block.arrowPosition || 'right') === opt.value
+                                            ? 'bg-visualy-accent-4/20 text-visualy-accent-4 border-visualy-accent-4/50'
+                                            : 'bg-gray-800 border-gray-700 text-gray-400 hover:text-white'
+                                            }`}
+                                    >
+                                        {opt.label}
+                                    </button>
+                                ))}
+                            </div>
+                        </div>
+
+                        <ColorInput label="Barva šipky" value={block.arrowColor || '#6B7280'} onChange={(val) => updateBlock('arrowColor', val)} />
+
+                        <div>
+                            <label className="text-xs font-medium text-gray-400 mb-1.5 block">
+                                Velikost šipky ({block.arrowSize || 24}px)
+                            </label>
+                            <input type="range" min={16} max={48} step={1} value={block.arrowSize || 24}
+                                onChange={(e) => updateBlock('arrowSize', parseInt(e.target.value))}
+                                className="w-full accent-visualy-accent-4"
+                            />
+                        </div>
+                    </div>
+                </CollapsibleSection>
+
+                <Separator />
+
+                {/* Divider settings */}
+                <CollapsibleSection title="Nastavení oddělovače" isOpen={!!openSections['divider']} onToggle={() => toggleSection('divider')}>
+                    <div className="space-y-4">
+                        <div className="flex items-center justify-between">
+                            <label className="text-xs font-medium text-gray-400">Zobrazit oddělovač</label>
+                            <button
+                                onClick={() => updateBlock('dividerEnabled', !(block.dividerEnabled ?? true))}
+                                className={`w-10 h-5 rounded-full flex items-center px-0.5 transition-colors ${(block.dividerEnabled ?? true) ? 'bg-visualy-accent-4' : 'bg-gray-700'}`}
+                            >
+                                <div className={`w-4 h-4 bg-white rounded-full shadow transition-transform ${(block.dividerEnabled ?? true) ? 'translate-x-5' : 'translate-x-0'}`} />
+                            </button>
+                        </div>
+                        {(block.dividerEnabled ?? true) && (
+                            <>
+                                <ColorInput label="Barva oddělovače" value={block.dividerColor || '#e5e7eb'} onChange={(val) => updateBlock('dividerColor', val)} />
+                                <div>
+                                    <label className="text-xs font-medium text-gray-400 mb-1.5 block">Šířka oddělovače ({block.dividerWidth || 100}%)</label>
+                                    <input type="range" min={10} max={100} step={5} value={block.dividerWidth || 100}
+                                        onChange={(e) => updateBlock('dividerWidth', parseInt(e.target.value))}
+                                        className="w-full accent-visualy-accent-4"
+                                    />
+                                </div>
+                                <div>
+                                    <label className="text-xs font-medium text-gray-400 mb-1.5 block">Výška oddělovače ({block.dividerHeight || 1}px)</label>
+                                    <input type="range" min={1} max={10} step={1} value={block.dividerHeight || 1}
+                                        onChange={(e) => updateBlock('dividerHeight', parseInt(e.target.value))}
+                                        className="w-full accent-visualy-accent-4"
+                                    />
+                                </div>
+                                <div>
+                                    <label className="text-xs font-medium text-gray-400 mb-1.5 block">Odsazení od oddělovače ({block.dividerMargin ?? 8}px)</label>
+                                    <input type="range" min={0} max={50} step={1} value={block.dividerMargin ?? 8}
+                                        onChange={(e) => updateBlock('dividerMargin', parseInt(e.target.value))}
+                                        className="w-full accent-visualy-accent-4"
+                                    />
+                                </div>
+                                <div className="grid grid-cols-3 gap-2">
+                                    {['solid', 'dashed', 'dotted'].map((style) => (
+                                        <button
+                                            key={style}
+                                            onClick={() => updateBlock('dividerStyle', style)}
+                                            className={`p-2 rounded text-xs font-medium capitalize border ${(block.dividerStyle || 'solid') === style
+                                                ? 'bg-visualy-accent-4/20 text-visualy-accent-4 border-visualy-accent-4/50'
+                                                : 'bg-gray-800 border-gray-700 text-gray-400 hover:text-white'
+                                                }`}
+                                        >
+                                            {style}
+                                        </button>
+                                    ))}
+                                </div>
+                            </>
+                        )}
+                    </div>
+                </CollapsibleSection>
+
+                <Separator />
+
+                {/* Border & Background */}
+                <CollapsibleSection title="Rámeček a pozadí" isOpen={!!openSections['border']} onToggle={() => toggleSection('border')}>
+                    <div className="space-y-4">
+                        <div className="flex items-center justify-between">
+                            <label className="text-xs font-medium text-gray-400">Zobrazit rámeček</label>
+                            <button
+                                onClick={() => updateBlock('borderEnabled', !block.borderEnabled)}
+                                className={`w-10 h-5 rounded-full flex items-center px-0.5 transition-colors ${block.borderEnabled ? 'bg-visualy-accent-4' : 'bg-gray-700'}`}
+                            >
+                                <div className={`w-4 h-4 bg-white rounded-full shadow transition-transform ${block.borderEnabled ? 'translate-x-5' : 'translate-x-0'}`} />
+                            </button>
+                        </div>
+                        {block.borderEnabled && (
+                            <>
+                                <ColorInput label="Barva rámečku" value={block.borderColor || '#e5e7eb'} onChange={(val) => updateBlock('borderColor', val)} />
+                                <div>
+                                    <label className="text-xs font-medium text-gray-400 mb-1.5 block">Šířka rámečku ({block.borderWidth || 1}px)</label>
+                                    <input type="range" min={1} max={10} step={1} value={block.borderWidth || 1}
+                                        onChange={(e) => updateBlock('borderWidth', parseInt(e.target.value))}
+                                        className="w-full accent-visualy-accent-4"
+                                    />
+                                </div>
+                                <div>
+                                    <label className="text-xs font-medium text-gray-400 mb-1.5 block">Zaoblení rámečku ({block.borderRadius || 0}px)</label>
+                                    <input type="range" min={0} max={32} step={1} value={block.borderRadius || 0}
+                                        onChange={(e) => updateBlock('borderRadius', parseInt(e.target.value))}
+                                        className="w-full accent-visualy-accent-4"
+                                    />
+                                </div>
+                            </>
+                        )}
+
+                        <ColorInput label="Barva pozadí" value={block.backgroundColor || 'transparent'} onChange={(val) => updateBlock('backgroundColor', val)} />
+
+                        <ColorInput label="Barva při najetí" value={block.hoverColor || '#4F46E5'} onChange={(val) => updateBlock('hoverColor', val)} />
+                    </div>
+                </CollapsibleSection>
+            </div>
+        );
+    }
+
+    return null;
+}
+
 export function ProductsGridProperties({ block, onChange, widgetId, tab }) {
     const [searchTerm, setSearchTerm] = useState('');
     const [searchResults, setSearchResults] = useState([]);

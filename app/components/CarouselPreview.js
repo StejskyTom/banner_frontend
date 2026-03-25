@@ -11,7 +11,7 @@ export default function CarouselPreview({
 }) {
     const [isPaused, setIsPaused] = useState(false);
 
-    if (!carousel?.attachments?.length) return null;
+    const attachments = carousel?.attachments || [];
 
     const handleMouseEnter = () => {
         if (carousel.pauseOnHover) {
@@ -32,12 +32,12 @@ export default function CarouselPreview({
     // Calculate duration & infinite loop repeat count
     const speed = carousel.speed ?? 20;
     const enableAnimation = settings?.enableAnimation !== false;
-    const originalCount = carousel.attachments.length;
+    const originalCount = attachments.length;
     // Duplicate logos enough times so the strip is wider than 2x any viewport (~9000px)
     const repeatCount = enableAnimation ? Math.max(2, Math.ceil(60 / Math.max(originalCount, 1))) : 1;
-    const attachmentsToRender = enableAnimation
-        ? Array(repeatCount).fill(carousel.attachments).flat()
-        : carousel.attachments;
+    const attachmentsToRender = enableAnimation && originalCount > 0
+        ? Array(repeatCount).fill(attachments).flat()
+        : attachments;
     const translatePercent = 100 / repeatCount;
     const duration = (originalCount * speed) / 5;
 
@@ -181,28 +181,49 @@ export default function CarouselPreview({
                     </>
                 )}
 
-                <ul
-                    className={`bnnr_logo_strip py-4 flex items-center ${enableAnimation ? 'w-max' : 'w-full flex-wrap justify-center'}`}
-                    style={{
-                        gap: `${carousel.gap ?? 32}px`,
-                        ...(enableAnimation ? {
-                            animationName: 'scroll',
-                            animationDuration: `${duration}s`,
-                            animationTimingFunction: 'linear',
-                            animationIterationCount: 'infinite',
-                            animationPlayState: isPaused ? 'paused' : 'running',
-                        } : {})
-                    }}
-                >
-                    {attachmentsToRender.map((logo, index) => {
-                        const altText = settings?.attachmentAlts?.[logo.id] || logo.alt || '';
-                        return (
-                            <li key={`${logo.id}-${index}`} className="flex-shrink-0">
-                                {logo.link ? (
-                                    <a href={logo.link} target="_blank" rel="noopener noreferrer" className="block hover:opacity-100 transition-opacity opacity-85">
+                {attachmentsToRender.length === 0 ? (
+                    <div className="w-full h-32 flex flex-col items-center justify-center border-2 border-dashed border-gray-300 dark:border-gray-700 rounded-xl bg-gray-50 dark:bg-gray-800/50 text-gray-400">
+                        <svg className="w-8 h-8 mb-2 opacity-50" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>
+                        <span className="font-medium text-sm">Zatím nebyly nahrány žádné obrázky</span>
+                    </div>
+                ) : (
+                    <ul
+                        className={`bnnr_logo_strip py-4 flex items-center ${enableAnimation ? 'w-max' : 'w-full flex-wrap justify-center'}`}
+                        style={{
+                            gap: `${carousel.gap ?? 32}px`,
+                            ...(enableAnimation ? {
+                                animationName: 'scroll',
+                                animationDuration: `${duration}s`,
+                                animationTimingFunction: 'linear',
+                                animationIterationCount: 'infinite',
+                                animationPlayState: isPaused ? 'paused' : 'running',
+                            } : {})
+                        }}
+                    >
+                        {attachmentsToRender.map((logo, index) => {
+                            const altText = settings?.attachmentAlts?.[logo.id] || logo.alt || '';
+                            return (
+                                <li key={`${logo.id}-${index}`} className="flex-shrink-0">
+                                    {logo.link ? (
+                                        <a href={logo.link} target="_blank" rel="noopener noreferrer" className="block hover:opacity-100 transition-opacity opacity-85">
+                                            <img
+                                                src={logo.url}
+                                                alt={altText}
+                                                style={{
+                                                    height: `${carousel.imageSize ?? 64}px`,
+                                                    maxWidth: '120px',
+                                                    objectFit: 'contain',
+                                                    borderRadius: `${imgRadius}px`,
+                                                    boxShadow: shadowStyle
+                                                }}
+                                                draggable="false"
+                                            />
+                                        </a>
+                                    ) : (
                                         <img
                                             src={logo.url}
                                             alt={altText}
+                                            className="block hover:opacity-100 transition-opacity opacity-85"
                                             style={{
                                                 height: `${carousel.imageSize ?? 64}px`,
                                                 maxWidth: '120px',
@@ -212,26 +233,12 @@ export default function CarouselPreview({
                                             }}
                                             draggable="false"
                                         />
-                                    </a>
-                                ) : (
-                                    <img
-                                        src={logo.url}
-                                        alt={altText}
-                                        className="block hover:opacity-100 transition-opacity opacity-85"
-                                        style={{
-                                            height: `${carousel.imageSize ?? 64}px`,
-                                            maxWidth: '120px',
-                                            objectFit: 'contain',
-                                            borderRadius: `${imgRadius}px`,
-                                            boxShadow: shadowStyle
-                                        }}
-                                        draggable="false"
-                                    />
-                                )}
-                            </li>
-                        );
-                    })}
-                </ul>
+                                    )}
+                                </li>
+                            );
+                        })}
+                    </ul>
+                )}
             </div>
 
             <style jsx global>{`

@@ -22,6 +22,7 @@ import {
     ArrowPathIcon,
     LinkSlashIcon,
     VideoCameraIcon,
+    QuestionMarkCircleIcon,
 } from '@heroicons/react/24/solid';
 import {
     TextProperties,
@@ -33,7 +34,8 @@ import {
     ProductsGridProperties,
     AuthorProperties,
     LayoutProperties,
-    VideoProperties
+    VideoProperties,
+    FaqProperties
 } from './article/BlockProperties';
 
 const BLOCK_TYPE_ICONS = {
@@ -47,6 +49,7 @@ const BLOCK_TYPE_ICONS = {
     author: UserCircleIcon,
     layout: ViewColumnsIcon,
     video: VideoCameraIcon,
+    faq: QuestionMarkCircleIcon,
 };
 
 const BLOCK_TYPE_LABELS = {
@@ -60,6 +63,7 @@ const BLOCK_TYPE_LABELS = {
     author: 'Autor',
     layout: 'Layout',
     video: 'Video',
+    faq: 'FAQ',
 };
 
 // --- Draggable Palette Item ---
@@ -385,6 +389,8 @@ export default function ArticleEditSidebar({
                         <TextProperties block={selectedBlock} onChange={handleUpdateBlock} widgetId={widget.id} activeFormats={activeFormats} tab="settings" />
                     ) : selectedBlock.type === 'video' ? (
                         <VideoProperties block={selectedBlock} onChange={handleUpdateBlock} widgetId={widget.id} />
+                    ) : selectedBlock.type === 'faq' ? (
+                        <FaqProperties block={selectedBlock} onChange={handleUpdateBlock} tab="settings" />
                     ) : (
                         <div className="flex-1 overflow-y-auto p-4 space-y-4">
                             {/* Add other block types here as needed for settings */}
@@ -503,6 +509,9 @@ export default function ArticleEditSidebar({
                             {selectedBlock.type === 'video' && (
                                 <VideoProperties block={selectedBlock} onChange={handleUpdateBlock} widgetId={widget.id} />
                             )}
+                            {selectedBlock.type === 'faq' && (
+                                <FaqProperties block={selectedBlock} onChange={handleUpdateBlock} tab="content" />
+                            )}
 
 
                             {/* Template Actions */}
@@ -596,6 +605,7 @@ export default function ArticleEditSidebar({
                                 <DraggablePaletteItem type="product" label="Produkt" icon={ShoppingBagIcon} />
                                 <DraggablePaletteItem type="products_grid" label="Produktový grid" icon={ShoppingBagIcon} />
                                 <DraggablePaletteItem type="author" label="Autor" icon={UserCircleIcon} />
+                                <DraggablePaletteItem type="faq" label="FAQ" icon={QuestionMarkCircleIcon} />
                             </div>
 
                             {/* Saved Templates */}

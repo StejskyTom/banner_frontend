@@ -20,9 +20,20 @@ import {
     BookmarkIcon,
     ViewColumnsIcon,
     ImageIcon,
-    VideoCameraIcon
+    VideoCameraIcon,
+    QuestionMarkCircleIcon
 } from '@heroicons/react/24/solid';
 import ContentEditable from './ContentEditable';
+import FaqPreview from '../FaqPreview';
+
+const hexToRgba = (hex, alpha) => {
+    if (!hex) return `rgba(0, 0, 0, ${alpha})`;
+    if (!hex.startsWith('#')) return hex;
+    const r = parseInt(hex.slice(1, 3), 16);
+    const g = parseInt(hex.slice(3, 5), 16);
+    const b = parseInt(hex.slice(5, 7), 16);
+    return `rgba(${r}, ${g}, ${b}, ${alpha})`;
+};
 
 const CHILD_BLOCK_TYPES = [
     { type: 'text', label: 'Text', icon: Bars3BottomLeftIcon },
@@ -33,6 +44,7 @@ const CHILD_BLOCK_TYPES = [
     { type: 'products_grid', label: 'Produktový grid', icon: ShoppingBagIcon },
     { type: 'author', label: 'Autor', icon: UserCircleIcon },
     { type: 'video', label: 'Video', icon: VideoCameraIcon },
+    { type: 'faq', label: 'FAQ', icon: QuestionMarkCircleIcon },
 ];
 
 const SAVED_BLOCK_ICONS = {
@@ -45,6 +57,7 @@ const SAVED_BLOCK_ICONS = {
     wrap: PhotoIcon,
     author: UserCircleIcon,
     layout: ViewColumnsIcon,
+    faq: QuestionMarkCircleIcon,
 };
 
 function createChildBlock(type) {
@@ -56,6 +69,23 @@ function createChildBlock(type) {
     if (type === 'product') { newBlock.name = 'Produkt'; newBlock.link = ''; newBlock.imgUrl = ''; newBlock.price = ''; newBlock.btnText = 'Koupit'; }
     if (type === 'table') { newBlock.header = ['Sloupec 1', 'Sloupec 2', 'Sloupec 3']; newBlock.data = [['', '', ''], ['', '', ''], ['', '', '']]; newBlock.rows = 3; newBlock.cols = 3; newBlock.width = 100; newBlock.borderStyle = 'full'; newBlock.borderColor = '#e5e7eb'; newBlock.headerBgColor = '#f3f4f6'; newBlock.headerTextColor = '#111827'; newBlock.stripedRows = false; newBlock.stripedColor = '#f9fafb'; newBlock.cellPadding = 12; newBlock.fontSize = 14; }
     if (type === 'author') { newBlock.authorName = ''; newBlock.authorTitle = ''; newBlock.authorBio = ''; newBlock.authorPhotoUrl = ''; }
+    if (type === 'faq') {
+        newBlock.questions = [
+            { id: crypto.randomUUID(), question: 'Vaše první otázka?', answer: 'Zde můžete napsat detailní odpověď na tuto otázku.' }
+        ];
+        newBlock.font = 'sans-serif';
+        newBlock.backgroundColor = 'transparent';
+        newBlock.borderEnabled = false;
+        newBlock.questionColor = '#111827';
+        newBlock.questionSize = '18px';
+        newBlock.questionBold = true;
+        newBlock.answerColor = '#6B7280';
+        newBlock.answerSize = '14px';
+        newBlock.dividerEnabled = true;
+        newBlock.dividerColor = '#e5e7eb';
+        newBlock.arrowPosition = 'right';
+        newBlock.arrowColor = '#6B7280';
+    }
     if (type === 'products_grid') {
         newBlock.selectedProducts = [];
         newBlock.layout = 'grid';
@@ -105,13 +135,21 @@ function resolveVideoUrl(url, autoPlay) {
     return url;
 }
 
-function AddBlockMenu({ onAdd, isEmptyState = false, savedBlocks = [], onAddSaved }) {
+function AddBlockMenu({ onAdd, isEmptyState = false, savedBlocks = [], onAddSaved, onOpenChange }) {
     const [open, setOpen] = useState(false);
+
+    const toggleOpen = (e) => {
+        e.stopPropagation();
+        const next = !open;
+        setOpen(next);
+        onOpenChange?.(next);
+    };
+
     return (
         <div className={`relative group/add ${isEmptyState ? 'h-full flex-1 min-h-[140px]' : 'pt-2'} ${open ? 'z-50' : 'z-10'}`}>
             {isEmptyState ? (
                 <button
-                    onClick={(e) => { e.stopPropagation(); setOpen(!open); }}
+                    onClick={toggleOpen}
                     className={`w-full h-full flex flex-col items-center justify-center p-4 text-center rounded-xl border-2 border-dashed transition-all
                         ${open
                             ? 'border-visualy-accent-4 bg-visualy-accent-4/15 text-visualy-accent-4'
@@ -127,7 +165,7 @@ function AddBlockMenu({ onAdd, isEmptyState = false, savedBlocks = [], onAddSave
                 </button>
             ) : (
                 <button
-                    onClick={(e) => { e.stopPropagation(); setOpen(!open); }}
+                    onClick={toggleOpen}
                     className={`w-full h-9 border border-dashed rounded-lg transition-all flex items-center justify-center gap-2 text-xs font-medium 
                         ${open
                             ? 'border-visualy-accent-4 text-visualy-accent-4 bg-visualy-accent-4/10'
@@ -141,7 +179,7 @@ function AddBlockMenu({ onAdd, isEmptyState = false, savedBlocks = [], onAddSave
 
             {open && (
                 <>
-                    <div className="fixed inset-0 z-40" onClick={(e) => { e.stopPropagation(); setOpen(false); }} />
+                    <div className="fixed inset-0 z-40" onClick={(e) => { e.stopPropagation(); setOpen(false); onOpenChange?.(false); }} />
                     <div className="absolute z-50 left-1/2 -translate-x-1/2 top-full mt-2 w-64 bg-white border border-gray-100 rounded-2xl shadow-2xl py-2 ring-1 ring-black/5 animate-zoom-in flex flex-col gap-1 p-1.5">
                         <div className="px-3 py-2 text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-1 flex items-center justify-between">
                             <span>Vyberte typ obsahu</span>
@@ -154,6 +192,7 @@ function AddBlockMenu({ onAdd, isEmptyState = false, savedBlocks = [], onAddSave
                                     e.stopPropagation();
                                     onAdd(type);
                                     setOpen(false);
+                                    onOpenChange?.(false);
                                 }}
                                 className="w-full px-3 py-2.5 text-left text-sm text-gray-700 hover:bg-visualy-accent-4/10 hover:text-visualy-accent-4 rounded-xl flex items-center gap-3 transition-colors group"
                             >
@@ -182,6 +221,7 @@ function AddBlockMenu({ onAdd, isEmptyState = false, savedBlocks = [], onAddSave
                                                 e.stopPropagation();
                                                 onAddSaved?.(sb);
                                                 setOpen(false);
+                                                onOpenChange?.(false);
                                             }}
                                             className="w-full px-3 py-2.5 text-left text-sm text-gray-700 hover:bg-visualy-accent-4/10 hover:text-visualy-accent-4 rounded-xl flex items-center gap-3 transition-colors group"
                                         >
@@ -434,6 +474,151 @@ function LayoutChildBlock({ childBlock, isSelected, onClick, onChange, onFormatC
                 </div>
             );
         }
+        if (childBlock.type === 'faq') {
+            return (
+                <div className="pointer-events-none" style={{ width: '100%' }}>
+                    <FaqPreview widget={childBlock} />
+                </div>
+            );
+        }
+        if (childBlock.type === 'table') {
+            const borderColor = childBlock.borderColor || '#e5e7eb';
+            const borderStyle = childBlock.borderStyle || 'full';
+            const cellPad = childBlock.cellPadding !== undefined ? childBlock.cellPadding : 12;
+            const fontSize = childBlock.fontSize !== undefined ? childBlock.fontSize : 12;
+            const stripedRows = childBlock.stripedRows || false;
+            const stripedColor = childBlock.stripedColor || '#f9fafb';
+
+            const addCol = () => {
+                const newHeader = [...(childBlock.header || []), `Sloupec ${(childBlock.header || []).length + 1}`];
+                const newData = (childBlock.data || []).map(row => [...row, '']);
+                onChange({ ...childBlock, header: newHeader, data: newData, cols: newHeader.length });
+            };
+            const removeCol = () => {
+                if ((childBlock.header || []).length <= 1) return;
+                const newHeader = childBlock.header.slice(0, -1);
+                const newData = (childBlock.data || []).map(row => row.slice(0, -1));
+                onChange({ ...childBlock, header: newHeader, data: newData, cols: newHeader.length });
+            };
+            const addRow = () => {
+                const cols = (childBlock.header || []).length;
+                const newData = [...(childBlock.data || []), new Array(cols).fill('')];
+                onChange({ ...childBlock, data: newData, rows: newData.length });
+            };
+            const removeRow = () => {
+                if ((childBlock.data || []).length <= 1) return;
+                const newData = childBlock.data.slice(0, -1);
+                onChange({ ...childBlock, data: newData, rows: newData.length });
+            };
+
+            return (
+                <div style={{ width: '100%' }}>
+                    <div style={{ overflowX: 'auto', borderRadius: `${childBlock.borderRadius !== undefined ? childBlock.borderRadius : 8}px`, border: childBlock.outerBorder !== false ? `1px solid ${borderColor}` : 'none', overflow: 'hidden' }}>
+                        <table style={{ width: `${childBlock.width || 100}%`, borderCollapse: 'separate', borderSpacing: 0, fontSize: `${fontSize}px` }}>
+                            <thead>
+                                <tr>
+                                    {(childBlock.header || []).map((head, i) => (
+                                        <th key={i} style={{ background: childBlock.headerBgColor || '#f3f4f6', color: childBlock.headerTextColor || '#111827', padding: `${cellPad}px`, textAlign: childBlock.textAlign || 'left', fontWeight: 600, borderBottom: borderStyle !== 'none' ? `1px solid ${borderColor}` : 'none', borderRight: borderStyle === 'full' && i < (childBlock.header.length - 1) ? `1px solid ${borderColor}` : 'none' }}>
+                                            <ContentEditable tagName="div" html={head} onChange={(val) => {
+                                                const newHeader = [...childBlock.header];
+                                                newHeader[i] = val;
+                                                onChange({ ...childBlock, header: newHeader });
+                                            }} style={{ outline: 'none', minWidth: '40px' }} />
+                                        </th>
+                                    ))}
+                                    <th style={{ background: childBlock.headerBgColor || '#f3f4f6', borderBottom: borderStyle !== 'none' ? `1px solid ${borderColor}` : 'none', padding: '4px', width: '40px', textAlign: 'center' }}>
+                                        <div style={{ display: 'flex', flexDirection: 'column', gap: '2px', alignItems: 'center' }}>
+                                            <button onClick={addCol} style={{ width: 18, height: 18, border: '1px solid #d1d5db', background: '#fff', cursor: 'pointer', fontSize: 12 }}>+</button>
+                                            <button onClick={removeCol} style={{ width: 18, height: 18, border: '1px solid #d1d5db', background: '#fff', cursor: 'pointer', fontSize: 12 }}>-</button>
+                                        </div>
+                                    </th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {(childBlock.data || []).map((row, rowIndex) => (
+                                    <tr key={rowIndex} style={{ background: stripedRows && rowIndex % 2 === 1 ? stripedColor : 'transparent' }}>
+                                        {row.map((cell, colIndex) => (
+                                            <td key={colIndex} style={{ padding: `${cellPad}px`, textAlign: childBlock.textAlign || 'left', borderBottom: borderStyle !== 'none' && rowIndex < (childBlock.data.length - 1) ? `1px solid ${borderColor}` : 'none', borderRight: borderStyle === 'full' && colIndex < (row.length - 1) ? `1px solid ${borderColor}` : 'none' }}>
+                                                <ContentEditable tagName="div" html={cell} onChange={(val) => {
+                                                    const newData = [...childBlock.data];
+                                                    newData[rowIndex] = [...newData[rowIndex]];
+                                                    newData[rowIndex][colIndex] = val;
+                                                    onChange({ ...childBlock, data: newData });
+                                                }} style={{ outline: 'none', minWidth: '40px' }} />
+                                            </td>
+                                        ))}
+                                        <td style={{ padding: '2px', textAlign: 'center', width: '40px' }}>
+                                            {rowIndex === (childBlock.data.length - 1) && (
+                                                <div style={{ display: 'flex', flexDirection: 'column', gap: '2px', alignItems: 'center' }}>
+                                                    <button onClick={addRow} style={{ width: 18, height: 18, border: '1px solid #d1d5db', background: '#fff', cursor: 'pointer', fontSize: 12 }}>+</button>
+                                                    <button onClick={removeRow} style={{ width: 18, height: 18, border: '1px solid #d1d5db', background: '#fff', cursor: 'pointer', fontSize: 12 }}>-</button>
+                                                </div>
+                                            )}
+                                        </td>
+                                    </tr>
+                                ))}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            );
+        }
+        if (childBlock.type === 'products_grid') {
+            const products = childBlock.selectedProducts || [];
+            if (products.length === 0) {
+                return (
+                    <div style={{ textAlign: 'center', padding: '24px', border: '2px dashed #e5e7eb', borderRadius: '8px', color: '#9ca3af', background: '#f9fafb' }}>
+                        <ShoppingBagIcon style={{ width: 32, height: 32, margin: '0 auto 8px', display: 'block' }} />
+                        <span style={{ fontSize: '12px' }}>Žádné produkty (upravte v nastavení)</span>
+                    </div>
+                );
+            }
+
+            const gridCols = Math.min(childBlock.gridColumns || 2, 3);
+
+            const renderGridItem = (p) => {
+                const cardStyle = {
+                    background: childBlock.cardBackgroundColor || '#ffffff',
+                    border: childBlock.cardBorderEnabled ? `${childBlock.cardBorderWidth || 1}px solid ${childBlock.cardBorderColor || '#e5e7eb'}` : '1px solid #e5e7eb',
+                    padding: `${childBlock.cardPaddingY !== undefined ? childBlock.cardPaddingY : 12}px ${childBlock.cardPaddingX !== undefined ? childBlock.cardPaddingX : 12}px`,
+                    borderRadius: childBlock.cardBorderRadius !== undefined ? `${childBlock.cardBorderRadius}px` : '8px',
+                    textAlign: 'center',
+                    boxShadow: childBlock.cardShadowEnabled ? `0 4px ${childBlock.cardShadowBlur || 10}px ${hexToRgba(childBlock.cardShadowColor || '#000000', (childBlock.cardShadowOpacity || 10) / 100)}` : 'none',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    height: '100%',
+                    overflow: 'hidden'
+                };
+                return (
+                    <div key={p.id} style={{ display: 'flex', flexDirection: 'column' }}>
+                        <div style={cardStyle}>
+                            {p.imgUrl && (
+                                <img src={resolveImageUrl(p.imgUrl)} alt={p.productName || ''} style={{ width: '100%', height: `${childBlock.imageHeight || 100}px`, objectFit: childBlock.imageObjectFit || 'contain', borderRadius: `${childBlock.imageBorderRadius || 4}px`, marginBottom: `${childBlock.imageMarginBottom || 8}px` }} />
+                            )}
+                            <div style={{ color: childBlock.productNameColor || '#111827', fontSize: childBlock.productNameSize || '13px', fontWeight: childBlock.productNameBold ? 'bold' : '600', marginBottom: '4px', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>
+                                {p.productName || 'Produkt'}
+                            </div>
+                            {p.priceVat && (
+                                <div style={{ color: childBlock.priceColor || '#059669', fontSize: childBlock.priceSize || '14px', fontWeight: childBlock.priceBold !== false ? 'bold' : 'normal', marginBottom: '8px' }}>
+                                    {p.priceVat} Kč
+                                </div>
+                            )}
+                            <a href={p.url || '#'} onClick={(e) => e.preventDefault()} style={{ background: childBlock.buttonColor || '#26AD80', color: childBlock.buttonTextColor || '#fff', fontSize: childBlock.buttonFontSize || '12px', padding: '6px 12px', borderRadius: `${childBlock.buttonBorderRadius || 6}px`, textDecoration: 'none', display: 'inline-block', marginTop: 'auto' }}>
+                                {childBlock.buttonText || 'Koupit'}
+                            </a>
+                        </div>
+                    </div>
+                );
+            };
+
+            return (
+                <div style={{ width: '100%' }}>
+                    <div style={{ display: 'grid', gridTemplateColumns: `repeat(${gridCols}, minmax(0, 1fr))`, gap: '12px', alignItems: 'stretch' }}>
+                        {products.map(renderGridItem)}
+                    </div>
+                </div>
+            );
+        }
         return null;
     };
 
@@ -471,6 +656,8 @@ function LayoutChildBlock({ childBlock, isSelected, onClick, onChange, onFormatC
 }
 
 export default function PreviewBlock({ block, isSelected, selectedBlockId, onClick, onSelectBlock, onChange, onFormatChange, onDelete, savedBlocks = [] }) {
+    const [isMenuOpen, setIsMenuOpen] = useState(false);
+
     const {
         attributes,
         listeners,
@@ -494,14 +681,6 @@ export default function PreviewBlock({ block, isSelected, selectedBlockId, onCli
         position: 'relative'
     };
 
-    const hexToRgba = (hex, alpha) => {
-        if (!hex) return `rgba(0, 0, 0, ${alpha})`;
-        if (!hex.startsWith('#')) return hex;
-        const r = parseInt(hex.slice(1, 3), 16);
-        const g = parseInt(hex.slice(3, 5), 16);
-        const b = parseInt(hex.slice(5, 7), 16);
-        return `rgba(${r}, ${g}, ${b}, ${alpha})`;
-    };
 
     const resolveImageUrl = (url) => {
         if (!url) return '';
@@ -898,6 +1077,13 @@ export default function PreviewBlock({ block, isSelected, selectedBlockId, onCli
         if (block.type === 'product') {
             return renderProduct(block, false);
         }
+        if (block.type === 'faq') {
+            return (
+                <div style={{ ...margin, position: 'relative' }} className="group pointer-events-none">
+                    <FaqPreview widget={block} />
+                </div>
+            );
+        }
         if (block.type === 'products_grid') {
             const products = block.selectedProducts || [];
             if (products.length === 0) {
@@ -1205,7 +1391,7 @@ export default function PreviewBlock({ block, isSelected, selectedBlockId, onCli
                             </div>
                             <div className="flex-1 flex flex-col h-full">
                                 {(col.blocks || []).length === 0 ? (
-                                    <AddBlockMenu onAdd={(type) => handleAddChildBlock(colIndex, type)} isEmptyState={true} savedBlocks={savedBlocks} onAddSaved={(sb) => handleAddSavedChildBlock(colIndex, sb)} />
+                                    <AddBlockMenu onAdd={(type) => handleAddChildBlock(colIndex, type)} isEmptyState={true} savedBlocks={savedBlocks} onAddSaved={(sb) => handleAddSavedChildBlock(colIndex, sb)} onOpenChange={setIsMenuOpen} />
                                 ) : (
                                     <>
                                         {(col.blocks || []).map((childBlock, blockIndex) => (
@@ -1225,7 +1411,7 @@ export default function PreviewBlock({ block, isSelected, selectedBlockId, onCli
                                                 resolveImageUrl={resolveImageUrl}
                                             />
                                         ))}
-                                        <AddBlockMenu onAdd={(type) => handleAddChildBlock(colIndex, type)} savedBlocks={savedBlocks} onAddSaved={(sb) => handleAddSavedChildBlock(colIndex, sb)} />
+                                        <AddBlockMenu onAdd={(type) => handleAddChildBlock(colIndex, type)} savedBlocks={savedBlocks} onAddSaved={(sb) => handleAddSavedChildBlock(colIndex, sb)} onOpenChange={setIsMenuOpen} />
                                     </>
                                 )}
                             </div>
@@ -1238,7 +1424,7 @@ export default function PreviewBlock({ block, isSelected, selectedBlockId, onCli
     };
 
     return (
-        <div ref={setNodeRef} style={style} onClick={onClick} className={`relative group p-4 rounded-2xl transition-all duration-200 ${isSelected ? 'ring-2 ring-visualy-accent-4 bg-visualy-accent-4/[0.03] shadow-lg shadow-visualy-accent-4/5 z-40' : 'hover:bg-gray-50/80 hover:ring-1 hover:ring-gray-200 hover:z-30'} ${isDragging ? 'z-50' : 'z-10'} ${showDropIndicator ? 'ring-2 ring-visualy-accent-4 ring-dashed bg-visualy-accent-4/10' : ''}`}>
+        <div ref={setNodeRef} style={style} onClick={onClick} className={`relative group p-4 rounded-2xl transition-all duration-200 ${isSelected ? 'ring-2 ring-visualy-accent-4 bg-visualy-accent-4/[0.03] shadow-lg shadow-visualy-accent-4/5 z-40' : (isMenuOpen ? 'z-50 ring-1 ring-gray-200 bg-white shadow-xl' : 'hover:bg-gray-50/80 hover:ring-1 hover:ring-gray-200 hover:z-30')} ${isDragging ? 'z-50' : 'z-10'} ${showDropIndicator ? 'ring-2 ring-visualy-accent-4 ring-dashed bg-visualy-accent-4/10' : ''}`}>
             {/* Simple handle indicator on hover */}
             <div {...attributes} {...listeners} className="absolute -left-3 md:-left-6 top-1/2 -translate-y-1/2 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity cursor-grab active:cursor-grabbing p-2 text-gray-400 hover:text-visualy-accent-4 hover:bg-visualy-accent-4/10 rounded-lg z-50 shadow-sm border border-transparent hover:border-visualy-accent-4/20 bg-white dark:bg-gray-800">
                 <ArrowsUpDownIcon className="h-5 w-5" />

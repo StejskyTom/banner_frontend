@@ -280,6 +280,36 @@ export default function ArticleEditPage() {
             newBlock.borderRadius = 8;
         }
         if (type === 'author') { newBlock.layout = 'centered'; }
+        if (type === 'faq') {
+            newBlock.questions = [
+                { id: crypto.randomUUID(), question: 'Vaše první otázka?', answer: 'Zde můžete napsat detailní odpověď na tuto otázku.' }
+            ];
+            newBlock.font = 'sans-serif';
+            newBlock.backgroundColor = 'transparent';
+            newBlock.borderEnabled = false;
+            newBlock.questionColor = '#111827';
+            newBlock.questionSize = '18px';
+            newBlock.questionBold = true;
+            newBlock.questionTag = 'h3';
+            newBlock.questionAlign = 'left';
+            newBlock.questionMarginBottom = 8;
+            newBlock.answerColor = '#6B7280';
+            newBlock.answerSize = '14px';
+            newBlock.answerBold = false;
+            newBlock.answerTag = 'p';
+            newBlock.answerAlign = 'left';
+            newBlock.answerMarginBottom = 8;
+            newBlock.dividerEnabled = true;
+            newBlock.dividerColor = '#e5e7eb';
+            newBlock.dividerHeight = 1;
+            newBlock.dividerWidth = 100;
+            newBlock.dividerStyle = 'solid';
+            newBlock.dividerMargin = 8;
+            newBlock.arrowPosition = 'right';
+            newBlock.arrowColor = '#6B7280';
+            newBlock.arrowSize = 24;
+            newBlock.hoverColor = '#4F46E5';
+        }
         if (type === 'layout') {
             newBlock.gap = 16;
             newBlock.columns = [
