@@ -61,6 +61,7 @@ export default function MainSidebar({ isDesktopCollapsed, onDesktopToggle }) {
                 </svg>
             ),
         },
+        /*
         {
             label: 'Články',
             href: '/widgets/article',
@@ -75,6 +76,7 @@ export default function MainSidebar({ isDesktopCollapsed, onDesktopToggle }) {
                 </svg>
             ),
         },
+         */
         {
             label: 'Autor',
             href: '/widgets/author',
