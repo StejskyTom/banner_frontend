@@ -86,9 +86,11 @@ function FaqItem({ question, settings, isFirst, isLast }) {
                     <QuestionTag style={questionStyle}>{question.question || 'Nová otázka'}</QuestionTag>
                     <ArrowIcon />
                 </summary>
-                <AnswerTag className="leading-relaxed" style={answerStyle}>
-                    {question.answer || 'Zde bude odpověď...'}
-                </AnswerTag>
+                <AnswerTag
+                    className="leading-relaxed"
+                    style={answerStyle}
+                    dangerouslySetInnerHTML={{ __html: question.answer || 'Zde bude odpověď...' }}
+                />
             </details>
             {!isLast && dividerEnabled && <hr style={dividerStyle} />}
         </div>
@@ -130,7 +132,7 @@ export default function FaqPreview({ widget }) {
     };
 
     return (
-        <div className="w-full max-w-3xl mx-auto p-6 rounded-xl" style={containerStyle}>
+        <div className="w-full max-w-3xl mx-auto p-5 rounded-xl" style={containerStyle}>
             {widget.name && (
                 <TitleTag style={titleStyle} className="mb-0">
                     {widget.name}
